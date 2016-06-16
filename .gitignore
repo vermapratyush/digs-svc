@@ -33,3 +33,4 @@ pkg/
 /lastupdate.tmp
 /bin
 /src/gopkg.in/
+/swagger
