@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"digs/domain"
-	"encoding/json"
 	"digs/models"
 	"fmt"
 	"errors"
@@ -14,10 +13,8 @@ type LoginController struct {
 
 func (this *LoginController) Post()  {
 	var request domain.UserLoginRequest
+	this.Super(&request.BaseRequest)
 
-	json.Unmarshal(this.Ctx.Input.RequestBody, &request)
-	request.SessionID = this.Ctx.Input.Header("SID")
-	request.UserAgent = this.Ctx.Input.UserAgent()
 
 	//Get data from facebook
 	firstName, lastName, email, about := getDataFromFacebook(request.AccessToken)

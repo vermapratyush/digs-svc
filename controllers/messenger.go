@@ -15,6 +15,7 @@ type MessengerController struct {
 
 func (this *MessengerController) Post()  {
 	var request domain.MessageSendRequest
+	this.Super(&request.BaseRequest)
 
 	err := json.Unmarshal(this.Ctx.Input.RequestBody, &request)
 	if err != nil {
@@ -35,6 +36,7 @@ func (this *MessengerController) Post()  {
 
 func (this *MessengerController) Get()  {
 	var request domain.MessageGetRequest
+	this.Super(&request.BaseRequest)
 
 	err := populateGetParams(this, &request)
 	if err != nil {

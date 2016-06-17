@@ -6,25 +6,24 @@ type Coordinate struct {
 }
 
 type BaseRequest struct {
+	UserAgent string
+	SessionID string
 }
 
 type UserLoginRequest struct {
-	UserAgent string
-	SessionID string
+	BaseRequest
 	AccessToken string `json:"accessToken" bson:"accessToken"`
 }
 
 type MessageSendRequest struct {
-	UserAgent string
-	SessionID string
+	BaseRequest
 	Body      string `json:"body" bson:"body"`
 	Username  string `json:"username" bson:"username"`
 	Location  Coordinate `json:"location" bson:"location"`
 }
 
 type MessageGetRequest struct {
-	UserAgent string
-	SessionID string
+	BaseRequest
 	Username  string `json:"username" bson:"username"`
 	Location  Coordinate `json:"location" bson:"location"`
 	Distance  int64 `json:"distance" bson:"distance"`
