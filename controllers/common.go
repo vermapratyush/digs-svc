@@ -1,8 +1,6 @@
 package controllers
 
 import (
-)
-import (
 	"digs/domain"
 	"github.com/astaxie/beego"
 	"encoding/json"
@@ -18,7 +16,7 @@ type WSBaseController struct {
 
 func (this *HttpBaseController) Super(request *domain.BaseRequest) *HttpBaseController {
 	if this.Ctx.Input.Method() == "POST" {
-		json.Unmarshal(this.Ctx.Input.RequestBody, request)
+		_ = json.Unmarshal(this.Ctx.Input.RequestBody, request)
 	}
 	request.SessionID = this.Ctx.Input.Header("SID")
 	request.UserAgent = this.Ctx.Input.UserAgent()

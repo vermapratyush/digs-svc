@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"digs/domain"
-	"encoding/json"
 	"strings"
 	"strconv"
 	"digs/models"
@@ -17,16 +16,8 @@ func (this *MessengerController) Post()  {
 	var request domain.MessageSendRequest
 	this.Super(&request.BaseRequest)
 
-	err := json.Unmarshal(this.Ctx.Input.RequestBody, &request)
-	if err != nil {
-		this.Serve500(err)
-		return
-	}
-	request.SessionID = this.Ctx.Input.Header("SID")
-	request.UserAgent = this.Ctx.Input.UserAgent()
-
 	//Write to database
-	_, err = models.CreateMessage(request.Username, request.Location, request.Body)
+	_, err := models.CreateMessage(request.Username, request.Location, request.Body)
 	if err != nil {
 		this.Serve500(err)
 		return
@@ -43,10 +34,8 @@ func (this *MessengerController) Get()  {
 		this.Serve500(err)
 		return
 	}
-	request.SessionID = this.Ctx.Input.Header("SID")
-	request.UserAgent = this.Ctx.Input.UserAgent()
-	//Get from database
 
+	//Get from database
 	messages, err := models.GetMessages(request.Distance, request.Location)
 	if err != nil {
 		this.Serve500(err)
