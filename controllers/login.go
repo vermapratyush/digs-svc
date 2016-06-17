@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
 	"digs/domain"
 	"encoding/json"
 	"digs/models"
@@ -10,17 +9,7 @@ import (
 )
 
 type LoginController struct {
-	beego.Controller
-	baseController BaseController
-}
-
-func (this *LoginController) Prepare() {
-	this.baseController.Data = &this.Data
-	serveJSON := this.ServeJSON
-	this.baseController.Serve = serveJSON
-	setStatus := this.Ctx.Output.SetStatus
-	this.baseController.SetStatus = setStatus
-
+	HttpBaseController
 }
 
 func (this *LoginController) Post()  {
@@ -36,19 +25,19 @@ func (this *LoginController) Post()  {
 	//Check if the person is already registered
 	userAccount, err := models.GetUserAccount(email)
 	if err != nil {
-		this.baseController.Serve500(errors.New("Unable to look up account table"))
+		this.Serve500(errors.New("Unable to look up account table"))
 		return
 	}
 	if userAccount == nil {
 		userAccount, err = models.AddUserAccount(firstName, lastName, email, about)
 		if err != nil {
-			this.baseController.Serve500(err)
+			this.Serve500(err)
 			return
 		}
 
 		err = models.AddUserAuth((*userAccount).UID, request.AccessToken)
 		if err != nil {
-			this.baseController.Serve500(err)
+			this.Serve500(err)
 			return
 		}
 	}
@@ -59,7 +48,7 @@ func (this *LoginController) Post()  {
 		Email:(*userAccount).Email,
 		About:(*userAccount).About,
 	}
-	this.baseController.Serve200(resp)
+	this.Serve200(resp)
 }
 
 func getDataFromFacebook(accessToken string) (string, string, string, string) {

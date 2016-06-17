@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
 	"digs/domain"
 	"encoding/json"
 	"strings"
@@ -11,17 +10,7 @@ import (
 )
 
 type MessengerController struct {
-	beego.Controller
-	baseController BaseController
-}
-
-func (this *MessengerController) Prepare() {
-	this.baseController.Data = &this.Data
-	fun := this.ServeJSON
-	this.baseController.Serve = fun
-	setStatus := this.Ctx.Output.SetStatus
-	this.baseController.SetStatus = setStatus
-
+	HttpBaseController
 }
 
 func (this *MessengerController) Post()  {
@@ -29,7 +18,7 @@ func (this *MessengerController) Post()  {
 
 	err := json.Unmarshal(this.Ctx.Input.RequestBody, &request)
 	if err != nil {
-		this.baseController.Serve500(err)
+		this.Serve500(err)
 		return
 	}
 	request.SessionID = this.Ctx.Input.Header("SID")
@@ -38,10 +27,10 @@ func (this *MessengerController) Post()  {
 	//Write to database
 	_, err = models.CreateMessage(request.Username, request.Location, request.Body)
 	if err != nil {
-		this.baseController.Serve500(err)
+		this.Serve500(err)
 		return
 	}
-	this.baseController.Serve304()
+	this.Serve304()
 }
 
 func (this *MessengerController) Get()  {
@@ -49,7 +38,7 @@ func (this *MessengerController) Get()  {
 
 	err := populateGetParams(this, &request)
 	if err != nil {
-		this.baseController.Serve500(err)
+		this.Serve500(err)
 		return
 	}
 	request.SessionID = this.Ctx.Input.Header("SID")
@@ -58,10 +47,10 @@ func (this *MessengerController) Get()  {
 
 	messages, err := models.GetMessages(request.Distance, request.Location)
 	if err != nil {
-		this.baseController.Serve500(err)
+		this.Serve500(err)
 		return
 	}
-	this.baseController.Serve200(messages)
+	this.Serve200(messages)
 }
 
 func populateGetParams(this *MessengerController, req *domain.MessageGetRequest) error {

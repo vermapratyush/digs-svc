@@ -13,6 +13,10 @@ import (
 )
 
 func init() {
+	//REST
 	beego.Router("/v1/login", &controllers.LoginController{})
 	beego.Router("/v1/messenger", &controllers.MessengerController{})
+
+	//WS
+	//beego.Router("/v1/ws/init", )
 }

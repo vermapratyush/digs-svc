@@ -4,32 +4,40 @@ import (
 )
 import (
 	"digs/domain"
+	"github.com/astaxie/beego"
 )
 
-type BaseController struct {
-	Data *map[interface{}]interface{}
-	SetStatus func (status int)
-	Serve func(encoding ...bool)
+type HttpBaseController struct {
+	beego.Controller
 }
 
-func (this *BaseController) Serve500(err error) {
-	(*this.Data)["json"] = domain.ErrorResponse{
+
+func (this *HttpBaseController) Prepare() {
+}
+
+
+type WebSocketController struct {
+	beego.Controller
+}
+
+func (this *HttpBaseController) Serve500(err error) {
+	this.Data["json"] = domain.ErrorResponse{
 		StatusCode:500,
 		Message:err.Error(),
 	}
-	this.SetStatus(500)
-	this.Serve()
+	this.Ctx.Output.SetStatus(500)
+	this.ServeJSON()
 	return
 
 }
 
-func (this *BaseController) Serve200(obj interface{}) {
-	(*this.Data)["json"] = obj
-	this.SetStatus(200)
-	this.Serve()
+func (this *HttpBaseController) Serve200(obj interface{}) {
+	this.Data["json"] = obj
+	this.Ctx.Output.SetStatus(200)
+	this.ServeJSON()
 }
 
-func (this *BaseController) Serve304() {
-	this.SetStatus(304)
-	this.Serve()
+func (this *HttpBaseController) Serve304() {
+	this.Ctx.Output.SetStatus(304)
+	this.ServeJSON()
 }
