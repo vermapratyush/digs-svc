@@ -5,6 +5,9 @@ import (
 	"digs/models"
 	"fmt"
 	"errors"
+	"encoding/json"
+	"github.com/astaxie/beego"
+	"github.com/satori/go.uuid"
 )
 
 type LoginController struct {
@@ -14,40 +17,52 @@ type LoginController struct {
 func (this *LoginController) Post()  {
 	var request domain.UserLoginRequest
 	this.Super(&request.BaseRequest)
-
-
-	//Get data from facebook
-	firstName, lastName, email, about := getDataFromFacebook(request.AccessToken)
+	json.Unmarshal(this.Ctx.Input.RequestBody, &request)
 
 	//Check if the person is already registered
-	userAccount, err := models.GetUserAccount(email)
+	userAccount, err := models.GetUserAccount(request.Email)
 	if err != nil {
 		this.Serve500(errors.New("Unable to look up account table"))
 		return
 	}
+
+	var sid string
 	if userAccount == nil {
-		userAccount, err = models.AddUserAccount(firstName, lastName, email, about)
+		userAccount, err = models.AddUserAccount(request.FirstName, request.LastName, request.Email, request.About)
 		if err != nil {
 			this.Serve500(err)
 			return
 		}
-
-		err = models.AddUserAuth((*userAccount).UID, request.AccessToken)
+		sid, err = createSession(userAccount, request.AccessToken)
 		if err != nil {
 			this.Serve500(err)
 			return
+		}
+	} else {
+		sid = models.FindSessionFromUID(userAccount.UID)
+		if sid == "" {
+			sid, err = createSession(userAccount, request.AccessToken)
+			if sid == "" || err != nil {
+				this.Serve500(errors.New("Unable to create new session"))
+				return
+			}
 		}
 	}
 
 	resp := &domain.UserLoginResponse{
 		StatusCode:200,
-		Name:fmt.Sprintf("%s %s", firstName, lastName),
-		Email:(*userAccount).Email,
-		About:(*userAccount).About,
+		Name:fmt.Sprintf("%s %s", request.FirstName, request.LastName),
+		Email:request.Email,
+		SessionId:sid,
+		About:request.About,
 	}
 	this.Serve200(resp)
 }
 
-func getDataFromFacebook(accessToken string) (string, string, string, string) {
-	return "f1", "l1", "test@gmail.com", "nothing"
+func createSession(userAccount *models.UserAccount, accessToken string) (string, error) {
+	sid := uuid.NewV4().String()
+	beego.Info("Session Created|SID=", sid, "|UID=", (*userAccount).UID, "|Email=", userAccount.Email)
+
+	err := models.AddUserAuth((*userAccount).UID, accessToken, sid)
+	return sid, err
 }

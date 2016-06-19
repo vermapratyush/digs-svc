@@ -7,6 +7,8 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
+//Create Index UID, email
+//CreationTime Asc
 type UserAccount struct {
 	UID string `bson:"uid" json:"uid"`
 	FirstName string `bson:"firstName" json:"firstName"`

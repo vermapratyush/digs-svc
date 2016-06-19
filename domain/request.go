@@ -12,6 +12,10 @@ type BaseRequest struct {
 
 type UserLoginRequest struct {
 	BaseRequest
+	FirstName string `json:"firstName" bson:"firstName"`
+	LastName string `json:"lastName" bson:"lastName"`
+	Email string `json:"email" bson:"email"`
+	About string `json:"about" bson:"about"`
 	AccessToken string `json:"accessToken" bson:"accessToken"`
 }
 

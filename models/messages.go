@@ -7,6 +7,9 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+//Create index MID, From
+//Do Execute db.messages.ensureIndex({location:"2dsphere"})
+
 type Message struct {
 	MID string `bson:"mid" json:"mid"`
 	From string `bson:"from" json:"from"`
