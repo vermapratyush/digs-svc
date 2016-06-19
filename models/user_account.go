@@ -20,7 +20,7 @@ type UserAccount struct {
 
 func AddUserAccount(firstName string, lastName string, email string, about string) (*UserAccount, error) {
 	conn := Session.Clone()
-	c := conn.DB("heroku_qnx0661v").C("userAccount")
+	c := conn.DB(DefaultDatabase).C("userAccount")
 	defer conn.Close()
 
 	userAccount := &UserAccount{
@@ -38,7 +38,7 @@ func AddUserAccount(firstName string, lastName string, email string, about strin
 
 func GetUserAccount(email string) (*UserAccount, error) {
 	conn := Session.Clone()
-	c := conn.DB("heroku_qnx0661v").C("userAccount")
+	c := conn.DB(DefaultDatabase).C("userAccount")
 	defer conn.Close()
 
 	res := &UserAccount{}

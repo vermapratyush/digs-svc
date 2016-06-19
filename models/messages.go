@@ -20,7 +20,7 @@ type Message struct {
 
 func CreateMessage(from string, location domain.Coordinate, content string) (*Message, error) {
 	conn := Session.Clone()
-	c := conn.DB("heroku_qnx0661v").C("messages")
+	c := conn.DB(DefaultDatabase).C("messages")
 	defer conn.Close()
 
 	message := &Message{
@@ -36,7 +36,7 @@ func CreateMessage(from string, location domain.Coordinate, content string) (*Me
 
 func GetMessages(distInMeter int64, loc domain.Coordinate) (*[]Message, error) {
 	conn := Session.Clone()
-	c := conn.DB("heroku_qnx0661v").C("messages")
+	c := conn.DB(DefaultDatabase).C("messages")
 	defer conn.Close()
 
 	results := []Message{}

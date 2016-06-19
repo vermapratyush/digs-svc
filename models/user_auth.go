@@ -5,7 +5,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-//Order by creation time desc
+//Order by creation time asc
 //Index uid, sid, accessToken
 type UserAuth struct {
 	UID string `bson:"uid" json:"uid"`
@@ -18,7 +18,7 @@ func AddUserAuth(uid string, accessToken string, sid string) error {
 	conn := Session.Clone()
 	defer conn.Close()
 
-	c := conn.DB("heroku_qnx0661v").C("auth")
+	c := conn.DB(DefaultDatabase).C("auth")
 	err := c.Insert(&UserAuth{
 		UID: uid,
 		SID: sid,
@@ -32,7 +32,7 @@ func FindSessionFromUID(uid string) string {
 	conn := Session.Clone()
 	defer conn.Close()
 
-	c := conn.DB("heroku_qnx0661v").C("auth")
+	c := conn.DB(DefaultDatabase).C("auth")
 	res := UserAuth{}
 	_ = c.Find(bson.M{"uid": uid}).Select(bson.M{"sid":"1"}).Sort("-creationTime").One(&res);
 	return res.SID
