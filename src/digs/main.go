@@ -3,7 +3,6 @@ package main
 import (
 	_ "digs/docs"
 	_ "digs/routers"
-
 	"github.com/astaxie/beego"
 )
 
