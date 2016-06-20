@@ -6,18 +6,20 @@ import (
 	"strconv"
 	"digs/models"
 	"errors"
+	"encoding/json"
 )
 
 type MessengerController struct {
 	HttpBaseController
 }
 
-func (this *MessengerController) Post()  {
+func (this *MessengerController) Post() {
 	var request domain.MessageSendRequest
 	this.Super(&request.BaseRequest)
+	json.Unmarshal(this.Ctx.Input.RequestBody, &request)
 
 	//Write to database
-	_, err := models.CreateMessage(request.Username, request.Location, request.Body)
+	_, err := models.CreateMessage(request.Username, request.Location[0], request.Location[1], request.Body)
 	if err != nil {
 		this.Serve500(err)
 		return
@@ -25,7 +27,7 @@ func (this *MessengerController) Post()  {
 	this.Serve304()
 }
 
-func (this *MessengerController) Get()  {
+func (this *MessengerController) Get() {
 	var request domain.MessageGetRequest
 	this.Super(&request.BaseRequest)
 
@@ -56,12 +58,12 @@ func populateGetParams(this *MessengerController, req *domain.MessageGetRequest)
 	if len(locationArray) != 2 {
 		return errors.New("Location format invalid. Please specify longitude,latitude")
 	}
-	req.Location.Coordinates = []float64{-1.0, -1.0}
-	req.Location.Coordinates[0], err = strconv.ParseFloat(locationArray[0], 64)
+	req.Location = make([]float64, 2)
+	req.Location[0], err = strconv.ParseFloat(locationArray[0], 64)
 	if err != nil {
 		return errors.New("Location format invalid. Please specify longitude correctly")
 	}
-	req.Location.Coordinates[1], err = strconv.ParseFloat(locationArray[1], 64)
+	req.Location[1], err = strconv.ParseFloat(locationArray[1], 64)
 	if err != nil {
 		return errors.New("Location format invalid. Please specify latitude correctly")
 	}

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"digs/domain"
 	"time"
 	"github.com/satori/go.uuid"
 	"gopkg.in/mgo.v2/bson"
@@ -10,15 +9,21 @@ import (
 //Create index MID, From
 //Do Execute db.messages.ensureIndex({location:"2dsphere"})
 
+
+type Coordinate struct {
+	Type        string    `json:"type" bson:"type"`
+	Coordinates []float64 `json:"coordinates"`
+}
+
 type Message struct {
-	MID string `bson:"mid" json:"mid"`
-	From string `bson:"from" json:"from"`
-	Location domain.Coordinate `bson:"location" json:"location"`
-	Content string `bson:"content" json:"content"`
+	MID          string `bson:"mid" json:"mid"`
+	From         string `bson:"from" json:"from"`
+	Location     Coordinate `bson:"location" json:"location"`
+	Content      string `bson:"content" json:"content"`
 	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
 }
 
-func CreateMessage(from string, location domain.Coordinate, content string) (*Message, error) {
+func CreateMessage(from string, longitude float64, latitude float64, content string) (*Message, error) {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("messages")
 	defer conn.Close()
@@ -26,7 +31,10 @@ func CreateMessage(from string, location domain.Coordinate, content string) (*Me
 	message := &Message{
 		MID:uuid.NewV4().String(),
 		From: from,
-		Location: location,
+		Location: Coordinate{
+			Type:"Point",
+			Coordinates:[]float64{longitude, latitude},
+		},
 		Content: content,
 		CreationTime: time.Now(),
 	}
@@ -34,7 +42,7 @@ func CreateMessage(from string, location domain.Coordinate, content string) (*Me
 	return message, err
 }
 
-func GetMessages(distInMeter int64, loc domain.Coordinate) (*[]Message, error) {
+func GetMessages(distInMeter int64, loc []float64) (*[]Message, error) {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("messages")
 	defer conn.Close()
@@ -45,7 +53,7 @@ func GetMessages(distInMeter int64, loc domain.Coordinate) (*[]Message, error) {
 			"$nearSphere": bson.M{
 				"$geometry": bson.M{
 					"type":        "Point",
-					"coordinates": []float64{loc.Coordinates[0], loc.Coordinates[1]},
+					"coordinates": []float64{loc[0], loc[1]},
 				},
 				"$maxDistance": distInMeter,
 			},
