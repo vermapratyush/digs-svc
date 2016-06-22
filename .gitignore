@@ -34,3 +34,4 @@ pkg/
 /bin
 /src/gopkg.in/
 /swagger
+/src/digs/digs
