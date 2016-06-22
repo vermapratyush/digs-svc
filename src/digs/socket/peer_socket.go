@@ -40,7 +40,7 @@ func LeaveNode(uid string) {
 }
 
 func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRequest) {
-	defer DeadSocketWrite()
+	defer DeadSocketWrite(userAccount)
 	uids := models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, msg.Reach)
 	beego.Info("TotalUsers|Size=", len(uids))
 	for idx := 0; idx < len(uids); idx++ {

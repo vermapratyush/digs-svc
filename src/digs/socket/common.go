@@ -1,9 +1,13 @@
 package socket
 
-import "github.com/astaxie/beego"
+import (
+	"github.com/astaxie/beego"
+	"digs/models"
+)
 
-func DeadSocketWrite() {
+func DeadSocketWrite(userAccount *models.UserAccount) {
 	if r := recover(); r != nil {
-		beego.Critical("PossiblyDeadSocketWrite| Recovering from panic in MulticastMessage", r)
+		LeaveNode(userAccount.UID)
+		beego.Critical("PossiblyDeadSocketWrite|FaultyUID=", userAccount.UID, "|Recovering from panic in MulticastMessage", r)
 	}
 }
