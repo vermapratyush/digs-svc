@@ -40,10 +40,12 @@ func LeaveNode(uid string) {
 }
 
 func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRequest) {
+	defer DeadSocketWrite()
 	uids := models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, msg.Reach)
 	beego.Info("TotalUsers|Size=", len(uids))
 	for idx := 0; idx < len(uids); idx++ {
-		if uids[idx] == userAccount.UID {
+		ws, present := LookUp[uids[idx]]
+		if present == false || uids[idx] == userAccount.UID {
 			continue
 		}
 		beego.Info("SendingMessage|From=", userAccount.UID, "|To=", uids[idx])
@@ -58,6 +60,6 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			beego.Critical("MessageSendFailed|Error=", uids[idx])
 			continue
 		}
-		LookUp[uids[idx]].Conn.WriteMessage(websocket.TextMessage, response)
+		ws.Conn.WriteMessage(websocket.TextMessage, response)
 	}
 }
