@@ -7,7 +7,7 @@ import (
 )
 
 var DefaultDatabase = "heroku_qnx0661v"
-var Session, _ = mgo.Dial(fmt.Sprintf("mongodb://node-js:node-js@ds015194.mlab.com:15194/%s", DefaultDatabase))
+var Session, _ = mgo.Dial(fmt.Sprintf("mongodb://127.0.0.1:27017/%s", DefaultDatabase))
 
 //Create index MID, From
 //Do Execute db.messages.ensureIndex({location:"2dsphere"})
