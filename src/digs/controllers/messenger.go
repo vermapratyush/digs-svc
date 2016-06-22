@@ -3,70 +3,107 @@ package controllers
 import (
 	"digs/domain"
 	"strings"
-	"strconv"
 	"digs/models"
-	"errors"
 	"encoding/json"
+	"digs/socket"
+	"github.com/astaxie/beego"
 )
 
-type MessengerController struct {
-	HttpBaseController
+type WSMessengerController struct {
+	WSBaseController
 }
 
-func (this *MessengerController) Post() {
-	var request domain.MessageSendRequest
-	this.Super(&request.BaseRequest)
-	json.Unmarshal(this.Ctx.Input.RequestBody, &request)
+func (this *WSMessengerController) Get() {
+	sid := this.GetString("sid")
+	beego.Info("WSConnection|SID=", sid)
 
-	//Write to database
-	_, err := models.CreateMessage(request.Username, request.Location[0], request.Location[1], request.Body)
-	if err != nil {
-		this.Serve500(err)
-		return
+	userAuth := models.FindSession("sid", sid)
+	beego.Info("UserConnected|UID=", userAuth.UID)
+
+	socket.AddNode(userAuth.UID, this.ws)
+	defer socket.LeaveNode(userAuth.UID)
+
+	for {
+
+		_, request, err := this.ws.ReadMessage()
+		if err != nil {
+			beego.Critical("NodeConnectionLost|Error", err)
+			return
+		}
+
+		response, err := serve(request, userAuth)
+		if err != nil {
+			this.Respond(&domain.ErrorResponse{
+				Message:err.Error(),
+			})
+		} else {
+			this.Respond(response)
+		}
+
 	}
-	this.Serve304()
 }
 
-func (this *MessengerController) Get() {
-	var request domain.MessageGetRequest
-	this.Super(&request.BaseRequest)
+func serve(requestBody []byte, userAuth *models.UserAuth) (interface{}, error) {
 
-	err := populateGetParams(this, &request)
-	if err != nil {
-		this.Serve500(err)
-		return
+	var location = domain.Coordinate{}
+	message := string(requestBody)
+
+	switch  {
+	case strings.HasPrefix(message, socket.UpdateLocation):
+		var newLocation = domain.Coordinate{}
+		_ = json.Unmarshal(requestBody[len(socket.UpdateLocation):], &newLocation)
+		updateLocation(&location, &newLocation, userAuth)
+		beego.Info("UpdateLocation|newLocation=",newLocation)
+
+		return &domain.MessageReceivedResponse{StatusCode:200}, nil
+
+	case strings.HasPrefix(message, socket.SendMessage):
+		var msg = domain.MessageSendRequest{}
+		_ = json.Unmarshal(requestBody[len(socket.SendMessage):], &msg)
+		updateLocation(&location, &msg.Location, userAuth)
+		beego.Info("SendMessage|Message=", msg)
+
+		err := handleMessage(userAuth.UID, &msg)
+		if err != nil {
+			beego.Critical("Unable to handle message %s", err)
+			return &domain.MessageReceivedResponse{
+				StatusCode:500,
+			}, nil
+		} else {
+			return &domain.MessageReceivedResponse{
+				StatusCode:200,
+			}, nil
+		}
+	default:
+		beego.Warn("UnknownCommand|Request=", string(requestBody))
+		return nil, nil
 	}
 
-	//Get from database
-	messages, err := models.GetMessages(request.Distance, request.Location)
-	if err != nil {
-		this.Serve500(err)
-		return
-	}
-	this.Serve200(messages)
 }
 
-func populateGetParams(this *MessengerController, req *domain.MessageGetRequest) error {
-	var err error
-	req.Username = this.GetString("username")
-	req.Distance, err = strconv.ParseInt(this.GetString("distance"), 10, 64)
+func updateLocation(oldLocation, newLocation *domain.Coordinate, userAuth *models.UserAuth) {
+
+	if oldLocation.Longitude != newLocation.Longitude || oldLocation.Latitude != newLocation.Latitude {
+		oldLocation.Longitude = newLocation.Longitude
+		oldLocation.Latitude = newLocation.Latitude
+		go models.AddUserNewLocation(newLocation.Longitude, newLocation.Latitude, userAuth.UID)
+	}
+	oldLocation = newLocation
+}
+
+func handleMessage(uid string, msg *domain.MessageSendRequest) (error) {
+
+	_, err := models.CreateMessage(uid, msg.Location.Longitude, msg.Location.Latitude, msg.Body)
 	if err != nil {
-		return errors.New("Distance invalid.")
+		return err
 	}
-	locationParam := this.GetString("location")
-	locationArray := strings.Split(locationParam, ",")
-	if len(locationArray) != 2 {
-		return errors.New("Location format invalid. Please specify longitude,latitude")
-	}
-	req.Location = make([]float64, 2)
-	req.Location[0], err = strconv.ParseFloat(locationArray[0], 64)
+
+	userAccount, err := models.GetUserAccount("uid", uid)
 	if err != nil {
-		return errors.New("Location format invalid. Please specify longitude correctly")
+		return err
 	}
-	req.Location[1], err = strconv.ParseFloat(locationArray[1], 64)
-	if err != nil {
-		return errors.New("Location format invalid. Please specify latitude correctly")
-	}
-	return err
+
+	go socket.MulticastMessage(userAccount, msg)
+	return nil
 }
 

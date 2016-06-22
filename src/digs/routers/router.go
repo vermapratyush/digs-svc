@@ -15,8 +15,8 @@ import (
 func init() {
 	//REST
 	beego.Router("/v1/login", &controllers.LoginController{})
-	beego.Router("/v1/messenger", &controllers.MessengerController{})
+	beego.Router("/v1/debug", &controllers.DebugController{})
 
 	//WS
-	//beego.Router("/v1/ws/init", )
+	beego.Router("/ws/v1/messenger", &controllers.WSMessengerController{})
 }

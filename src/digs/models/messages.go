@@ -6,23 +6,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-//Create index MID, From
-//Do Execute db.messages.ensureIndex({location:"2dsphere"})
-
-
-type Coordinate struct {
-	Type        string    `json:"type" bson:"type"`
-	Coordinates []float64 `json:"coordinates"`
-}
-
-type Message struct {
-	MID          string `bson:"mid" json:"mid"`
-	From         string `bson:"from" json:"from"`
-	Location     Coordinate `bson:"location" json:"location"`
-	Content      string `bson:"content" json:"content"`
-	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
-}
-
 func CreateMessage(from string, longitude float64, latitude float64, content string) (*Message, error) {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("messages")

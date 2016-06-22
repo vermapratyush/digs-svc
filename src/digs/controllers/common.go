@@ -4,6 +4,8 @@ import (
 	"digs/domain"
 	"github.com/astaxie/beego"
 	"encoding/json"
+	"github.com/gorilla/websocket"
+	"net/http"
 )
 
 type HttpBaseController struct {
@@ -11,7 +13,8 @@ type HttpBaseController struct {
 }
 
 type WSBaseController struct {
-
+	beego.Controller
+	ws *websocket.Conn
 }
 
 func (this *HttpBaseController) Super(request *domain.BaseRequest) *HttpBaseController {
@@ -23,9 +26,17 @@ func (this *HttpBaseController) Super(request *domain.BaseRequest) *HttpBaseCont
 	return this
 }
 
+func (this *WSBaseController) Prepare() {
 
-type WebSocketController struct {
-	beego.Controller
+	ws, err := websocket.Upgrade(this.Ctx.ResponseWriter, this.Ctx.Request, nil, 1024, 1024)
+	if _, ok := err.(websocket.HandshakeError); ok {
+		http.Error(this.Ctx.ResponseWriter, "Not a websocket handshake", 400)
+		return
+	} else if err != nil {
+		beego.Error("Cannot setup WebSocket connection:", err)
+		return
+	}
+	this.ws = ws
 }
 
 func (this *HttpBaseController) Serve500(err error) {
@@ -48,4 +59,14 @@ func (this *HttpBaseController) Serve200(obj interface{}) {
 func (this *HttpBaseController) Serve304() {
 	this.Ctx.Output.SetStatus(304)
 	this.ServeJSON()
+}
+
+func (this *WSBaseController) Respond(obj interface{})  {
+	data, err := json.Marshal(obj)
+	if err != nil {
+		beego.Critical("Unable to repoly back to the message sender Err=%s", err)
+		this.ws.WriteMessage(websocket.TextMessage, []byte("Unable to respond"))
+		return
+	}
+	this.ws.WriteMessage(websocket.TextMessage, data)
 }

@@ -20,7 +20,7 @@ func (this *LoginController) Post()  {
 	json.Unmarshal(this.Ctx.Input.RequestBody, &request)
 
 	//Check if the person is already registered
-	userAccount, err := models.GetUserAccount(request.Email)
+	userAccount, err := models.GetUserAccount("email", request.Email)
 	if err != nil {
 		this.Serve500(errors.New("Unable to look up account table"))
 		return
@@ -39,8 +39,8 @@ func (this *LoginController) Post()  {
 			return
 		}
 	} else {
-		sid = models.FindSessionFromUID(userAccount.UID)
-		if sid == "" {
+		userAuth := models.FindSession("uid", userAccount.UID)
+		if userAuth.SID == "" {
 			sid, err = createSession(userAccount, request.AccessToken)
 			if sid == "" || err != nil {
 				this.Serve500(errors.New("Unable to create new session"))

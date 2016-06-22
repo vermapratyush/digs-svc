@@ -5,15 +5,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-//Order by creation time asc
-//Index uid, sid, accessToken
-type UserAuth struct {
-	UID string `bson:"uid" json:"uid"`
-	SID string `bson:"sid" json:"sid"`
-	AccessToken string `bson:"accessToken" json:"accessToken"`
-	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
-}
-
 func AddUserAuth(uid string, accessToken string, sid string) error {
 	conn := Session.Clone()
 	defer conn.Close()
@@ -28,12 +19,12 @@ func AddUserAuth(uid string, accessToken string, sid string) error {
 	return err
 }
 
-func FindSessionFromUID(uid string) string {
+func FindSession(fieldName, fieldValue string) (*UserAuth) {
 	conn := Session.Clone()
 	defer conn.Close()
 
 	c := conn.DB(DefaultDatabase).C("auth")
 	res := UserAuth{}
-	_ = c.Find(bson.M{"uid": uid}).Select(bson.M{"sid":"1"}).Sort("-creationTime").One(&res);
-	return res.SID
+	_ = c.Find(bson.M{fieldName: fieldValue}).Sort("-creationTime").One(&res);
+	return &res
 }
