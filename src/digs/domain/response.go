@@ -3,10 +3,7 @@ package domain
 
 type UserLoginResponse struct {
 	StatusCode int32
-	SessionId string
-	Name string
-	Email string
-	About string
+	SessionId string `json:"sessionId" bson:"sessionId"`
 }
 
 type MessageReceivedResponse struct {
@@ -14,8 +11,9 @@ type MessageReceivedResponse struct {
 }
 
 type ErrorResponse struct {
-	StatusCode int32
-	Message string
+	StatusCode int32 `json:"statusCode" bson:"statusCode"`
+	ErrorCode int32 `json:"errorCode" bson:"errorCode"`
+	Message string `json:"message" bson:"message"`
 }
 
 type MessageSendResponse struct {

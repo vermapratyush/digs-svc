@@ -1,8 +1,13 @@
 package domain
 
 type BaseRequest struct {
-	UserAgent string
-	SessionID string
+	HeaderUserAgent string
+	HeaderSessionID string
+}
+
+type UserLogoutRequest struct {
+	BaseRequest
+	SessionID string `json:"sessionId" bson:"sessionId"`
 }
 
 type UserLoginRequest struct {

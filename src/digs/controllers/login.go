@@ -3,7 +3,6 @@ package controllers
 import (
 	"digs/domain"
 	"digs/models"
-	"fmt"
 	"errors"
 	"encoding/json"
 	"github.com/astaxie/beego"
@@ -16,6 +15,7 @@ type LoginController struct {
 
 func (this *LoginController) Post()  {
 	var request domain.UserLoginRequest
+	beego.Info(string(this.Ctx.Input.RequestBody))
 	this.Super(&request.BaseRequest)
 	json.Unmarshal(this.Ctx.Input.RequestBody, &request)
 
@@ -39,23 +39,23 @@ func (this *LoginController) Post()  {
 			return
 		}
 	} else {
-		userAuth := models.FindSession("uid", userAccount.UID)
-		if userAuth.SID == "" {
+		userAuth, err := models.FindSession("uid", userAccount.UID)
+		if err != nil || userAuth.SID == "" {
 			sid, err = createSession(userAccount, request.AccessToken)
 			if sid == "" || err != nil {
 				this.Serve500(errors.New("Unable to create new session"))
 				return
 			}
+		} else {
+			sid = userAuth.SID
 		}
 	}
 
 	resp := &domain.UserLoginResponse{
 		StatusCode:200,
-		Name:fmt.Sprintf("%s %s", request.FirstName, request.LastName),
-		Email:request.Email,
 		SessionId:sid,
-		About:request.About,
 	}
+	beego.Info(resp)
 	this.Serve200(resp)
 }
 

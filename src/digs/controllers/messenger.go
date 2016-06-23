@@ -17,7 +17,15 @@ func (this *WSMessengerController) Get() {
 	sid := this.GetString("sid")
 	beego.Info("WSConnection|SID=", sid)
 
-	userAuth := models.FindSession("sid", sid)
+	userAuth, err := models.FindSession("sid", sid)
+	if err != nil {
+		this.Respond(&domain.ErrorResponse{
+			StatusCode:422,
+			ErrorCode:5000,
+			Message:"Invalid Session",
+		})
+		return
+	}
 	beego.Info("UserConnected|UID=", userAuth.UID)
 
 	socket.AddNode(userAuth.UID, this.ws)

@@ -2,7 +2,6 @@ package models
 
 import (
 	"time"
-	"github.com/satori/go.uuid"
 	"gopkg.in/mgo.v2/bson"
 	"gopkg.in/mgo.v2"
 )
@@ -13,7 +12,7 @@ func AddUserAccount(firstName, lastName, email, about, fbid, locale, profilePict
 	defer conn.Close()
 
 	userAccount := &UserAccount{
-		UID: uuid.NewV4().String(),
+		UID: fbid,
 		FirstName: firstName,
 		LastName: lastName,
 		Email: email,
