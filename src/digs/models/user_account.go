@@ -7,7 +7,7 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-func AddUserAccount(firstName string, lastName string, email string, about string) (*UserAccount, error) {
+func AddUserAccount(firstName, lastName, email, about, fbid, locale, profilePicture string, fbVerified bool) (*UserAccount, error) {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("accounts")
 	defer conn.Close()
@@ -18,6 +18,10 @@ func AddUserAccount(firstName string, lastName string, email string, about strin
 		LastName: lastName,
 		Email: email,
 		About: about,
+		FBID: fbid,
+		Locale: locale,
+		ProfilePicture: profilePicture,
+		FBVerified: fbVerified,
 		CreationTime:time.Now(),
 	}
 	err := c.Insert(userAccount)

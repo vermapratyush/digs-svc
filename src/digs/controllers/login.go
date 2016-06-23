@@ -28,7 +28,7 @@ func (this *LoginController) Post()  {
 
 	var sid string
 	if userAccount == nil {
-		userAccount, err = models.AddUserAccount(request.FirstName, request.LastName, request.Email, request.About)
+		userAccount, err = models.AddUserAccount(request.FirstName, request.LastName, request.Email, request.About, request.FBID, request.Locale, request.ProfilePicture, request.FBVerified)
 		if err != nil {
 			this.Serve500(err)
 			return
@@ -61,7 +61,7 @@ func (this *LoginController) Post()  {
 
 func createSession(userAccount *models.UserAccount, accessToken string) (string, error) {
 	sid := uuid.NewV4().String()
-	beego.Info("Session Created|SID=", sid, "|UID=", (*userAccount).UID, "|Email=", userAccount.Email)
+	beego.Info("SessionCreated|SID=", sid, "|UID=", userAccount.UID, "|Email=", userAccount.Email)
 
 	err := models.AddUserAuth((*userAccount).UID, accessToken, sid)
 	return sid, err

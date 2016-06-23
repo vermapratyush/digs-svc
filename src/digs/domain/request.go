@@ -14,8 +14,8 @@ type UserLoginRequest struct {
 	Email string `json:"email" bson:"email"`
 	About string `json:"about" bson:"about"`
 	ProfilePicture string `bson:"profilePicture" json:"profilePicture"`
-	FBVerified string `bson:"fbVerified" json:"fbVerified"`
 	AccessToken string `json:"accessToken" bson:"accessToken"`
+	FBVerified bool `bson:"fbVerified" json:"fbVerified"`
 }
 
 type MessageSendRequest struct {

@@ -34,11 +34,11 @@ type UserAccount struct {
 	LastName string `bson:"lastName" json:"lastName"`
 	Email string `bson:"email" json:"email"`
 	About string `bson:"about" json:"about"`
-	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
 	ProfilePicture string `bson:"profilePicture" json:"profilePicture"`
-	FBVerified string `bson:"fbVerified" json:"fbVerified"`
 	FBID string `json:"fbid" bson:"fbid"`
 	Locale string `json:"locale" bson:"locale"`
+	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
+	FBVerified bool `bson:"fbVerified" json:"fbVerified"`
 }
 
 //Order by creation time asc

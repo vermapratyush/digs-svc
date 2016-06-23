@@ -49,17 +49,18 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			continue
 		}
 		beego.Info("SendingMessage|From=", userAccount.UID, "|To=", uids[idx])
-		response, err := json.Marshal(domain.MessageGetResponse{
+		response, _ := json.Marshal(domain.MessageGetResponse{
 			From:userAccount.FirstName + userAccount.LastName,
 			UID:userAccount.UID,
 			Message: msg.Body,
 			Timestamp: msg.Timestamp,
 
 		})
+		err := ws.Conn.WriteMessage(websocket.TextMessage, response)
 		if err != nil {
 			beego.Critical("MessageSendFailed|Error=", uids[idx])
+			go LeaveNode(uids[idx])
 			continue
 		}
-		ws.Conn.WriteMessage(websocket.TextMessage, response)
 	}
 }
