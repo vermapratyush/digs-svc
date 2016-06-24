@@ -1,8 +1,13 @@
 package domain
 
 type BaseRequest struct {
-	UserAgent string
-	SessionID string
+	HeaderUserAgent string
+	HeaderSessionID string
+}
+
+type UserLogoutRequest struct {
+	BaseRequest
+	SessionID string `json:"sessionId" bson:"sessionId"`
 }
 
 type UserLoginRequest struct {
@@ -13,9 +18,9 @@ type UserLoginRequest struct {
 	LastName string `json:"lastName" bson:"lastName"`
 	Email string `json:"email" bson:"email"`
 	About string `json:"about" bson:"about"`
-	ProfilePicture string `bson:"profilePicture" json:"profilePicture"`
-	FBVerified string `bson:"fbVerified" json:"fbVerified"`
+	ProfilePicture string `bson:"picture" json:"picture"`
 	AccessToken string `json:"accessToken" bson:"accessToken"`
+	FBVerified bool `bson:"fbVerified" json:"fbVerified"`
 }
 
 type MessageSendRequest struct {

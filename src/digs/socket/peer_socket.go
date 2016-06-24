@@ -35,12 +35,15 @@ func AddNode(uid string, ws *websocket.Conn) {
 
 func LeaveNode(uid string) {
 	beego.Info("NodeLeft|UID=", uid)
-	LookUp[uid].Conn.Close()
+	_, ok := LookUp[uid]
+	if ok && LookUp[uid].Conn != nil {
+		LookUp[uid].Conn.Close()
+	}
 	delete(LookUp, uid)
 }
 
 func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRequest) {
-	defer DeadSocketWrite()
+	defer DeadSocketWrite(userAccount)
 	uids := models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, msg.Reach)
 	beego.Info("TotalUsers|Size=", len(uids))
 	for idx := 0; idx < len(uids); idx++ {
@@ -49,17 +52,18 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			continue
 		}
 		beego.Info("SendingMessage|From=", userAccount.UID, "|To=", uids[idx])
-		response, err := json.Marshal(domain.MessageGetResponse{
+		response, _ := json.Marshal(domain.MessageGetResponse{
 			From:userAccount.FirstName + userAccount.LastName,
 			UID:userAccount.UID,
 			Message: msg.Body,
 			Timestamp: msg.Timestamp,
-
+			ProfilePicture:userAccount.ProfilePicture,
 		})
+		err := ws.Conn.WriteMessage(websocket.TextMessage, response)
 		if err != nil {
 			beego.Critical("MessageSendFailed|Error=", uids[idx])
+			LeaveNode(uids[idx])
 			continue
 		}
-		ws.Conn.WriteMessage(websocket.TextMessage, response)
 	}
 }

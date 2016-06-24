@@ -21,8 +21,8 @@ func (this *HttpBaseController) Super(request *domain.BaseRequest) *HttpBaseCont
 	if this.Ctx.Input.Method() == "POST" {
 		_ = json.Unmarshal(this.Ctx.Input.RequestBody, request)
 	}
-	request.SessionID = this.Ctx.Input.Header("SID")
-	request.UserAgent = this.Ctx.Input.UserAgent()
+	request.HeaderSessionID = this.Ctx.Input.Header("SID")
+	request.HeaderUserAgent = this.Ctx.Input.UserAgent()
 	return this
 }
 
@@ -56,8 +56,8 @@ func (this *HttpBaseController) Serve200(obj interface{}) {
 	this.ServeJSON()
 }
 
-func (this *HttpBaseController) Serve304() {
-	this.Ctx.Output.SetStatus(304)
+func (this *HttpBaseController) Serve204() {
+	this.Ctx.Output.SetStatus(204)
 	this.ServeJSON()
 }
 
@@ -68,5 +68,8 @@ func (this *WSBaseController) Respond(obj interface{})  {
 		this.ws.WriteMessage(websocket.TextMessage, []byte("Unable to respond"))
 		return
 	}
-	this.ws.WriteMessage(websocket.TextMessage, data)
+	err = this.ws.WriteMessage(websocket.TextMessage, data)
+	if err != nil {
+		beego.Critical("Error writing to websocket")
+	}
 }
