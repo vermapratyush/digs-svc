@@ -4,6 +4,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"fmt"
 	"time"
+	"gopkg.in/mgo.v2/bson"
 )
 
 var DefaultDatabase = "heroku_qnx0661v"
@@ -44,6 +45,7 @@ type UserAccount struct {
 //Order by creation time asc
 //Index uid, sid, accessToken
 type UserAuth struct {
+	Id bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	UID string `bson:"uid" json:"uid"`
 	SID string `bson:"sid" json:"sid"`
 	AccessToken string `bson:"accessToken" json:"accessToken"`
