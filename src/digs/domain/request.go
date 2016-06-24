@@ -18,7 +18,7 @@ type UserLoginRequest struct {
 	LastName string `json:"lastName" bson:"lastName"`
 	Email string `json:"email" bson:"email"`
 	About string `json:"about" bson:"about"`
-	ProfilePicture string `bson:"profilePicture" json:"profilePicture"`
+	ProfilePicture string `bson:"picture" json:"picture"`
 	AccessToken string `json:"accessToken" bson:"accessToken"`
 	FBVerified bool `bson:"fbVerified" json:"fbVerified"`
 }

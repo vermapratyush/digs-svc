@@ -35,7 +35,10 @@ func AddNode(uid string, ws *websocket.Conn) {
 
 func LeaveNode(uid string) {
 	beego.Info("NodeLeft|UID=", uid)
-	LookUp[uid].Conn.Close()
+	_, ok := LookUp[uid]
+	if ok && LookUp[uid].Conn != nil {
+		LookUp[uid].Conn.Close()
+	}
 	delete(LookUp, uid)
 }
 
@@ -54,12 +57,12 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			UID:userAccount.UID,
 			Message: msg.Body,
 			Timestamp: msg.Timestamp,
-
+			ProfilePicture:userAccount.ProfilePicture,
 		})
 		err := ws.Conn.WriteMessage(websocket.TextMessage, response)
 		if err != nil {
 			beego.Critical("MessageSendFailed|Error=", uids[idx])
-			go LeaveNode(uids[idx])
+			LeaveNode(uids[idx])
 			continue
 		}
 	}

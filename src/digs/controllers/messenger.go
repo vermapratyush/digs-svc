@@ -26,7 +26,7 @@ func (this *WSMessengerController) Get() {
 		})
 		return
 	}
-	beego.Info("UserConnected|UID=", userAuth.UID)
+	beego.Info("UserConnected|UID=", userAuth)
 
 	socket.AddNode(userAuth.UID, this.ws)
 	defer socket.LeaveNode(userAuth.UID)
@@ -34,12 +34,19 @@ func (this *WSMessengerController) Get() {
 	for {
 
 		_, request, err := this.ws.ReadMessage()
+		beego.Info("From sid=", userAuth, "Request", string(request))
+		if err != nil {
+			beego.Info("Err", err.Error())
+		}
 		if err != nil {
 			beego.Critical("NodeConnectionLost|Error", err)
 			return
 		}
-
 		response, err := serve(request, userAuth)
+		if err != nil {
+			beego.Info("Err", err.Error())
+		}
+		beego.Info("From sid=", userAuth, "Response", response)
 		if err != nil {
 			this.Respond(&domain.ErrorResponse{
 				Message:err.Error(),

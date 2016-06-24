@@ -15,10 +15,10 @@ type LoginController struct {
 
 func (this *LoginController) Post()  {
 	var request domain.UserLoginRequest
-	beego.Info(string(this.Ctx.Input.RequestBody))
+	beego.Info("Login Request", string(this.Ctx.Input.RequestBody))
 	this.Super(&request.BaseRequest)
 	json.Unmarshal(this.Ctx.Input.RequestBody, &request)
-
+	beego.Info("login request obj=", request)
 	//Check if the person is already registered
 	userAccount, err := models.GetUserAccount("email", request.Email)
 	if err != nil {
@@ -26,9 +26,10 @@ func (this *LoginController) Post()  {
 		return
 	}
 
-	var sid string
+	var sid, uid string
 	if userAccount == nil {
 		userAccount, err = models.AddUserAccount(request.FirstName, request.LastName, request.Email, request.About, request.FBID, request.Locale, request.ProfilePicture, request.FBVerified)
+		uid = userAccount.UID
 		if err != nil {
 			this.Serve500(err)
 			return
@@ -40,6 +41,7 @@ func (this *LoginController) Post()  {
 		}
 	} else {
 		userAuth, err := models.FindSession("uid", userAccount.UID)
+		uid = userAuth.UID
 		if err != nil || userAuth.SID == "" {
 			sid, err = createSession(userAccount, request.AccessToken)
 			if sid == "" || err != nil {
@@ -54,8 +56,9 @@ func (this *LoginController) Post()  {
 	resp := &domain.UserLoginResponse{
 		StatusCode:200,
 		SessionId:sid,
+		UserId:uid,
 	}
-	beego.Info(resp)
+	beego.Info("Login Response=", resp)
 	this.Serve200(resp)
 }
 
