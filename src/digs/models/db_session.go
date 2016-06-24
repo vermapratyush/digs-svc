@@ -59,3 +59,9 @@ type UserLocation struct {
 	Location Coordinate `json:"location" bson:"location"`
 	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
 }
+
+type Notification struct {
+	UID string `json:"userId" bson:"userId"`
+	NotificationId string `json:"notificationId" bson:"notificationId"`
+	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
+}

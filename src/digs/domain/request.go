@@ -5,6 +5,12 @@ type BaseRequest struct {
 	HeaderSessionID string
 }
 
+type NotificationRequest struct {
+	BaseRequest
+	SessionID string `json:"sessionId" bson:"sessionId"`
+	NotificationID string `json:"notificationId" bson:"notificationId"`
+}
+
 type UserLogoutRequest struct {
 	BaseRequest
 	SessionID string `json:"sessionId" bson:"sessionId"`
