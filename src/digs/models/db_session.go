@@ -4,6 +4,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"fmt"
 	"time"
+	"gopkg.in/mgo.v2/bson"
 )
 
 var DefaultDatabase = "heroku_qnx0661v"
@@ -39,11 +40,14 @@ type UserAccount struct {
 	Locale string `json:"locale" bson:"locale"`
 	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
 	FBVerified bool `bson:"fbVerified" json:"fbVerified"`
+	Range int64 `json:"range" bson:"range"`
+	PushNotification bool `json:"notificationEnabled" bson:"notificationEnabled"`
 }
 
 //Order by creation time asc
 //Index uid, sid, accessToken
 type UserAuth struct {
+	Id bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	UID string `bson:"uid" json:"uid"`
 	SID string `bson:"sid" json:"sid"`
 	AccessToken string `bson:"accessToken" json:"accessToken"`
@@ -56,4 +60,11 @@ type UserLocation struct {
 	Username string `json:"username" bson:"username"`
 	Location Coordinate `json:"location" bson:"location"`
 	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
+}
+
+type Notification struct {
+	UID string `json:"uid" bson:"uid"`
+	NotificationId string `json:"notificationId" bson:"notificationId"`
+	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
+	OSType string `bson:"osType" json:"osType"`
 }

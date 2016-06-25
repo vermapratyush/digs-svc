@@ -30,12 +30,12 @@ func FindSession(fieldName, fieldValue string) (*UserAuth, error) {
 	return &res, err
 }
 
-func DeleteUserAuth(sid string) error {
+func DeleteUserAuth(_id bson.ObjectId) error {
 	conn := Session.Clone()
 	defer conn.Close()
 
 	c := conn.DB(DefaultDatabase).C("auth")
-	err := c.Remove(bson.M{"sid": sid})
+	err := c.RemoveId(_id)
 	if err == mgo.ErrNotFound {
 		return nil
 	}

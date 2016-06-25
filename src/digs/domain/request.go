@@ -3,11 +3,19 @@ package domain
 type BaseRequest struct {
 	HeaderUserAgent string
 	HeaderSessionID string
+	RequestId string `json:"requestId" bson:"requestId"`
+	SessionID string `json:"sessionId" bson:"sessionId"`
+}
+
+type NotificationRequest struct {
+	BaseRequest
+	NotificationID string `json:"notificationId" bson:"notificationId"`
+	OSType string `json:"os" bson:"os"`
 }
 
 type UserLogoutRequest struct {
 	BaseRequest
-	SessionID string `json:"sessionId" bson:"sessionId"`
+	NotificationId string `json:"notificationId" bson:"notificationId"`
 }
 
 type UserLoginRequest struct {
@@ -32,6 +40,7 @@ type MessageSendRequest struct {
 }
 
 type Coordinate struct  {
+	BaseRequest
 	Latitude float64 `json:"latitude" bson:"latitude"`
 	Longitude float64 `json:"longitude" bson:"longitude"`
 }
@@ -41,4 +50,11 @@ type MessageGetRequest struct {
 	Username  string `json:"username" bson:"username"`
 	Location  []float64 `json:"location" bson:"location"`
 	Distance  int64 `json:"distance" bson:"distance"`
+}
+
+type SettingRequest struct {
+	BaseRequest
+	Range int64 `json:"range" bson:"range"`
+	PushNotification bool `json:"notificationEnabled" bson:"notificationEnabled"`
+
 }
