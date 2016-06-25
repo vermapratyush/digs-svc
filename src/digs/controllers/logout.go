@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"digs/models"
 	"digs/socket"
+	"errors"
 )
 
 type LogoutController struct {
@@ -21,8 +22,8 @@ func (this *LogoutController) Post()  {
 	userAuth, err := models.FindSession("sid", request.SessionID)
 	beego.Info(request.SessionID)
 	if err != nil {
-		beego.Info(err)
-		this.Serve500(err)
+		beego.Error(err)
+		this.Serve500(errors.New("Unable to find session"))
 		return
 	}
 	socket.LeaveNode(userAuth.UID)

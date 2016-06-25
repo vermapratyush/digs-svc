@@ -40,6 +40,8 @@ type UserAccount struct {
 	Locale string `json:"locale" bson:"locale"`
 	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
 	FBVerified bool `bson:"fbVerified" json:"fbVerified"`
+	Range int64 `json:"range" bson:"range"`
+	PushNotification bool `json:"notificationEnabled" bson:"notificationEnabled"`
 }
 
 //Order by creation time asc

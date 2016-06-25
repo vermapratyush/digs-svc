@@ -43,6 +43,18 @@ func GetUserAccount(fieldName, fieldValue string) (*UserAccount, error) {
 	return res, nil
 }
 
+func UpdateUserAccount(uid string, enableNotification bool, messageRange int64) error {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("accounts")
+	defer conn.Close()
+
+	key := bson.M{"uid": uid}
+	values := bson.M{ "$set": bson.M{ "notificationEnabled": enableNotification, "range": messageRange } }
+	err := c.Update(key, values)
+
+	return err
+}
+
 func GetUIDForFeed(longitude, latitude float64, distInMeter int64) ([]string) {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("accounts")
