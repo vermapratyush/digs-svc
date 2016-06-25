@@ -61,7 +61,8 @@ type UserLocation struct {
 }
 
 type Notification struct {
-	UID string `json:"userId" bson:"userId"`
+	UID string `json:"uid" bson:"uid"`
 	NotificationId string `json:"notificationId" bson:"notificationId"`
 	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
+	OSType string `bson:"osType" json:"osType"`
 }

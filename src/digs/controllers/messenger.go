@@ -32,7 +32,6 @@ func (this *WSMessengerController) Get() {
 	defer socket.LeaveNode(userAuth.UID)
 
 	for {
-
 		_, request, err := this.ws.ReadMessage()
 		beego.Info("From sid=", userAuth, "Request", string(request))
 		if err != nil {
@@ -42,18 +41,9 @@ func (this *WSMessengerController) Get() {
 			beego.Critical("NodeConnectionLost|Error", err)
 			return
 		}
-		response, err := serve(request, userAuth)
-		if err != nil {
-			beego.Info("Err", err.Error())
-		}
+		response, _ := serve(request, userAuth)
 		beego.Info("From sid=", userAuth, "Response", response)
-		if err != nil {
-			this.Respond(&domain.ErrorResponse{
-				Message:err.Error(),
-			})
-		} else {
-			this.Respond(response)
-		}
+		this.Respond(response)
 
 	}
 }
@@ -70,7 +60,10 @@ func serve(requestBody []byte, userAuth *models.UserAuth) (interface{}, error) {
 		updateLocation(&location, &newLocation, userAuth)
 		beego.Info("UpdateLocation|newLocation=",newLocation)
 
-		return &domain.MessageReceivedResponse{StatusCode:200}, nil
+		return &domain.MessageReceivedResponse{
+			StatusCode:200,
+			RequestId:newLocation.RequestId,
+		}, nil
 
 	case strings.HasPrefix(message, socket.SendMessage):
 		var msg = domain.MessageSendRequest{}
@@ -83,10 +76,12 @@ func serve(requestBody []byte, userAuth *models.UserAuth) (interface{}, error) {
 			beego.Critical("Unable to handle message %s", err)
 			return &domain.MessageReceivedResponse{
 				StatusCode:500,
+				RequestId:msg.RequestId,
 			}, nil
 		} else {
 			return &domain.MessageReceivedResponse{
 				StatusCode:200,
+				RequestId:msg.RequestId,
 			}, nil
 		}
 	default:

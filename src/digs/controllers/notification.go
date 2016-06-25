@@ -23,7 +23,7 @@ func (this *NotificationController) Post() {
 		this.Serve500(errors.New("Unable to find session"))
 		return
 	}
-	err = models.AddNotificationId(session.UID, request.NotificationID)
+	err = models.AddNotificationId(session.UID, request.NotificationID, request.OSType)
 	if err != nil {
 		this.Serve500(errors.New("Unable to register device"))
 	} else {

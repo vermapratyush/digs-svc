@@ -11,6 +11,7 @@ import (
 type Peer struct {
 	Conn *websocket.Conn
 	UID string
+	NotificationId []string
 }
 
 const (
@@ -26,10 +27,27 @@ const (
 var LookUp = make(map[string]Peer)
 
 func AddNode(uid string, ws *websocket.Conn) {
+	notifications, err := models.GetNotificationIds(uid)
+	nid := make(map[string]struct{})
+	if err != nil {
+		beego.Info("No notifications for user ", uid)
+	} else {
+		for _, notification := range (*notifications) {
+			nid[notification.NotificationId]  = struct{}{}
+		}
+	}
+	nidArray := make([]string, len(nid))
+	idx := 0
+	for k, _ := range (nid) {
+		nidArray[idx] = k
+		idx = idx + 1
+	}
+
 	beego.Info("NodeAdded|UID=", uid)
 	LookUp[uid] = Peer{
 		Conn:ws,
 		UID:uid,
+		NotificationId:nidArray,
 	}
 }
 

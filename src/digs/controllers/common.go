@@ -18,9 +18,6 @@ type WSBaseController struct {
 }
 
 func (this *HttpBaseController) Super(request *domain.BaseRequest) *HttpBaseController {
-	if this.Ctx.Input.Method() == "POST" {
-		_ = json.Unmarshal(this.Ctx.Input.RequestBody, request)
-	}
 	request.HeaderSessionID = this.Ctx.Input.Header("SID")
 	request.HeaderUserAgent = this.Ctx.Input.UserAgent()
 	return this

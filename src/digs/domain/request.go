@@ -3,12 +3,14 @@ package domain
 type BaseRequest struct {
 	HeaderUserAgent string
 	HeaderSessionID string
+	RequestId string `json:"requestId" bson:"requestId"`
 }
 
 type NotificationRequest struct {
 	BaseRequest
 	SessionID string `json:"sessionId" bson:"sessionId"`
 	NotificationID string `json:"notificationId" bson:"notificationId"`
+	OSType string `json:"os" bson:"os"`
 }
 
 type UserLogoutRequest struct {
@@ -38,6 +40,7 @@ type MessageSendRequest struct {
 }
 
 type Coordinate struct  {
+	BaseRequest
 	Latitude float64 `json:"latitude" bson:"latitude"`
 	Longitude float64 `json:"longitude" bson:"longitude"`
 }
