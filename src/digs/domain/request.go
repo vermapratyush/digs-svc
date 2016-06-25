@@ -16,6 +16,7 @@ type NotificationRequest struct {
 type UserLogoutRequest struct {
 	BaseRequest
 	SessionID string `json:"sessionId" bson:"sessionId"`
+	NotificationId string `json:"notificationId" bson:"notificationId"`
 }
 
 type UserLoginRequest struct {

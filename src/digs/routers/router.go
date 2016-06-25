@@ -16,7 +16,6 @@ func init() {
 	//REST
 	beego.Router("/v1/login", &controllers.LoginController{})
 	beego.Router("/v1/logout", &controllers.LogoutController{})
-	beego.Router("/v1/notification", &controllers.NotificationController{})
 	beego.Router("/v1/debug", &controllers.DebugController{})
 
 	//WS

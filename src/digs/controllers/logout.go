@@ -26,6 +26,13 @@ func (this *LogoutController) Post()  {
 		return
 	}
 	socket.LeaveNode(userAuth.UID)
+
+	err = models.DeleteNotification(request.NotificationId)
+
+	if err != nil {
+		beego.Error("NotificationDeleteFailed|notificationId=", request.NotificationId)
+	}
+
 	err = models.DeleteUserAuth(userAuth.Id)
 	if err != nil {
 		beego.Info(err)

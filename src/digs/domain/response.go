@@ -31,3 +31,7 @@ type MessageGetResponse struct {
 	Timestamp int64 `json:"timestamp" bson:"timestamp"`
 	ProfilePicture string `json:"picture" bson:"picture"`
 }
+
+type MessagePushResponse struct {
+	MessageGetResponse
+}

@@ -35,3 +35,14 @@ func GetNotificationIds(uid string) (*[]Notification, error) {
 	return &notifications, err
 
 }
+
+func DeleteNotification(did string) error {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("notifications")
+	defer conn.Close()
+	_, err := c.RemoveAll(bson.M{
+		"notificationId": did,
+	})
+
+	return err
+}
