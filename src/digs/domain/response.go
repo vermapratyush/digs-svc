@@ -32,6 +32,14 @@ type MessageGetResponse struct {
 	ProfilePicture string `json:"picture" bson:"picture"`
 }
 
+type PersonResponse struct {
+	Name string `json:"name" bson:"name"`
+	UID string `json:"userId" bson:"userId"`
+	About string `json:"about" bson:"about"`
+	Activity string `json:"activity" bson:"activity"`
+	ProfilePicture string `json:"picture" bson:"picture"`
+}
+
 type MessagePushResponse struct {
 	MessageGetResponse
 }

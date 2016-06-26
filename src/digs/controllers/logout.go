@@ -26,7 +26,7 @@ func (this *LogoutController) Post()  {
 		this.Serve500(errors.New("Unable to find session"))
 		return
 	}
-	socket.LeaveNode(userAuth.UID)
+	go socket.LeaveNode(userAuth.UID)
 
 	err = models.DeleteNotification(request.NotificationId)
 

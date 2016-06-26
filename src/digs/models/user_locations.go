@@ -21,6 +21,21 @@ func AddUserNewLocation(longitude, latitude float64, uid string) error {
 	return err
 }
 
+func GetUserLocation(uid string) (UserLocation, error) {
+	conn := Session.Clone()
+	defer conn.Close()
+
+	results := UserLocation{}
+
+	c := conn.DB(DefaultDatabase).C("user_locations")
+
+	err := c.Find(bson.M{
+		"uid": uid,
+	}).Sort("-creationTime").One(&results)
+
+	return results, err
+}
+
 func GetLiveUIDForFeed(longitude, latitude float64, distInMeter int64) ([]string) {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("user_locations")
