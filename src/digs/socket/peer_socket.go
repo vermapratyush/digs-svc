@@ -34,14 +34,14 @@ func AddNode(uid string, ws *websocket.Conn) {
 		Conn:ws,
 		UID:uid,
 	}
-	//MulticastPerson(uid, "join")
+	MulticastPerson(uid, "join")
 }
 
 func LeaveNode(uid string) {
 	beego.Info("NodeLeft|UID=", uid)
 	_, present := LookUp[uid]
 	if present && LookUp[uid].Conn != nil {
-		//MulticastPerson(uid, "leave")
+		MulticastPerson(uid, "leave")
 		LookUp[uid].Conn.Close()
 	} else if present {
 		beego.Info("WSAlredyClosed|uid=", uid)
