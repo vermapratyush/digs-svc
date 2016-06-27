@@ -15,6 +15,16 @@ type WSMessengerController struct {
 
 func (this *WSMessengerController) Get() {
 	sid := this.GetString("sid")
+	longitude, longErr := this.GetFloat("longitude")
+	latitude, latErr := this.GetFloat("latitude")
+	if longErr != nil || latErr != nil {
+		this.Respond(&domain.ErrorResponse{
+			StatusCode:422,
+			ErrorCode:5001,
+			Message:"Location cordinate not provided in proper format",
+		})
+	}
+
 	beego.Info("WSConnection|SID=", sid)
 
 	userAuth, err := models.FindSession("sid", sid)
@@ -28,6 +38,10 @@ func (this *WSMessengerController) Get() {
 	}
 	beego.Info("UserConnected|UID=", userAuth)
 
+	updateLocation(nil, &domain.Coordinate{
+		Longitude:longitude,
+		Latitude:latitude,
+	}, userAuth)
 	socket.AddNode(userAuth.UID, this.ws)
 	defer socket.LeaveNode(userAuth.UID)
 
@@ -93,7 +107,10 @@ func serve(requestBody []byte, userAuth *models.UserAuth) (interface{}, error) {
 
 func updateLocation(oldLocation, newLocation *domain.Coordinate, userAuth *models.UserAuth) {
 
-	if oldLocation.Longitude != newLocation.Longitude || oldLocation.Latitude != newLocation.Latitude {
+	if oldLocation == nil || oldLocation.Longitude != newLocation.Longitude || oldLocation.Latitude != newLocation.Latitude {
+		if oldLocation == nil {
+			oldLocation = &domain.Coordinate{}
+		}
 		oldLocation.Longitude = newLocation.Longitude
 		oldLocation.Latitude = newLocation.Latitude
 		go models.AddUserNewLocation(newLocation.Longitude, newLocation.Latitude, userAuth.UID)
