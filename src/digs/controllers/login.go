@@ -54,16 +54,11 @@ func (this *LoginController) Post()  {
 		}
 	}
 
-	setting := make(map[string]interface{})
-	setting["messageRange"] = "10"
-	setting["enableNotification"] = "true"
-	setting["publicProfile"] = "true"
-
 	resp := &domain.UserLoginResponse{
 		StatusCode:200,
 		SessionId:sid,
 		UserId:uid,
-		Settings:setting,
+		Settings:userAccount.Settings,
 	}
 	beego.Info("Login Response=", resp)
 	this.Serve200(resp)

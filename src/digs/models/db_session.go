@@ -40,7 +40,7 @@ type UserAccount struct {
 	Locale string `json:"locale" bson:"locale"`
 	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
 	FBVerified bool `bson:"fbVerified" json:"fbVerified"`
-	Settings map[string]interface{} `json:"setting" bson:"setting"`
+	Settings map[string]interface{} `json:"settings" bson:"settings"`
 }
 
 //type Setting struct {
