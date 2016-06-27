@@ -29,18 +29,18 @@ const (
 )
 
 var LookUp = make(map[string]Peer)
-var lookUpLock sync.RWMutex
+var LookUpLock sync.RWMutex
 
 func AddNode(uid string, ws *websocket.Conn) {
 
 	beego.Info("NodeAdded|UID=", uid)
 
-	lookUpLock.Lock()
+	LookUpLock.Lock()
 	LookUp[uid] = Peer{
 		Conn:ws,
 		UID:uid,
 	}
-	lookUpLock.Unlock()
+	LookUpLock.Unlock()
 	MulticastPerson(uid, "join")
 }
 
@@ -56,9 +56,9 @@ func LeaveNode(uid string) {
 		beego.Info("WSAlredyClosed|uid=", uid)
 	}
 
-	lookUpLock.Lock()
+	LookUpLock.Lock()
 	delete(LookUp, uid)
-	lookUpLock.Unlock()
+	LookUpLock.Unlock()
 }
 
 func MulticastPerson(uid string, activity string) {
@@ -73,7 +73,12 @@ func MulticastPerson(uid string, activity string) {
 
 	//HACK: Find a better solution
 	enableNotification, _ := userAccount.Settings["enableNotification"].(bool)
-	LookUp[uid].PushNotificationEnabled = enableNotification
+	var peer = LookUp[uid]
+	peer.PushNotificationEnabled = enableNotification
+	LookUpLock.Lock()
+	LookUp[uid] = peer
+	LookUpLock.Unlock()
+
 
 	uids := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], messageRange)
 	for _, toUID := range(uids) {

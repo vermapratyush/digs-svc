@@ -26,8 +26,9 @@ func (this *SettingController) Post() {
 		return
 	}
 	err = models.UpdateUserAccount(userAuth.UID, &dataObject)
-	enablePush, _ := dataObject["enableNotification"].(bool)
-	socket.LookUp[userAuth.UID].PushNotificationEnabled = enablePush
+
+	enableNotification, _ := dataObject["enableNotification"].(bool)
+	go updateLookUpTable(enableNotification, userAuth.UID)
 
 	if err != nil {
 		beego.Error("SettingUpdateFailed|", err)
@@ -35,6 +36,15 @@ func (this *SettingController) Post() {
 	} else {
 		this.Serve204()
 	}
+}
+
+func updateLookUpTable(notification bool, uid string) {
+
+	var peer = socket.LookUp[uid]
+	peer.PushNotificationEnabled = notification
+	socket.LookUpLock.Lock()
+	socket.LookUp[uid] = peer
+	socket.LookUpLock.Unlock()
 }
 
 func (this *SettingController) Get()  {
