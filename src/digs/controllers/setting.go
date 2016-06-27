@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"digs/models"
 	"errors"
+	"digs/socket"
 )
 
 type SettingController struct {
@@ -25,6 +26,8 @@ func (this *SettingController) Post() {
 		return
 	}
 	err = models.UpdateUserAccount(userAuth.UID, &dataObject)
+	enablePush, _ := dataObject["enableNotification"].(bool)
+	socket.LookUp[userAuth.UID].PushNotificationEnabled = enablePush
 
 	if err != nil {
 		beego.Error("SettingUpdateFailed|", err)

@@ -15,6 +15,7 @@ import (
 type Peer struct {
 	Conn *websocket.Conn
 	UID string
+	PushNotificationEnabled bool
 }
 
 const (
@@ -68,12 +69,18 @@ func MulticastPerson(uid string, activity string) {
 	}
 	userAccount, _ := models.GetUserAccount("uid", uid)
 	messageRange, _ := userAccount.Settings["messageRange"].(int64)
+	isPublic, _ := userAccount.Settings["publicProfile"].(bool)
+
+	//HACK: Find a better solution
+	enableNotification, _ := userAccount.Settings["enableNotification"].(bool)
+	LookUp[uid].PushNotificationEnabled = enableNotification
+
 	uids := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], messageRange)
 	for _, toUID := range(uids) {
 		peer, present := LookUp[toUID]
 		if uid == toUID || present == false {
 			continue
-		} else {
+		} else if (isPublic) {
 			beego.Info("Stacktrace", string(debug.Stack()))
 			beego.Info("Person=", uid, " activity=", activity, " to=", toUID)
 			response, _ := json.Marshal(&domain.PersonResponse{
@@ -92,14 +99,15 @@ func MulticastPerson(uid string, activity string) {
 }
 
 func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRequest) {
-	uids := models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, msg.Reach)
+	reach, _ := userAccount.Settings["messageReach"].(int64)
+	uids := models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, reach)
 	beego.Info("TotalUsers|Size=", len(uids))
 	for idx := 0; idx < len(uids); idx++ {
 		peer, present := LookUp[uids[idx]]
 		beego.Info("from", userAccount.UID, "to=", uids[idx])
 		if uids[idx] == userAccount.UID {
 			continue
-		} else if (present == false) {
+		} else if (present == false && peer.PushNotificationEnabled) {
 			sendPushMessage(userAccount, uids[idx], msg)
 
 		} else {
@@ -111,7 +119,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 				ProfilePicture:userAccount.ProfilePicture,
 			})
 			err := sendWSMessage(peer, userAccount.UID, response)
-			if err != nil {
+			if err != nil && peer.PushNotificationEnabled {
 				sendPushMessage(userAccount, uids[idx], msg)
 			}
 		}
