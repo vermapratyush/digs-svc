@@ -40,14 +40,14 @@ type UserAccount struct {
 	Locale string `json:"locale" bson:"locale"`
 	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
 	FBVerified bool `bson:"fbVerified" json:"fbVerified"`
-	Settings map[string]interface{} `json:"settings" bson:"settings"`
+	Settings Setting `json:"settings" bson:"settings"`
 }
 
-//type Setting struct {
-//	Range int64 `json:"messageRange" bson:"messageRange"`
-//	PublicProfile bool `json:"publicProfile" bson:"publicProfile"`
-//	PushNotification bool `json:"notificationEnabled" bson:"notificationEnabled"`
-//}
+type Setting struct {
+	Range float64 `json:"messageRange" bson:"messageRange"`
+	PublicProfile bool `json:"publicProfile" bson:"publicProfile"`
+	PushNotification bool `json:"notificationEnabled" bson:"notificationEnabled"`
+}
 
 //Order by creation time asc
 //Index uid, sid, accessToken

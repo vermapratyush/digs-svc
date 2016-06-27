@@ -32,7 +32,9 @@ var LookUp = make(map[string]Peer)
 var LookUpLock sync.RWMutex
 
 func AddNode(uid string, ws *websocket.Conn) {
-
+	if uid == "" {
+		return
+	}
 	beego.Info("NodeAdded|UID=", uid)
 
 	LookUpLock.Lock()
@@ -68,24 +70,22 @@ func MulticastPerson(uid string, activity string) {
 		return
 	}
 	userAccount, _ := models.GetUserAccount("uid", uid)
-	messageRange, _ := userAccount.Settings["messageRange"].(int64)
-	isPublic, _ := userAccount.Settings["publicProfile"].(bool)
 
 	//HACK: Find a better solution
-	enableNotification, _ := userAccount.Settings["enableNotification"].(bool)
-	var peer = LookUp[uid]
-	peer.PushNotificationEnabled = enableNotification
-	LookUpLock.Lock()
-	LookUp[uid] = peer
-	LookUpLock.Unlock()
+	if activity == "join" {
+		var peer = LookUp[uid]
+		peer.PushNotificationEnabled = userAccount.Settings.PushNotification
+		LookUpLock.Lock()
+		LookUp[uid] = peer
+		LookUpLock.Unlock()
+	}
 
-
-	uids := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], messageRange)
+	uids := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], int64(userAccount.Settings.Range))
 	for _, toUID := range(uids) {
 		peer, present := LookUp[toUID]
 		if uid == toUID || present == false {
 			continue
-		} else if (isPublic) {
+		} else if (userAccount.Settings.PublicProfile) {
 			beego.Info("Stacktrace", string(debug.Stack()))
 			beego.Info("Person=", uid, " activity=", activity, " to=", toUID)
 			response, _ := json.Marshal(&domain.PersonResponse{
@@ -104,19 +104,23 @@ func MulticastPerson(uid string, activity string) {
 }
 
 func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRequest) {
-	reach := int64(10000)
-	beego.Info("Searching people in radius of ", reach, " from ", msg.Location)
-	uids := models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, reach)
+
+	beego.Info("Searching people in radius of ", userAccount.Settings.Range, " from ", msg.Location)
+	uids := models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, int64(userAccount.Settings.Range))
 	beego.Info("TotalUsers|Size=", len(uids))
 	for idx := 0; idx < len(uids); idx++ {
 		peer, present := LookUp[uids[idx]]
-		beego.Info("from", userAccount.UID, "to=", uids[idx])
 		if uids[idx] == userAccount.UID {
 			continue
-		} else if (present == false && peer.PushNotificationEnabled) {
+		}
+		pushEnabled, _ := models.GetUserAccount("uid", uids[idx])
+		if (!present && pushEnabled.Settings.PushNotification) {
+			beego.Info("Push|from", userAccount.UID, "to=", uids[idx])
 			sendPushMessage(userAccount, uids[idx], msg)
 
-		} else {
+		} else if (present) {
+			beego.Info("WS|from", userAccount.UID, "to=", uids[idx])
+			beego.Info("Peer=", peer)
 			response, _ := json.Marshal(domain.MessageGetResponse{
 				From:common.GetName(userAccount.FirstName, userAccount.LastName),
 				UID:userAccount.UID,
@@ -125,7 +129,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 				ProfilePicture:userAccount.ProfilePicture,
 			})
 			err := sendWSMessage(peer, userAccount.UID, response)
-			if err != nil && peer.PushNotificationEnabled {
+			if err != nil && pushEnabled.Settings.PushNotification {
 				sendPushMessage(userAccount, uids[idx], msg)
 			}
 		}

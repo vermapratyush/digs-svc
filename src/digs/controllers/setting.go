@@ -6,6 +6,7 @@ import (
 	"digs/models"
 	"errors"
 	"digs/socket"
+	"digs/domain"
 )
 
 type SettingController struct {
@@ -14,21 +15,20 @@ type SettingController struct {
 
 func (this *SettingController) Post() {
 
-	var dataObject map[string]interface{}
-	json.Unmarshal(this.Ctx.Input.RequestBody, &dataObject)
-	beego.Info("UpdateSetting|postData=", dataObject)
+	var request domain.SettingRequest
+	json.Unmarshal(this.Ctx.Input.RequestBody, &request)
+	request.Range = request.Range * 1000
+	beego.Info("UpdateSetting|postData=", request)
 
-	sid, _ := dataObject["sessionId"].(string)
-	userAuth, err := models.FindSession("sid", sid)
+	userAuth, err := models.FindSession("sid", request.SessionID)
 	if err != nil {
 		beego.Error("SessionNotFound|err=", err)
 		this.Serve500(errors.New("Unable to find session"))
 		return
 	}
-	err = models.UpdateUserAccount(userAuth.UID, &dataObject)
+	err = models.UpdateUserAccount(userAuth.UID, &request)
 
-	enableNotification, _ := dataObject["enableNotification"].(bool)
-	go updateLookUpTable(enableNotification, userAuth.UID)
+	go updateLookUpTable(request.PushNotification, userAuth.UID)
 
 	if err != nil {
 		beego.Error("SettingUpdateFailed|", err)
@@ -57,10 +57,6 @@ func (this *SettingController) Get()  {
 		return
 	}
 	userAccount, _ := models.GetUserAccount("uid", userAuth.UID)
-	if userAccount.Settings == nil {
-		this.Serve304()
-		return
-	}
 	beego.Info("Setting=", userAccount.Settings)
 	this.Serve200(&userAccount.Settings)
 

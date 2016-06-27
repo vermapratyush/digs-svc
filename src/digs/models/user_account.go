@@ -4,17 +4,13 @@ import (
 	"time"
 	"gopkg.in/mgo.v2/bson"
 	"gopkg.in/mgo.v2"
+	"digs/domain"
 )
 
 func AddUserAccount(firstName, lastName, email, about, fbid, locale, profilePicture string, fbVerified bool) (*UserAccount, error) {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("accounts")
 	defer conn.Close()
-
-	setting := make(map[string]interface{})
-	setting["messageRange"] = "10"
-	setting["enableNotification"] = "true"
-	setting["publicProfile"] = "true"
 
 	userAccount := &UserAccount{
 		UID: fbid,
@@ -27,7 +23,11 @@ func AddUserAccount(firstName, lastName, email, about, fbid, locale, profilePict
 		ProfilePicture: profilePicture,
 		FBVerified: fbVerified,
 		CreationTime:time.Now(),
-		Settings:setting,
+		Settings:Setting{
+			Range: 10.0,
+			PublicProfile: true,
+			PushNotification: true,
+		},
 	}
 	err := c.Insert(userAccount)
 
@@ -49,13 +49,13 @@ func GetUserAccount(fieldName, fieldValue string) (*UserAccount, error) {
 	return res, nil
 }
 
-func UpdateUserAccount(uid string, setting *map[string]interface{}) error {
+func UpdateUserAccount(uid string, setting *domain.SettingRequest) error {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("accounts")
 	defer conn.Close()
 
 	key := bson.M{"uid": uid}
-	values := bson.M{ "$set": bson.M{ "settings": *setting } }
+	values := bson.M{ "$set": bson.M{ "settings": bson.M{"messageRange": setting.Range, "publicProfile": setting.PublicProfile, "notificationEnabled": setting.PushNotification} } }
 	err := c.Update(key, values)
 
 	return err

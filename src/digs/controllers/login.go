@@ -58,7 +58,11 @@ func (this *LoginController) Post()  {
 		StatusCode:200,
 		SessionId:sid,
 		UserId:uid,
-		Settings:userAccount.Settings,
+		Settings:domain.SettingResponse{
+			Range:userAccount.Settings.Range,
+			PublicProfile:userAccount.Settings.PublicProfile,
+			PushNotification:userAccount.Settings.PushNotification,
+		},
 	}
 	beego.Info("Login Response=", resp)
 	this.Serve200(resp)
