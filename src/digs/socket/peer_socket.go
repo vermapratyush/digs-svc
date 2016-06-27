@@ -9,6 +9,7 @@ import (
 	"github.com/NaySoftware/go-fcm"
 	"digs/common"
 	"sync"
+	"runtime/debug"
 )
 
 type Peer struct {
@@ -66,12 +67,14 @@ func MulticastPerson(uid string, activity string) {
 		return
 	}
 	userAccount, _ := models.GetUserAccount("uid", uid)
-	uids := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], userAccount.Range)
+	messageRange, _ := userAccount.Settings["messageRange"].(int64)
+	uids := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], messageRange)
 	for _, toUID := range(uids) {
 		peer, present := LookUp[toUID]
 		if uid == toUID || present == false {
 			continue
 		} else {
+			beego.Info("Stacktrace", string(debug.Stack()))
 			beego.Info("Person=", uid, " activity=", activity, " to=", toUID)
 			response, _ := json.Marshal(&domain.PersonResponse{
 				Name: common.GetName(userAccount.FirstName, userAccount.LastName),

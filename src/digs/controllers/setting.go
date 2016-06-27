@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"digs/domain"
 	"github.com/astaxie/beego"
 	"encoding/json"
 	"digs/models"
@@ -13,18 +12,19 @@ type SettingController struct {
 }
 
 func (this *SettingController) Post() {
-	var request domain.SettingRequest
-	beego.Info("Login Request", string(this.Ctx.Input.RequestBody))
-	this.Super(&request.BaseRequest)
-	json.Unmarshal(this.Ctx.Input.RequestBody, &request)
 
-	userAuth, err := models.FindSession("sid", request.SessionID)
+	var dataObject map[string]interface{}
+	json.Unmarshal(this.Ctx.Input.RequestBody, &dataObject)
+	beego.Info("UpdateSetting|postData=", dataObject)
+
+	sid, _ := dataObject["sessionId"].(string)
+	userAuth, err := models.FindSession("sid", sid)
 	if err != nil {
 		beego.Error("SessionNotFound|err=", err)
 		this.Serve500(errors.New("Unable to find session"))
 		return
 	}
-	err = models.UpdateUserAccount(userAuth.UID, request.PushNotification, request.Range)
+	err = models.UpdateUserAccount(userAuth.UID, &dataObject)
 
 	if err != nil {
 		beego.Error("SettingUpdateFailed|", err)
@@ -32,4 +32,23 @@ func (this *SettingController) Post() {
 	} else {
 		this.Serve204()
 	}
+}
+
+func (this *SettingController) Get()  {
+	sid := this.GetString("sid")
+	userAuth, err := models.FindSession("sid", sid)
+	beego.Info("GetSetting|sid=", sid)
+	if err != nil {
+		beego.Error(err)
+		this.Serve500(errors.New("Unable to get session"))
+		return
+	}
+	userAccount, _ := models.GetUserAccount("uid", userAuth.UID)
+	if userAccount.Settings == nil {
+		this.Serve304()
+		return
+	}
+	beego.Info("Setting=", userAccount.Settings)
+	this.Serve200(&userAccount.Settings)
+
 }

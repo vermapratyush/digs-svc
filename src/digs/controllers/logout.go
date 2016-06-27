@@ -5,7 +5,6 @@ import (
 	"github.com/astaxie/beego"
 	"encoding/json"
 	"digs/models"
-	"digs/socket"
 	"errors"
 )
 
@@ -26,7 +25,6 @@ func (this *LogoutController) Post()  {
 		this.Serve500(errors.New("Unable to find session"))
 		return
 	}
-	go socket.LeaveNode(userAuth.UID)
 
 	err = models.DeleteNotification(request.NotificationId)
 

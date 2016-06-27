@@ -53,6 +53,11 @@ func (this *HttpBaseController) Serve200(obj interface{}) {
 	this.ServeJSON()
 }
 
+func (this *HttpBaseController) Serve304() {
+	this.Ctx.Output.SetStatus(304)
+	this.ServeJSON()
+}
+
 func (this *HttpBaseController) Serve204() {
 	this.Ctx.Output.SetStatus(204)
 	this.ServeJSON()

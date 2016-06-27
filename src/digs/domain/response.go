@@ -4,6 +4,7 @@ type UserLoginResponse struct {
 	StatusCode int32
 	SessionId string `json:"sessionId" bson:"sessionId"`
 	UserId string `json:"userId" bson:"userId"`
+	Settings map[string]interface{} `json:"settings" bson:"settings"`
 }
 
 type MessageReceivedResponse struct {
@@ -42,4 +43,11 @@ type PersonResponse struct {
 
 type MessagePushResponse struct {
 	MessageGetResponse
+}
+
+type SettingResponse struct {
+	Range int64 `json:"messageRange" bson:"messageRange"`
+	PublicProfile bool `json:"publicProfile" bson:"publicProfile"`
+	PushNotification bool `json:"notificationEnabled" bson:"notificationEnabled"`
+
 }

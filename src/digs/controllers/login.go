@@ -21,6 +21,7 @@ func (this *LoginController) Post()  {
 	beego.Info("login request obj=", request)
 	//Check if the person is already registered
 	userAccount, err := models.GetUserAccount("email", request.Email)
+	beego.Info("////////////", userAccount)
 	if err != nil {
 		this.Serve500(errors.New("Unable to look up account table"))
 		return
@@ -53,10 +54,16 @@ func (this *LoginController) Post()  {
 		}
 	}
 
+	setting := make(map[string]interface{})
+	setting["messageRange"] = "10"
+	setting["enableNotification"] = "true"
+	setting["publicProfile"] = "true"
+
 	resp := &domain.UserLoginResponse{
 		StatusCode:200,
 		SessionId:sid,
 		UserId:uid,
+		Settings:setting,
 	}
 	beego.Info("Login Response=", resp)
 	this.Serve200(resp)

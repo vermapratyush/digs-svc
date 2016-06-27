@@ -1,5 +1,6 @@
 package domain
 
+//Except for Setting Controller this is used.
 type BaseRequest struct {
 	HeaderUserAgent string
 	HeaderSessionID string
@@ -53,8 +54,8 @@ type MessageGetRequest struct {
 }
 
 type SettingRequest struct {
-	BaseRequest
-	Range int64 `json:"range" bson:"range"`
+	Range int64 `json:"messageRange" bson:"messageRange"`
+	PublicProfile bool `json:"publicProfile" bson:"publicProfile"`
 	PushNotification bool `json:"notificationEnabled" bson:"notificationEnabled"`
 
 }

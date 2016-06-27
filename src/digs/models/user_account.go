@@ -43,13 +43,13 @@ func GetUserAccount(fieldName, fieldValue string) (*UserAccount, error) {
 	return res, nil
 }
 
-func UpdateUserAccount(uid string, enableNotification bool, messageRange int64) error {
+func UpdateUserAccount(uid string, setting *map[string]interface{}) error {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("accounts")
 	defer conn.Close()
 
 	key := bson.M{"uid": uid}
-	values := bson.M{ "$set": bson.M{ "notificationEnabled": enableNotification, "range": messageRange } }
+	values := bson.M{ "$set": bson.M{ "setting": *setting } }
 	err := c.Update(key, values)
 
 	return err
