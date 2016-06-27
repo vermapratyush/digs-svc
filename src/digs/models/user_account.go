@@ -11,6 +11,11 @@ func AddUserAccount(firstName, lastName, email, about, fbid, locale, profilePict
 	c := conn.DB(DefaultDatabase).C("accounts")
 	defer conn.Close()
 
+	setting := make(map[string]interface{})
+	setting["messageRange"] = "10"
+	setting["enableNotification"] = "true"
+	setting["publicProfile"] = "true"
+
 	userAccount := &UserAccount{
 		UID: fbid,
 		FirstName: firstName,
@@ -22,6 +27,7 @@ func AddUserAccount(firstName, lastName, email, about, fbid, locale, profilePict
 		ProfilePicture: profilePicture,
 		FBVerified: fbVerified,
 		CreationTime:time.Now(),
+		Settings:setting,
 	}
 	err := c.Insert(userAccount)
 
