@@ -56,8 +56,8 @@ func (this *WSMessengerController) Get() {
 			return
 		}
 		response, _ := serve(request, userAuth)
-		beego.Info("From sid=", userAuth, "Response", response)
 		if (response != nil) {
+			beego.Info("From sid=", userAuth, "Response", response)
 			this.Respond(response)
 		}
 
@@ -74,7 +74,6 @@ func serve(requestBody []byte, userAuth *models.UserAuth) (interface{}, error) {
 		var newLocation = domain.Coordinate{}
 		_ = json.Unmarshal(requestBody[len(socket.UpdateLocation):], &newLocation)
 		updateLocation(&location, &newLocation, userAuth)
-		beego.Info("UpdateLocation|newLocation=",newLocation)
 
 		return nil, nil
 
