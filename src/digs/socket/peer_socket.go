@@ -42,6 +42,8 @@ func LeaveNode(uid string) {
 	_, present := LookUp[uid]
 	if present && LookUp[uid].Conn != nil {
 		MulticastPerson(uid, "leave")
+
+		defer DeadSocketWrite(LookUp[uid])
 		LookUp[uid].Conn.Close()
 	} else if present {
 		beego.Info("WSAlredyClosed|uid=", uid)
@@ -57,13 +59,12 @@ func MulticastPerson(uid string, activity string) {
 	}
 	userAccount, _ := models.GetUserAccount("uid", uid)
 	uids := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], userAccount.Range)
-
 	for _, toUID := range(uids) {
 		peer, present := LookUp[toUID]
-		beego.Info("Person=", uid, " activity=", activity, " to=", toUID)
 		if uid == toUID || present == false {
 			continue
 		} else {
+			beego.Info("Person=", uid, " activity=", activity, " to=", toUID)
 			response, _ := json.Marshal(&domain.PersonResponse{
 				Name: common.GetName(userAccount.FirstName, userAccount.LastName),
 				UID: uid,
