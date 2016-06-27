@@ -8,6 +8,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/NaySoftware/go-fcm"
 	"digs/common"
+	"sync"
 )
 
 type Peer struct {
@@ -26,14 +27,18 @@ const (
 )
 
 var LookUp = make(map[string]Peer)
+var lookUpLock sync.RWMutex
 
 func AddNode(uid string, ws *websocket.Conn) {
 
 	beego.Info("NodeAdded|UID=", uid)
+
+	lookUpLock.Lock()
 	LookUp[uid] = Peer{
 		Conn:ws,
 		UID:uid,
 	}
+	lookUpLock.Unlock()
 	MulticastPerson(uid, "join")
 }
 
@@ -48,7 +53,10 @@ func LeaveNode(uid string) {
 	} else if present {
 		beego.Info("WSAlredyClosed|uid=", uid)
 	}
+
+	lookUpLock.Lock()
 	delete(LookUp, uid)
+	lookUpLock.Unlock()
 }
 
 func MulticastPerson(uid string, activity string) {
