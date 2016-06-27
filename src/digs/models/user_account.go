@@ -55,7 +55,7 @@ func UpdateUserAccount(uid string, setting *map[string]interface{}) error {
 	defer conn.Close()
 
 	key := bson.M{"uid": uid}
-	values := bson.M{ "$set": bson.M{ "setting": *setting } }
+	values := bson.M{ "$set": bson.M{ "settings": *setting } }
 	err := c.Update(key, values)
 
 	return err
