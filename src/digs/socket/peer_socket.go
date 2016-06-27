@@ -105,6 +105,7 @@ func MulticastPerson(uid string, activity string) {
 
 func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRequest) {
 	reach, _ := userAccount.Settings["messageReach"].(int64)
+	beego.Info("Searching people in radius of ", reach, " from ", msg.Location)
 	uids := models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, reach)
 	beego.Info("TotalUsers|Size=", len(uids))
 	for idx := 0; idx < len(uids); idx++ {

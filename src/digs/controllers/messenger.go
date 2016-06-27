@@ -47,7 +47,7 @@ func (this *WSMessengerController) Get() {
 
 	for {
 		_, request, err := this.ws.ReadMessage()
-		beego.Info("From sid=", userAuth, "Request", string(request))
+
 		if err != nil {
 			beego.Info("Err", err.Error())
 		}
@@ -57,7 +57,9 @@ func (this *WSMessengerController) Get() {
 		}
 		response, _ := serve(request, userAuth)
 		beego.Info("From sid=", userAuth, "Response", response)
-		this.Respond(response)
+		if (response != nil) {
+			this.Respond(response)
+		}
 
 	}
 }
@@ -74,12 +76,11 @@ func serve(requestBody []byte, userAuth *models.UserAuth) (interface{}, error) {
 		updateLocation(&location, &newLocation, userAuth)
 		beego.Info("UpdateLocation|newLocation=",newLocation)
 
-		return &domain.MessageReceivedResponse{
-			StatusCode:200,
-			RequestId:newLocation.RequestId,
-		}, nil
+		return nil, nil
 
 	case strings.HasPrefix(message, socket.SendMessage):
+		beego.Info("From sid=", userAuth, "Request", string(requestBody))
+
 		var msg = domain.MessageSendRequest{}
 		_ = json.Unmarshal(requestBody[len(socket.SendMessage):], &msg)
 		updateLocation(&location, &msg.Location, userAuth)
