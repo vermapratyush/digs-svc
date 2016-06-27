@@ -11,6 +11,7 @@ func (this *DebugController) Get() {
 	debug["totalActiveClient"] = len(socket.LookUp)
 	for k, _ := range(socket.LookUp) {
 		debug[k] = 1
+		debug["push-" + k] = socket.LookUp[k].PushNotificationEnabled
 	}
 	this.Serve200(debug)
 }
