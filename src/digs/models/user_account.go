@@ -55,7 +55,7 @@ func UpdateUserAccount(uid string, setting *domain.SettingRequest) error {
 	defer conn.Close()
 
 	key := bson.M{"uid": uid}
-	values := bson.M{ "$set": bson.M{ "settings": bson.M{"messageRange": setting.Range, "publicProfile": setting.PublicProfile, "notificationEnabled": setting.PushNotification} } }
+	values := bson.M{ "$set": bson.M{ "settings": bson.M{"messageRange": setting.Range, "publicProfile": setting.PublicProfile, "enableNotification": setting.PushNotification} } }
 	err := c.Update(key, values)
 
 	return err

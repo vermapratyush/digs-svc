@@ -17,7 +17,6 @@ func (this *SettingController) Post() {
 
 	var request domain.SettingRequest
 	json.Unmarshal(this.Ctx.Input.RequestBody, &request)
-	request.Range = request.Range * 1000
 	beego.Info("UpdateSetting|postData=", request)
 
 	userAuth, err := models.FindSession("sid", request.SessionID)
@@ -28,7 +27,7 @@ func (this *SettingController) Post() {
 	}
 	err = models.UpdateUserAccount(userAuth.UID, &request)
 
-	go updateLookUpTable(request.PushNotification, userAuth.UID)
+	go updateLookUpTable(request, userAuth.UID)
 
 	if err != nil {
 		beego.Error("SettingUpdateFailed|", err)
@@ -38,13 +37,19 @@ func (this *SettingController) Post() {
 	}
 }
 
-func updateLookUpTable(notification bool, uid string) {
+func updateLookUpTable(settingRequest domain.SettingRequest, uid string) {
 
 	var peer = socket.LookUp[uid]
-	peer.PushNotificationEnabled = notification
+	peer.PushNotificationEnabled = settingRequest.PushNotification
 	socket.LookUpLock.Lock()
 	socket.LookUp[uid] = peer
 	socket.LookUpLock.Unlock()
+	if settingRequest.PublicProfile == false {
+		socket.MulticastPerson(uid, "hide")
+	} else {
+		socket.MulticastPerson(uid, "join")
+	}
+
 }
 
 func (this *SettingController) Get()  {

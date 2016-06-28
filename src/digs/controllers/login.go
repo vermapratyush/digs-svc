@@ -20,7 +20,7 @@ func (this *LoginController) Post()  {
 	json.Unmarshal(this.Ctx.Input.RequestBody, &request)
 	beego.Info("login request obj=", request)
 	//Check if the person is already registered
-	userAccount, err := models.GetUserAccount("email", request.Email)
+	userAccount, err := models.GetUserAccount("uid", request.FBID)
 	beego.Info("////////////", userAccount)
 	if err != nil {
 		this.Serve500(errors.New("Unable to look up account table"))

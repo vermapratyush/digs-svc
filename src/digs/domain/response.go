@@ -48,6 +48,6 @@ type MessagePushResponse struct {
 type SettingResponse struct {
 	Range float64 `json:"messageRange" bson:"messageRange"`
 	PublicProfile bool `json:"publicProfile" bson:"publicProfile"`
-	PushNotification bool `json:"notificationEnabled" bson:"notificationEnabled"`
+	PushNotification bool `json:"enableNotification" bson:"enableNotification"`
 
 }

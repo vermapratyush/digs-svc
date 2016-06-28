@@ -9,7 +9,6 @@ import (
 	"github.com/NaySoftware/go-fcm"
 	"digs/common"
 	"sync"
-	"runtime/debug"
 )
 
 type Peer struct {
@@ -85,8 +84,7 @@ func MulticastPerson(uid string, activity string) {
 		peer, present := LookUp[toUID]
 		if uid == toUID || present == false {
 			continue
-		} else if (userAccount.Settings.PublicProfile) {
-			beego.Info("Stacktrace", string(debug.Stack()))
+		} else if (activity == "hide" || activity == "show" || userAccount.Settings.PublicProfile) {
 			beego.Info("Person=", uid, " activity=", activity, " to=", toUID)
 			response, _ := json.Marshal(&domain.PersonResponse{
 				Name: common.GetName(userAccount.FirstName, userAccount.LastName),
