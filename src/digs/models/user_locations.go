@@ -11,14 +11,16 @@ func AddUserNewLocation(longitude, latitude float64, uid string) error {
 	defer conn.Close()
 
 	c := conn.DB(DefaultDatabase).C("user_locations")
-	err := c.Insert(&UserLocation{
-		UID:uid,
-		Location: Coordinate{
-			Type:"Point",
-			Coordinates:[]float64{longitude, latitude},
+	key := bson.M{"uid": uid}
+	value := bson.M{
+		"uid": uid,
+		"location": bson.M{
+			"type":"Point",
+			"coordinates": []float64{longitude, latitude},
 		},
-		CreationTime: time.Now(),
-	})
+		"creationTime": time.Now(),
+	}
+	_, err := c.Upsert(key, value)
 	return err
 }
 
@@ -47,24 +49,34 @@ func GetUserLocation(uid string) (UserLocation, error) {
 //"$maxDistance":10000
 //}
 //}})
-func GetLiveUIDForFeed(longitude, latitude float64, distInMeter int64) ([]string) {
+func GetLiveUIDForFeed(longitude, latitude float64, maxDistance, minDistance float64) ([]string) {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("user_locations")
 	defer conn.Close()
 
 	results := []UserLocation{}
 
-	err := c.Find(bson.M{
-		"location": bson.M{
-			"$nearSphere": bson.M{
-				"$geometry": bson.M{
-					"type":        "Point",
-					"coordinates": []float64{longitude, latitude},
-				},
-				"$maxDistance": distInMeter,
+	var filter bson.M
+	if minDistance != -1 {
+		filter = bson.M{"location": bson.M{"$nearSphere": bson.M{
+			"$geometry": bson.M{
+				"type":        "Point",
+				"coordinates": []float64{longitude, latitude},
 			},
-		},
-	}).All(&results)
+			"$maxDistance": int64(maxDistance),
+			"$minDistance": int64(minDistance),
+		},},}
+	} else {
+		filter = bson.M{"location": bson.M{"$nearSphere": bson.M{
+			"$geometry": bson.M{
+				"type":        "Point",
+				"coordinates": []float64{longitude, latitude},
+			},
+			"$maxDistance": int64(maxDistance),
+		},},}
+	}
+
+	err := c.Find(filter).All(&results)
 
 	if err != nil {
 		beego.Error(err)
@@ -79,9 +91,9 @@ func GetLiveUIDForFeed(longitude, latitude float64, distInMeter int64) ([]string
 	uidArray := make([]string, len(uids))
 	idx := 0
 	for k, _ := range(uids) {
-		beego.Info(k)
 		uidArray[idx] = k
 		idx++
 	}
+	beego.Info(uidArray)
 	return uidArray
 }

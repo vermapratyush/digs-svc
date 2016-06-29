@@ -16,7 +16,7 @@ var Session, _ = mgo.Dial(fmt.Sprintf("mongodb://node-js:node-js@ds015194.mlab.c
 
 type Coordinate struct {
 	Type        string    `json:"type" bson:"type"`
-	Coordinates []float64 `json:"coordinates"`
+	Coordinates []float64 `json:"coordinates" bson:"coordinates"`
 }
 
 type Message struct {
@@ -62,7 +62,6 @@ type UserAuth struct {
 
 type UserLocation struct {
 	UID string `json:"uid" bson:"uid"`
-	Username string `json:"username" bson:"username"`
 	Location Coordinate `json:"location" bson:"location"`
 	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
 }

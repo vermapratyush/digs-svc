@@ -25,9 +25,18 @@ func (this *SettingController) Post() {
 		this.Serve500(errors.New("Unable to find session"))
 		return
 	}
-	err = models.UpdateUserAccount(userAuth.UID, &request)
+	userAuth, err = models.FindSession("sid", request.SessionID)
+	if err == nil {
 
-	go updateLookUpTable(request, userAuth.UID)
+		userAccount, err := models.GetUserAccount("uid", userAuth.UID)
+		if (err == nil && userAccount.Settings.Range != request.Range) {
+			go updatePersonActivity(userAccount, userAccount.Settings.Range, request.Range)
+		} else if err == nil && userAccount.Settings.PublicProfile != request.PublicProfile {
+			go hideJoinPersonActivity(request, userAuth.UID)
+		}
+	}
+
+	err = models.UpdateUserAccount(userAuth.UID, &request)
 
 	if err != nil {
 		beego.Error("SettingUpdateFailed|", err)
@@ -37,13 +46,23 @@ func (this *SettingController) Post() {
 	}
 }
 
-func updateLookUpTable(settingRequest domain.SettingRequest, uid string) {
+func updatePersonActivity(userAccount *models.UserAccount, oldRange, newRange float64)  {
+	userLocation, err := models.GetUserLocation(userAccount.UID)
+	if (err == nil) {
+		if oldRange > newRange {
+			uidList := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], oldRange, newRange)
+			beego.Info("SettingsChanged|InformPartialUser=", uidList)
+			socket.MulticastPersonCustom("leave", userAccount, userLocation.Location, uidList)
+		} else {
+			uidList := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], newRange, oldRange)
+			beego.Info("SettingsChanged|InformPartialUser=", uidList)
+			socket.MulticastPersonCustom("join", userAccount, userLocation.Location, uidList)
+		}
+	}
+}
 
-	var peer = socket.LookUp[uid]
-	peer.PushNotificationEnabled = settingRequest.PushNotification
-	socket.LookUpLock.Lock()
-	socket.LookUp[uid] = peer
-	socket.LookUpLock.Unlock()
+func hideJoinPersonActivity(settingRequest domain.SettingRequest, uid string) {
+
 	if settingRequest.PublicProfile == false {
 		socket.MulticastPerson(uid, "hide")
 	} else {

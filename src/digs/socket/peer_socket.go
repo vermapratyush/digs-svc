@@ -14,7 +14,6 @@ import (
 type Peer struct {
 	Conn *websocket.Conn
 	UID string
-	PushNotificationEnabled bool
 }
 
 const (
@@ -69,31 +68,27 @@ func MulticastPerson(uid string, activity string) {
 		return
 	}
 	userAccount, _ := models.GetUserAccount("uid", uid)
+	uidList := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], userAccount.Settings.Range, -1)
+	MulticastPersonCustom(activity, userAccount, userLocation.Location, uidList)
 
-	//HACK: Find a better solution
-	if activity == "join" {
-		var peer = LookUp[uid]
-		peer.PushNotificationEnabled = userAccount.Settings.PushNotification
-		LookUpLock.Lock()
-		LookUp[uid] = peer
-		LookUpLock.Unlock()
-	}
+}
 
-	uids := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], int64(userAccount.Settings.Range))
+func MulticastPersonCustom(activity string, userAccount *models.UserAccount, userLocation models.Coordinate, uids []string)  {
+
 	for _, toUID := range(uids) {
 		peer, present := LookUp[toUID]
-		if uid == toUID || present == false {
+		if toUID == "" || userAccount.UID == toUID || present == false {
 			continue
 		} else if (activity == "hide" || activity == "show" || userAccount.Settings.PublicProfile) {
-			beego.Info("Person=", uid, " activity=", activity, " to=", toUID)
+			beego.Info("Person=", userAccount.UID, " activity=", activity, " to=", toUID)
 			response, _ := json.Marshal(&domain.PersonResponse{
 				Name: common.GetName(userAccount.FirstName, userAccount.LastName),
-				UID: uid,
+				UID: userAccount.UID,
 				Activity: activity,
 				About: userAccount.About,
 				ProfilePicture: userAccount.ProfilePicture,
 			})
-			err := sendWSMessage(peer, uid, response)
+			err := sendWSMessage(peer, userAccount.UID, response)
 			if err != nil {
 				beego.Error("MessageSendFailed|err=", err)
 			}
@@ -104,20 +99,20 @@ func MulticastPerson(uid string, activity string) {
 func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRequest) {
 
 	beego.Info("Searching people in radius of ", userAccount.Settings.Range, " from ", msg.Location)
-	uids := models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, int64(userAccount.Settings.Range))
+	uids := models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, userAccount.Settings.Range, -1)
 	beego.Info("TotalUsers|Size=", len(uids))
-	for idx := 0; idx < len(uids); idx++ {
-		peer, present := LookUp[uids[idx]]
-		if uids[idx] == userAccount.UID {
+	for _, toUID := range(uids) {
+		peer, present := LookUp[toUID]
+		if toUID == "" || toUID == userAccount.UID {
 			continue
 		}
-		pushEnabled, _ := models.GetUserAccount("uid", uids[idx])
+		pushEnabled, _ := models.GetUserAccount("uid", toUID)
 		if (!present && pushEnabled.Settings.PushNotification) {
-			beego.Info("Push|from", userAccount.UID, "to=", uids[idx])
-			sendPushMessage(userAccount, uids[idx], msg)
+			beego.Info("Push|from", userAccount.UID, "to=", toUID)
+			sendPushMessage(userAccount, toUID, msg)
 
 		} else if (present) {
-			beego.Info("WS|from", userAccount.UID, "to=", uids[idx])
+			beego.Info("WS|from", userAccount.UID, "to=", toUID)
 			beego.Info("Peer=", peer)
 			response, _ := json.Marshal(domain.MessageGetResponse{
 				From:common.GetName(userAccount.FirstName, userAccount.LastName),
@@ -128,7 +123,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			})
 			err := sendWSMessage(peer, userAccount.UID, response)
 			if err != nil && pushEnabled.Settings.PushNotification {
-				sendPushMessage(userAccount, uids[idx], msg)
+				sendPushMessage(userAccount, toUID, msg)
 			}
 		}
 	}
