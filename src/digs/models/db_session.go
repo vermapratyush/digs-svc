@@ -12,8 +12,6 @@ var Session, _ = mgo.Dial(fmt.Sprintf("mongodb://node-js:node-js@ds015194.mlab.c
 
 //Create index MID, From
 //Do Execute db.messages.ensureIndex({location:"2dsphere"})
-
-
 type Coordinate struct {
 	Type        string    `json:"type" bson:"type"`
 	Coordinates []float64 `json:"coordinates" bson:"coordinates"`
@@ -71,4 +69,9 @@ type Notification struct {
 	NotificationId string `json:"notificationId" bson:"notificationId"`
 	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
 	OSType string `bson:"osType" json:"osType"`
+}
+
+type MessageHistory struct {
+	MID []string `json:"mid" bson:"mid"`
+	UID string `json:"uid" bson:"uid"`
 }

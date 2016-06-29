@@ -147,9 +147,11 @@ func sendPushMessage(userAccount *models.UserAccount, toUID string, msg *domain.
 	fcm := fcm.NewFcmClient(common.PushNotification_API_KEY)
 
 	data := map[string]string{
-		"title": userAccount.FirstName,
+		"title": "powow",
 		"message": msg.Body,
 		"image": "twitter",
+		"style": "inbox",
+		"summaryText": "There are %n% notification",
 	}
 
 	notifications, err := models.GetNotificationIds(toUID)

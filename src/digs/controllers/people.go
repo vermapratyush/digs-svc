@@ -6,6 +6,7 @@ import (
 	"errors"
 	"digs/domain"
 	"digs/common"
+	"digs/socket"
 )
 
 type PeopleController struct {
@@ -13,7 +14,7 @@ type PeopleController struct {
 }
 
 func (this *PeopleController) Get() {
-	sid := this.GetString("sid")
+	sid := this.GetString("sessionId")
 	longitude, longErr := this.GetFloat("longitude")
 	latitude, latErr := this.GetFloat("latitude")
 
@@ -22,18 +23,29 @@ func (this *PeopleController) Get() {
 		return
 	}
 
-	userAuth, _ := models.FindSession("sid", sid)
-	userAccount, _ := models.GetUserAccount("uid", userAuth.UID)
+	userAuth, err := models.FindSession("sid", sid)
+	if err != nil {
+		beego.Info(err)
+		this.Serve500(errors.New("Invalid session"))
+		return
+	}
+	userAccount, err := models.GetUserAccount("uid", userAuth.UID)
+	if err != nil {
+		this.Serve500(errors.New("User not found"))
+		return
+	}
+
 	uidList := models.GetLiveUIDForFeed(longitude, latitude, userAccount.Settings.Range, -1)
-	beego.Info(uidList)
 	users, err := models.GetAllUserAccount(uidList)
 	if err != nil {
 		beego.Info(err)
 	}
-	var people []domain.PersonResponse
+	//TODO: Find a better solution, too make realloc
+	people := make([]domain.PersonResponse, 0, len(uidList))
 	for idx := 0; idx < len(users); idx = idx + 1 {
 		user := users[idx]
-		if user.UID != userAccount.UID {
+		_, present := socket.LookUp[user.UID]
+		if !present || user.UID == userAccount.UID {
 			continue
 		}
 		people = append(people, domain.PersonResponse{
@@ -46,7 +58,6 @@ func (this *PeopleController) Get() {
 	}
 
 	this.Serve200(people)
-
 }
 
 

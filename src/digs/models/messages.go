@@ -25,22 +25,14 @@ func CreateMessage(from string, longitude float64, latitude float64, content str
 	return message, err
 }
 
-func GetMessages(distInMeter int64, loc []float64) (*[]Message, error) {
+
+func GetAllMessages(fieldValue []string) (*[]Message, error) {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("messages")
 	defer conn.Close()
 
-	results := []Message{}
-	err := c.Find(bson.M{
-		"location": bson.M{
-			"$nearSphere": bson.M{
-				"$geometry": bson.M{
-					"type":        "Point",
-					"coordinates": []float64{loc[0], loc[1]},
-				},
-				"$maxDistance": distInMeter,
-			},
-		},
-	}).All(&results)
-	return &results, err
+	res := []Message{}
+	err := c.Find(bson.M{"mid": bson.M{"$in": fieldValue}}).All(&res)
+
+	return &res, err
 }
