@@ -127,8 +127,6 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			}
 		}
 	}
-
-
 }
 
 func sendWSMessage(toPeer Peer, fromUID string, data []byte) error {

@@ -23,6 +23,7 @@ func (this *WSMessengerController) Get() {
 			ErrorCode:5001,
 			Message:"Location cordinate not provided in proper format",
 		})
+		return
 	}
 
 	beego.Info("WSConnection|SID=", sid)

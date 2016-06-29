@@ -34,6 +34,17 @@ func AddUserAccount(firstName, lastName, email, about, fbid, locale, profilePict
 	return userAccount, err
 }
 
+func GetAllUserAccount(fieldValue []string) ([]UserAccount, error) {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("accounts")
+	defer conn.Close()
+
+	res := []UserAccount{}
+	err := c.Find(bson.M{"uid": bson.M{"$in": fieldValue}}).All(&res)
+
+	return res, err
+}
+
 func GetUserAccount(fieldName, fieldValue string) (*UserAccount, error) {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("accounts")
