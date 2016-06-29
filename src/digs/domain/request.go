@@ -37,6 +37,7 @@ type MessageSendRequest struct {
 	Body      string `json:"body" bson:"body"`
 	Location  Coordinate `json:"location" bson:"location"`
 	Reach int64 `json:"reach" bson:"reach"`
+	MID string `json:"messageId" json:"messageId"`
 	Timestamp int64 `json:"timestamp" bson:"timestamp"`
 }
 

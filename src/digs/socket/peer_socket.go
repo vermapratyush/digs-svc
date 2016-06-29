@@ -117,6 +117,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			response, _ := json.Marshal(domain.MessageGetResponse{
 				From:common.GetName(userAccount.FirstName, userAccount.LastName),
 				UID:userAccount.UID,
+				MID:msg.MID,
 				Message: msg.Body,
 				Timestamp: msg.Timestamp,
 				ProfilePicture:userAccount.ProfilePicture,

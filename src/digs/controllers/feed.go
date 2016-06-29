@@ -13,7 +13,7 @@ type FeedController struct {
 
 func (this *FeedController) Get() {
 	sid := this.GetString("sessionId")
-	lastId := this.GetString("lastId", "")
+	lastMessageId := this.GetString("messageId", "")
 
 	userAuth, err := models.FindSession("sid", sid)
 	if err != nil {
@@ -28,16 +28,21 @@ func (this *FeedController) Get() {
 		this.Serve500(err)
 	}
 
-	fromIndex := len(history.MID)
 	var feedMID []string
 
-	if lastId != "" {
-		fromIndex = common.IndexOf(history.MID, lastId)
-		feedMID = history.MID[fromIndex - 50 : 50]
+	if lastMessageId != "" {
+		fromIndex := common.IndexOf(history.MID, lastMessageId)
+		var toIndex int
+		if toIndex >= common.MessageBatchSize {
+			toIndex = toIndex - common.MessageBatchSize
+		} else {
+			toIndex = 0
+		}
+		feedMID = history.MID[toIndex : fromIndex]
 	} else {
 		firstIndex := 0
-		if len(history.MID) > 50 {
-			firstIndex = len(history.MID) - 50
+		if len(history.MID) > common.MessageBatchSize {
+			firstIndex = len(history.MID) - common.MessageBatchSize
 		}
 		feedMID = history.MID[firstIndex:]
 	}
@@ -59,15 +64,16 @@ func (this *FeedController) Get() {
 
 
 	feed := make([]domain.MessageGetResponse, 0, len(history.MID))
-	for _, messageId := range history.MID {
+	for messageId, _ := range mapMID {
 		msg := mapMID[messageId]
 		user := mapUID[msg.From]
 		feed = append(feed,
 			domain.MessageGetResponse{
 				UID: user.UID,
+				MID: messageId,
 				From: common.GetName(user.FirstName, user.LastName),
 				Message: msg.Content,
-				Timestamp: msg.CreationTime.Unix() * 1000,
+				Timestamp: msg.CreationTime.Unix() * int64(1000),
 				ProfilePicture: user.ProfilePicture,
 			},
 		)

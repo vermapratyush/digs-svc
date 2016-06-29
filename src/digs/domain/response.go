@@ -25,8 +25,8 @@ type MessageSendResponse struct {
 }
 
 type MessageGetResponse struct {
-	RequestId string `json:"requestId" bson:"requestId"`
 	UID string `json:"userId" bson:"userId"`
+	MID string `json:"messageId" bson:"messageId"`
 	From string `json:"name" bson:"name"`
 	Message string `json:"body" bson:"body"`
 	Timestamp int64 `json:"timestamp" bson:"timestamp"`

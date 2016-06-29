@@ -121,12 +121,11 @@ func updateLocation(oldLocation, newLocation *domain.Coordinate, userAuth *model
 
 func handleMessage(uid string, msg *domain.MessageSendRequest) (error) {
 
-	message, err := models.CreateMessage(uid, msg.Location.Longitude, msg.Location.Latitude, msg.Body)
+	_, err := models.CreateMessage(uid, msg.MID, msg.Location.Longitude, msg.Location.Latitude, msg.Body)
 	if err != nil {
 		return err
-	} else {
-		models.AddToUserFeed(uid, message.MID)
 	}
+	models.AddToUserFeed(uid, msg.MID)
 
 	userAccount, err := models.GetUserAccount("uid", uid)
 	if err != nil {

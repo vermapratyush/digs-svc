@@ -2,17 +2,16 @@ package models
 
 import (
 	"time"
-	"github.com/satori/go.uuid"
 	"gopkg.in/mgo.v2/bson"
 )
 
-func CreateMessage(from string, longitude float64, latitude float64, content string) (*Message, error) {
+func CreateMessage(from string, mid string, longitude float64, latitude float64, content string) (*Message, error) {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("messages")
 	defer conn.Close()
 
 	message := &Message{
-		MID:uuid.NewV4().String(),
+		MID:mid,
 		From: from,
 		Location: Coordinate{
 			Type:"Point",
