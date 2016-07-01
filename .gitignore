@@ -33,5 +33,6 @@ pkg/
 /lastupdate.tmp
 /bin
 /src/gopkg.in/
+/src/golang.org/
 /swagger
 /src/digs/digs

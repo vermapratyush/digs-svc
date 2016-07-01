@@ -9,6 +9,8 @@ import (
 	"github.com/NaySoftware/go-fcm"
 	"digs/common"
 	"sync"
+	"github.com/sideshow/apns2/certificate"
+	apns "github.com/sideshow/apns2"
 )
 
 type Peer struct {
@@ -145,6 +147,24 @@ func sendWSMessage(toPeer Peer, fromUID string, data []byte) error {
 
 func sendPushMessage(userAccount *models.UserAccount, toUID string, msg *domain.MessageSendRequest) {
 	beego.Info("SendingPushMessage|From=", userAccount.UID, "|To=", toUID)
+
+	notifications, err := models.GetNotificationIds(toUID)
+	if err != nil {
+		beego.Error("NotificationIdFetch|err=", err)
+		return
+	}
+
+	for _, notification := range(*notifications) {
+		if notification.OSType == "android" {
+			androidPush(userAccount, notification.NotificationId, msg)
+		} else {
+			iosPush(userAccount, notification.NotificationId, msg)
+		}
+	}
+}
+
+func androidPush(userAccount *models.UserAccount, nid string, msg *domain.MessageSendRequest) {
+	beego.Info("AndroidPush|From=", userAccount.UID, "|To=", nid)
 	fcm := fcm.NewFcmClient(common.PushNotification_API_KEY)
 
 	data := map[string]string{
@@ -155,24 +175,7 @@ func sendPushMessage(userAccount *models.UserAccount, toUID string, msg *domain.
 		"summaryText": "There are %n% notification",
 	}
 
-	notifications, err := models.GetNotificationIds(toUID)
-
-	nid := make(map[string]struct{})
-	if err != nil {
-		beego.Info("No push notifications for user ", toUID)
-	} else {
-		for _, notification := range (*notifications) {
-			nid[notification.NotificationId]  = struct{}{}
-		}
-	}
-
-	nidArray := make([]string, len(nid))
-	idx := 0
-	for k, _ := range (nid) {
-		nidArray[idx] = k
-		idx = idx + 1
-	}
-	fcm.NewFcmRegIdsMsg(nidArray, data)
+	fcm.NewFcmMsgTo(nid, data)
 	status, err := fcm.Send(1)
 	if err == nil {
 		beego.Info(status)
@@ -180,4 +183,25 @@ func sendPushMessage(userAccount *models.UserAccount, toUID string, msg *domain.
 		beego.Error(err)
 	}
 
+}
+
+func iosPush(userAccount *models.UserAccount, nid string, msg *domain.MessageSendRequest)  {
+	beego.Info("IOSPush|From=", userAccount.UID, "|To=", nid)
+	cert, pemErr := certificate.FromPemFile("socket/final.pem", "")
+	if pemErr != nil {
+		beego.Error("APNSCertError|err", pemErr)
+		return
+	}
+
+	notification := &apns.Notification{}
+	notification.DeviceToken = nid
+	notification.Payload = []byte("{\"aps\":{\"alert\":\"" + msg.Body + "\"}}") // See Payload section below
+
+	client := apns.NewClient(cert).Development()
+	_, err := client.Push(notification)
+
+	if err != nil {
+		beego.Error("APNSPushError|err=", err)
+		return
+	}
 }
