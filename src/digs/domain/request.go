@@ -11,7 +11,7 @@ type BaseRequest struct {
 type NotificationRequest struct {
 	BaseRequest
 	NotificationID string `json:"notificationId" bson:"notificationId"`
-	OSType string `json:"os" bson:"os"`
+	OSType string `json:"osType" bson:"osType"`
 }
 
 type UserLogoutRequest struct {

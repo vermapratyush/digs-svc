@@ -91,12 +91,12 @@ func serve(requestBody []byte, userAuth *models.UserAuth) (interface{}, error) {
 			beego.Critical("Unable to handle message %s", err)
 			return &domain.MessageReceivedResponse{
 				StatusCode:500,
-				RequestId:msg.RequestId,
+				RequestId:msg.MID,
 			}, nil
 		} else {
 			return &domain.MessageReceivedResponse{
 				StatusCode:200,
-				RequestId:msg.RequestId,
+				RequestId:msg.MID,
 			}, nil
 		}
 	default:

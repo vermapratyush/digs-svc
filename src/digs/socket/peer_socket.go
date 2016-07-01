@@ -109,6 +109,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			continue
 		}
 		pushEnabled, _ := models.GetUserAccount("uid", toUID)
+		models.AddToUserFeed(toUID, msg.MID)
 		if (!present && pushEnabled.Settings.PushNotification) {
 			beego.Info("Push|from", userAccount.UID, "to=", toUID)
 			sendPushMessage(userAccount, toUID, msg)

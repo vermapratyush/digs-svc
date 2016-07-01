@@ -8,7 +8,7 @@ type UserLoginResponse struct {
 }
 
 type MessageReceivedResponse struct {
-	RequestId string `json:"requestId" bson:"requestId"`
+	RequestId string `json:"messageId" bson:"messageId"`
 	StatusCode int32 `json:"statusCode" bson:"statusCode"`
 }
 
