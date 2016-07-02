@@ -12,11 +12,11 @@ type MessageReceivedResponse struct {
 	StatusCode int32 `json:"statusCode" bson:"statusCode"`
 }
 
-type ErrorResponse struct {
-	RequestId string `json:"requestId" bson:"requestId"`
-	StatusCode int32 `json:"statusCode" bson:"statusCode"`
-	ErrorCode int32 `json:"errorCode" bson:"errorCode"`
-	Message string `json:"message" bson:"message"`
+type GenericResponse struct {
+	RequestId   string `json:"requestId" bson:"requestId"`
+	StatusCode  int32 `json:"statusCode" bson:"statusCode"`
+	MessageCode int32 `json:"messageCode" bson:"messageCode"`
+	Message     string `json:"message" bson:"message"`
 }
 
 type MessageSendResponse struct {

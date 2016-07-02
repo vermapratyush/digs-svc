@@ -4,6 +4,8 @@ import (
 	"time"
 	"gopkg.in/mgo.v2/bson"
 	"gopkg.in/mgo.v2"
+	"github.com/astaxie/beego"
+	"runtime/debug"
 )
 
 func AddUserAuth(uid string, accessToken string, sid string) error {
@@ -27,6 +29,9 @@ func FindSession(fieldName, fieldValue string) (*UserAuth, error) {
 	c := conn.DB(DefaultDatabase).C("auth")
 	res := UserAuth{}
 	err := c.Find(bson.M{fieldName: fieldValue}).Sort("-creationTime").One(&res);
+	if err != nil {
+		beego.Critical("SessionNotFound|err=", err,"|Stacktrace=", string(debug.Stack()))
+	}
 	return &res, err
 }
 

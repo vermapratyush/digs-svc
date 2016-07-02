@@ -37,6 +37,13 @@ func (this *FeedController) Get() {
 		this.Serve500(err)
 	}
 
+	feed := make([]*domain.MessageGetResponse, 0, len(history.MID))
+	beego.Info(len(history.MID))
+	if len(history.MID) == 0 {
+		this.Serve200(feed);
+		return
+	}
+
 	var feedMID []string
 
 	if lastMessageId != "" {
@@ -46,6 +53,9 @@ func (this *FeedController) Get() {
 			toIndex = toIndex - common.MessageBatchSize
 		} else {
 			toIndex = 0
+		}
+		if fromIndex == -1 {
+			fromIndex = 0
 		}
 		feedMID = history.MID[toIndex : fromIndex]
 	} else {
@@ -72,7 +82,6 @@ func (this *FeedController) Get() {
 	}
 
 
-	feed := make([]*domain.MessageGetResponse, 0, len(history.MID))
 	for messageId, _ := range mapMID {
 		msg := mapMID[messageId]
 		user := mapUID[msg.From]

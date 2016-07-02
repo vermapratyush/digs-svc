@@ -30,28 +30,19 @@ func (this *LoginController) Post()  {
 	var sid, uid string
 	if userAccount == nil {
 		userAccount, err = models.AddUserAccount(request.FirstName, request.LastName, request.Email, request.About, request.FBID, request.Locale, request.ProfilePicture, request.FBVerified)
-		uid = userAccount.UID
+
 		if err != nil {
 			this.Serve500(err)
 			return
 		}
-		sid, err = createSession(userAccount, request.AccessToken)
-		if err != nil {
-			this.Serve500(err)
-			return
-		}
-	} else {
-		userAuth, err := models.FindSession("uid", userAccount.UID)
-		uid = userAuth.UID
-		if err != nil || userAuth.SID == "" {
-			sid, err = createSession(userAccount, request.AccessToken)
-			if sid == "" || err != nil {
-				this.Serve500(errors.New("Unable to create new session"))
-				return
-			}
-		} else {
-			sid = userAuth.SID
-		}
+	}
+	uid = userAccount.UID
+	beego.Info("Creating new session", sid)
+	sid, err = createSession(userAccount, request.AccessToken)
+	if sid == "" || err != nil {
+		beego.Critical("SessionCreationFailed|err=", err)
+		this.Serve500(errors.New("Unable to create new session"))
+		return
 	}
 
 	resp := &domain.UserLoginResponse{

@@ -37,7 +37,7 @@ func (this *WSBaseController) Prepare() {
 }
 
 func (this *HttpBaseController) Serve500(err error) {
-	this.Data["json"] = domain.ErrorResponse{
+	this.Data["json"] = domain.GenericResponse{
 		StatusCode:500,
 		Message:err.Error(),
 	}

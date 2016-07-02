@@ -14,13 +14,13 @@ type WSMessengerController struct {
 }
 
 func (this *WSMessengerController) Get() {
-	sid := this.GetString("sid")
+	sid := this.GetString("sessionId")
 	longitude, longErr := this.GetFloat("longitude")
 	latitude, latErr := this.GetFloat("latitude")
 	if longErr != nil || latErr != nil {
-		this.Respond(&domain.ErrorResponse{
+		this.Respond(&domain.GenericResponse{
 			StatusCode:422,
-			ErrorCode:5001,
+			MessageCode:5001,
 			Message:"Location cordinate not provided in proper format",
 		})
 		return
@@ -30,14 +30,19 @@ func (this *WSMessengerController) Get() {
 
 	userAuth, err := models.FindSession("sid", sid)
 	if err != nil {
-		this.Respond(&domain.ErrorResponse{
+		this.Respond(&domain.GenericResponse{
 			StatusCode:422,
-			ErrorCode:5000,
+			MessageCode:5000,
 			Message:"Invalid Session",
 		})
 		return
 	}
 	beego.Info("UserConnected|UID=", userAuth)
+	this.Respond(&domain.GenericResponse{
+		StatusCode: 200,
+		Message: "Connection Established",
+		MessageCode: 3000,
+	})
 
 	updateLocation(nil, &domain.Coordinate{
 		Longitude:longitude,

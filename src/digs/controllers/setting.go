@@ -72,7 +72,7 @@ func hideJoinPersonActivity(settingRequest domain.SettingRequest, uid string) {
 }
 
 func (this *SettingController) Get()  {
-	sid := this.GetString("sid")
+	sid := this.GetString("sessionId")
 	userAuth, err := models.FindSession("sid", sid)
 	beego.Info("GetSetting|sid=", sid)
 	if err != nil {
