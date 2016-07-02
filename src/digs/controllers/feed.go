@@ -30,7 +30,6 @@ func (this *FeedController) Get() {
 		return
 	}
 
-
 	//TODO: Fix the following, should be done in one query
 	history, err := models.GetUserFeed(userAuth.UID)
 	if err != nil {
@@ -43,19 +42,15 @@ func (this *FeedController) Get() {
 		this.Serve200(feed);
 		return
 	}
-
 	var feedMID []string
 
 	if lastMessageId != "" {
 		fromIndex := common.IndexOf(history.MID, lastMessageId)
 		var toIndex int
-		if toIndex >= common.MessageBatchSize {
-			toIndex = toIndex - common.MessageBatchSize
+		if fromIndex >= common.MessageBatchSize {
+			toIndex = fromIndex - common.MessageBatchSize
 		} else {
 			toIndex = 0
-		}
-		if fromIndex == -1 {
-			fromIndex = 0
 		}
 		feedMID = history.MID[toIndex : fromIndex]
 	} else {

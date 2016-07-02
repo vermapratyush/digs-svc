@@ -15,16 +15,6 @@ type WSMessengerController struct {
 
 func (this *WSMessengerController) Get() {
 	sid := this.GetString("sessionId")
-	longitude, longErr := this.GetFloat("longitude")
-	latitude, latErr := this.GetFloat("latitude")
-	if longErr != nil || latErr != nil {
-		this.Respond(&domain.GenericResponse{
-			StatusCode:422,
-			MessageCode:5001,
-			Message:"Location cordinate not provided in proper format",
-		})
-		return
-	}
 
 	beego.Info("WSConnection|SID=", sid)
 
@@ -44,10 +34,6 @@ func (this *WSMessengerController) Get() {
 		MessageCode: 3000,
 	})
 
-	updateLocation(nil, &domain.Coordinate{
-		Longitude:longitude,
-		Latitude:latitude,
-	}, userAuth)
 	socket.AddNode(userAuth.UID, this.ws)
 	defer socket.LeaveNode(userAuth.UID)
 

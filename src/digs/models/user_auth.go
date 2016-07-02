@@ -30,7 +30,7 @@ func FindSession(fieldName, fieldValue string) (*UserAuth, error) {
 	res := UserAuth{}
 	err := c.Find(bson.M{fieldName: fieldValue}).Sort("-creationTime").One(&res);
 	if err != nil {
-		beego.Critical("SessionNotFound|err=", err,"|Stacktrace=", string(debug.Stack()))
+		beego.Critical("SessionNotFound|", fieldName, "=", fieldValue, "|err=", err,"|Stacktrace=", string(debug.Stack()))
 	}
 	return &res, err
 }
