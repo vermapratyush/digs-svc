@@ -19,6 +19,7 @@ func (this *PeopleController) Get() {
 	latitude, latErr := this.GetFloat("latitude")
 
 	if longErr != nil || latErr != nil {
+		beego.Error("LatLongFormatError")
 		this.Serve500(errors.New("Location cordinate not provided in proper format"))
 		return
 	}
@@ -31,6 +32,7 @@ func (this *PeopleController) Get() {
 	}
 	userAccount, err := models.GetUserAccount("uid", userAuth.UID)
 	if err != nil {
+		beego.Error("UserAccount|err=", err)
 		this.Serve500(errors.New("User not found"))
 		return
 	}
@@ -39,6 +41,7 @@ func (this *PeopleController) Get() {
 	users, err := models.GetAllUserAccount(uidList)
 	if err != nil {
 		beego.Info(err)
+		return
 	}
 	//TODO: Find a better solution, too make realloc
 	people := make([]domain.PersonResponse, 0, len(uidList))

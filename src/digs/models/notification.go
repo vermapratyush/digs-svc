@@ -10,14 +10,14 @@ func AddNotificationId(uid string, nid string, os string) error {
 	c := conn.DB(DefaultDatabase).C("notifications")
 	defer conn.Close()
 
-	notification := &Notification{
-		UID:uid,
-		NotificationId: nid,
-		OSType: os,
-		CreationTime: time.Now(),
+	key := bson.M{"uid": uid, "nid": nid}
+	value := bson.M{
+		"uid": uid,
+		"notificationId": nid,
+		"os": os,
+		"creationTime": time.Now(),
 	}
-
-	err := c.Insert(notification)
+	_, err := c.Upsert(key, value)
 
 	return err
 }
