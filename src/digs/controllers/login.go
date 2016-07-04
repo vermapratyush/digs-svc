@@ -23,6 +23,7 @@ func (this *LoginController) Post()  {
 	userAccount, err := models.GetUserAccount("uid", request.FBID)
 	beego.Info("////////////", userAccount)
 	if err != nil {
+		beego.Error("Unable to get user Account|Err=", err)
 		this.Serve500(errors.New("Unable to look up account table"))
 		return
 	}
@@ -30,8 +31,8 @@ func (this *LoginController) Post()  {
 	var sid, uid string
 	if userAccount == nil {
 		userAccount, err = models.AddUserAccount(request.FirstName, request.LastName, request.Email, request.About, request.FBID, request.Locale, request.ProfilePicture, request.FBVerified)
-
 		if err != nil {
+			beego.Error("Unable to create user Account|Err=", err)
 			this.Serve500(err)
 			return
 		}

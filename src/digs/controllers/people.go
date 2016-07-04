@@ -47,7 +47,7 @@ func (this *PeopleController) Get() {
 	people := make([]domain.PersonResponse, 0, len(uidList))
 	for idx := 0; idx < len(users); idx = idx + 1 {
 		user := users[idx]
-		_, present := socket.LookUp[user.UID]
+		_, present := socket.GetLookUp(user.UID)
 		if !present || user.UID == userAccount.UID {
 			continue
 		}

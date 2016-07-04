@@ -5,9 +5,9 @@ import (
 	"runtime/debug"
 )
 
-func DeadSocketWrite(peer Peer) {
+func DeadSocketWrite(uid string) {
 	if r := recover(); r != nil {
-		LeaveNode(peer.UID)
-		beego.Critical("PossiblyDeadSocketWrite|FaultyUID=", peer.UID, "|Recovering from panic in MulticastMessage", r, "|Stacktrace=", string(debug.Stack()))
+		LeaveNode(uid)
+		beego.Critical("PossiblyDeadSocketWrite|FaultyUID=", uid, "|Recovering from panic in MulticastMessage", r, "|Stacktrace=", string(debug.Stack()))
 	}
 }

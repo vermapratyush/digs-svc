@@ -8,8 +8,9 @@ type DebugController struct {
 
 func (this *DebugController) Get() {
 	debug := make(map[string]interface{})
-	debug["totalActiveClient"] = len(socket.LookUp)
-	for k, _ := range(socket.LookUp) {
+	lookUp := socket.GetCopy()
+	debug["totalActiveClient"] = len(lookUp)
+	for k, _ := range(lookUp) {
 		debug[k] = 1
 	}
 	this.Serve200(debug)

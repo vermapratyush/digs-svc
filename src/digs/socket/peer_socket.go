@@ -8,15 +8,10 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/NaySoftware/go-fcm"
 	"digs/common"
-	"sync"
 	"github.com/sideshow/apns2/certificate"
 	apns "github.com/sideshow/apns2"
 )
 
-type Peer struct {
-	Conn *websocket.Conn
-	UID string
-}
 
 const (
 	//MessageToServer
@@ -28,39 +23,35 @@ const (
 	Message        = "5:"
 )
 
-var LookUp = make(map[string]Peer)
-var LookUpLock sync.RWMutex
-
 func AddNode(uid string, ws *websocket.Conn) {
 	if uid == "" {
 		return
 	}
 	beego.Info("NodeAdded|UID=", uid)
 
-	LookUpLock.Lock()
-	LookUp[uid] = Peer{
+	SetLookUp(uid, &Peer{
 		Conn:ws,
 		UID:uid,
-	}
-	LookUpLock.Unlock()
+	})
 	MulticastPerson(uid, "join")
 }
 
 func LeaveNode(uid string) {
+	if uid == "" {
+		return
+	}
 	beego.Info("NodeLeft|UID=", uid)
-	_, present := LookUp[uid]
-	if present && LookUp[uid].Conn != nil {
+	ws, present := GetLookUp(uid)
+	if present && ws.Conn != nil {
 		MulticastPerson(uid, "leave")
 
-		defer DeadSocketWrite(LookUp[uid])
-		LookUp[uid].Conn.Close()
+		defer DeadSocketWrite(uid)
+		ws.Conn.Close()
 	} else if present {
 		beego.Info("WSAlredyClosed|uid=", uid)
 	}
 
-	LookUpLock.Lock()
-	delete(LookUp, uid)
-	LookUpLock.Unlock()
+	RemoveLookUp(uid)
 }
 
 func MulticastPerson(uid string, activity string) {
@@ -78,7 +69,7 @@ func MulticastPerson(uid string, activity string) {
 func MulticastPersonCustom(activity string, userAccount *models.UserAccount, userLocation models.Coordinate, uids []string)  {
 
 	for _, toUID := range(uids) {
-		peer, present := LookUp[toUID]
+		peer, present := GetLookUp(toUID)
 		if toUID == "" || userAccount.UID == toUID || present == false {
 			continue
 		} else if (activity == "hide" || activity == "show" || userAccount.Settings.PublicProfile) {
@@ -104,7 +95,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 	uids := models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, userAccount.Settings.Range, -1)
 	beego.Info("TotalUsers|Size=", len(uids))
 	for _, toUID := range(uids) {
-		peer, present := LookUp[toUID]
+		peer, present := GetLookUp(toUID)
 		if toUID == "" || toUID == userAccount.UID {
 			continue
 		}
@@ -134,10 +125,10 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 }
 
 func sendWSMessage(toPeer Peer, fromUID string, data []byte) error {
-	defer DeadSocketWrite(toPeer)
+	defer DeadSocketWrite(toPeer.UID)
 	beego.Info("SendingWSMessage|From=", fromUID, "|To=", toPeer.UID)
 
-	err := toPeer.Conn.WriteMessage(websocket.TextMessage, data)
+	err := SendData(toPeer.UID, data)
 	if err != nil {
 		beego.Critical("MessageSendFailed|Error=", toPeer.UID)
 		LeaveNode(fromUID)
