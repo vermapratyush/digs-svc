@@ -7,6 +7,8 @@ import (
 	"digs/common"
 	"github.com/astaxie/beego"
 	"sort"
+	"time"
+	"gopkg.in/mgo.v2"
 )
 
 type FeedController struct {
@@ -32,13 +34,15 @@ func (this *FeedController) Get() {
 
 	//TODO: Fix the following, should be done in one query
 	history, err := models.GetUserFeed(userAuth.UID)
-	if err != nil {
+	if err != nil && err != mgo.ErrNotFound {
 		this.Serve500(err)
 	}
 
 	feed := make([]*domain.MessageGetResponse, 0, len(history.MID))
 	beego.Info(len(history.MID))
 	if len(history.MID) == 0 {
+		feed = addStub()
+		beego.Info(feed)
 		this.Serve200(feed);
 		return
 	}
@@ -96,4 +100,17 @@ func (this *FeedController) Get() {
 	beego.Info("FEEDResponse|Sid=", sid, "|LastID=", lastMessageId, "|ResponseSize=", len(feed))
 	this.Serve200(feed)
 
+}
+
+func addStub() ([]*domain.MessageGetResponse) {
+	feed := make([]*domain.MessageGetResponse, 0)
+	feed = append(feed, &domain.MessageGetResponse{
+		UID: "uid1",
+		MID: "mid1",
+		From: "Powow",
+		Message: "Hi, Welcome to powow. We do not have any message to show you right now. Please type in a message below and it will be viewed by someone in your locality. In the settings page you can specity your influence range (currently: 10 KM). Depending on the value you will be able to reach as many people as possible.",
+		Timestamp: time.Now().Unix() * int64(1000),
+		ProfilePicture:"",
+	})
+	return feed
 }
