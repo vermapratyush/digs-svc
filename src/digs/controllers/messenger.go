@@ -21,7 +21,7 @@ func (this *WSMessengerController) Get() {
 	userAuth, err := models.FindSession("sid", sid)
 	if err != nil {
 		this.Respond(&domain.GenericResponse{
-			StatusCode:422,
+			StatusCode:401,
 			MessageCode:5000,
 			Message:"Invalid Session",
 		})

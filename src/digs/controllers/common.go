@@ -47,6 +47,17 @@ func (this *HttpBaseController) Serve500(err error) {
 
 }
 
+func (this *HttpBaseController) InvalidSessionResponse() {
+	this.Data["json"] = &domain.GenericResponse{
+		StatusCode:401,
+		MessageCode:5000,
+		Message:"Invalid Session",
+	}
+	this.Ctx.Output.SetStatus(401)
+	this.ServeJSON()
+}
+
+
 func (this *HttpBaseController) Serve200(obj interface{}) {
 	this.Data["json"] = obj
 	this.Ctx.Output.SetStatus(200)

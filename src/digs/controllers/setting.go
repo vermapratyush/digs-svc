@@ -7,6 +7,7 @@ import (
 	"errors"
 	"digs/socket"
 	"digs/domain"
+	"gopkg.in/mgo.v2"
 )
 
 type SettingController struct {
@@ -22,12 +23,13 @@ func (this *SettingController) Post() {
 	userAuth, err := models.FindSession("sid", request.SessionID)
 	if err != nil {
 		beego.Error("SessionNotFound|err=", err)
-		this.Serve500(errors.New("Unable to find session"))
+		if err == mgo.ErrNotFound {
+			this.InvalidSessionResponse()
+			return
+		}
+		this.Serve500(err)
 		return
-	}
-	userAuth, err = models.FindSession("sid", request.SessionID)
-	if err == nil {
-
+	} else {
 		userAccount, err := models.GetUserAccount("uid", userAuth.UID)
 		if (err == nil && userAccount.Settings.Range != request.Range) {
 			go updatePersonActivity(userAccount, userAccount.Settings.Range, request.Range)
@@ -77,7 +79,11 @@ func (this *SettingController) Get()  {
 	beego.Info("GetSetting|sid=", sid)
 	if err != nil {
 		beego.Error(err)
-		this.Serve500(errors.New("Unable to get session"))
+		if err == mgo.ErrNotFound {
+			this.InvalidSessionResponse()
+			return
+		}
+		this.Serve500(err)
 		return
 	}
 	userAccount, _ := models.GetUserAccount("uid", userAuth.UID)

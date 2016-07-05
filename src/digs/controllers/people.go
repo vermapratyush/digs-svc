@@ -7,6 +7,7 @@ import (
 	"digs/domain"
 	"digs/common"
 	"digs/socket"
+	"gopkg.in/mgo.v2"
 )
 
 type PeopleController struct {
@@ -27,7 +28,11 @@ func (this *PeopleController) Get() {
 	userAuth, err := models.FindSession("sid", sid)
 	if err != nil {
 		beego.Info(err)
-		this.Serve500(errors.New("Invalid session"))
+		if err == mgo.ErrNotFound {
+			this.InvalidSessionResponse()
+			return
+		}
+		this.Serve500(err)
 		return
 	}
 	userAccount, err := models.GetUserAccount("uid", userAuth.UID)

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"digs/models"
 	"errors"
+	"gopkg.in/mgo.v2"
 )
 
 type NotificationController struct {
@@ -20,7 +21,11 @@ func (this *NotificationController) Post() {
 
 	session, err := models.FindSession("sid", request.SessionID)
 	if err != nil {
-		this.Serve500(errors.New("Unable to find session"))
+		if err == mgo.ErrNotFound {
+			this.InvalidSessionResponse()
+			return
+		}
+		this.Serve500(err)
 		return
 	}
 	err = models.AddNotificationId(session.UID, request.NotificationID, request.OSType)

@@ -5,7 +5,7 @@ import (
 	"github.com/astaxie/beego"
 	"encoding/json"
 	"digs/models"
-	"errors"
+	"gopkg.in/mgo.v2"
 )
 
 type LogoutController struct {
@@ -22,7 +22,11 @@ func (this *LogoutController) Post()  {
 	beego.Info(request.SessionID)
 	if err != nil {
 		beego.Error(err)
-		this.Serve500(errors.New("Unable to find session"))
+		if err == mgo.ErrNotFound {
+			this.InvalidSessionResponse()
+			return
+		}
+		this.Serve500(err)
 		return
 	}
 

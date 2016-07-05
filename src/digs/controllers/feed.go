@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"digs/models"
-	"errors"
 	"digs/domain"
 	"digs/common"
 	"github.com/astaxie/beego"
@@ -28,7 +27,11 @@ func (this *FeedController) Get() {
 	beego.Info("FEEDRequest|Sid=", sid, "|LastID=", lastMessageId)
 	userAuth, err := models.FindSession("sid", sid)
 	if err != nil {
-		this.Serve500(errors.New("Inavlid session"))
+		if err == mgo.ErrNotFound {
+			this.InvalidSessionResponse()
+			return
+		}
+		this.Serve500(err)
 		return
 	}
 
