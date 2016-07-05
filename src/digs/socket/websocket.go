@@ -22,31 +22,36 @@ func GetCopy() map[string]Peer {
 
 func RemoveLookUp(uid string) {
 	lookUpLock.Lock()
+	defer lookUpLock.Unlock()
+
 	delete(lookUp, uid)
-	lookUpLock.Unlock()
 }
 
 func GetLookUp(uid string) (Peer, bool) {
 	lookUpLock.RLock()
+	defer lookUpLock.RUnlock()
+
 	peer, present := lookUp[uid]
-	lookUpLock.RUnlock()
 	return peer, present
 }
 
 func SetLookUp(uid string, peer Peer) {
 	lookUpLock.Lock()
+	defer lookUpLock.Unlock()
 	lookUp[uid] = peer
-	lookUpLock.Unlock()
 }
 
 func SendData(uid string, data []byte) error {
 	lookUpLock.RLock()
+	defer lookUpLock.RUnlock()
+
 	peer := lookUp[uid];
-	lookUpLock.RUnlock()
 	beego.Info("peer=", peer)
+
 	peer.wsLock.Lock()
+	defer peer.wsLock.Unlock()
+
 	err := peer.Conn.WriteMessage(websocket.TextMessage, data)
-	peer.wsLock.Unlock()
 	if err != nil {
 		beego.Info("error=", err)
 	}

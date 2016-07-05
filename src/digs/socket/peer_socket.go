@@ -44,6 +44,8 @@ func LeaveNode(uid string) {
 	}
 	beego.Info("NodeLeft|UID=", uid)
 	ws, present := GetLookUp(uid)
+	RemoveLookUp(uid)
+
 	if present && ws.Conn != nil {
 		MulticastPerson(uid, "leave")
 
@@ -53,7 +55,7 @@ func LeaveNode(uid string) {
 		beego.Info("WSAlredyClosed|uid=", uid)
 	}
 
-	RemoveLookUp(uid)
+
 }
 
 func MulticastPerson(uid string, activity string) {
