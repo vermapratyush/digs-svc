@@ -1,7 +1,7 @@
 package common
 
 const (
-	PushNotification_API_KEY = "AIzaSyDFEvXnsgfd8qhUzbQfD98GUbwpclGuJDc"
+	PushNotification_API_KEY = "AIzaSyCMYdgQUqL8X7D5OaY7hvADMOQzA6WaqPI"
 	MessageBatchSize = 50
 )
 

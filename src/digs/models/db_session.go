@@ -68,7 +68,7 @@ type Notification struct {
 	UID string `json:"uid" bson:"uid"`
 	NotificationId string `json:"notificationId" bson:"notificationId"`
 	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
-	OSType string `bson:"osType" json:"osType"`
+	OSType string `bson:"os" json:"os"`
 }
 
 type MessageHistory struct {

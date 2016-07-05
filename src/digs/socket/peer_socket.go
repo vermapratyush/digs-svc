@@ -10,6 +10,7 @@ import (
 	"digs/common"
 	"github.com/sideshow/apns2/certificate"
 	apns "github.com/sideshow/apns2"
+	"sync"
 )
 
 
@@ -29,9 +30,10 @@ func AddNode(uid string, ws *websocket.Conn) {
 	}
 	beego.Info("NodeAdded|UID=", uid)
 
-	SetLookUp(uid, &Peer{
+	SetLookUp(uid, Peer{
 		Conn:ws,
 		UID:uid,
+		wsLock:&sync.Mutex{},
 	})
 	MulticastPerson(uid, "join")
 }
@@ -62,6 +64,7 @@ func MulticastPerson(uid string, activity string) {
 	}
 	userAccount, _ := models.GetUserAccount("uid", uid)
 	uidList := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], userAccount.Settings.Range, -1)
+	beego.Info(uidList)
 	MulticastPersonCustom(activity, userAccount, userLocation.Location, uidList)
 
 }
@@ -70,6 +73,7 @@ func MulticastPersonCustom(activity string, userAccount *models.UserAccount, use
 
 	for _, toUID := range(uids) {
 		peer, present := GetLookUp(toUID)
+		beego.Info("From=", userAccount.UID, "|To=", toUID, "|present=", present)
 		if toUID == "" || userAccount.UID == toUID || present == false {
 			continue
 		} else if (activity == "hide" || activity == "show" || userAccount.Settings.PublicProfile) {
@@ -125,7 +129,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 }
 
 func sendWSMessage(toPeer Peer, fromUID string, data []byte) error {
-	defer DeadSocketWrite(toPeer.UID)
+		defer DeadSocketWrite(toPeer.UID)
 	beego.Info("SendingWSMessage|From=", fromUID, "|To=", toPeer.UID)
 
 	err := SendData(toPeer.UID, data)
@@ -147,6 +151,7 @@ func sendPushMessage(userAccount *models.UserAccount, toUID string, msg *domain.
 	}
 
 	for _, notification := range(*notifications) {
+		beego.Info(notification.OSType)
 		if notification.OSType == "android" {
 			androidPush(userAccount, notification.NotificationId, msg)
 		} else {
@@ -179,7 +184,7 @@ func androidPush(userAccount *models.UserAccount, nid string, msg *domain.Messag
 
 func iosPush(userAccount *models.UserAccount, nid string, msg *domain.MessageSendRequest)  {
 	beego.Info("IOSPush|From=", userAccount.UID, "|To=", nid)
-	cert, pemErr := certificate.FromPemFile("socket/final.pem", "")
+	cert, pemErr := certificate.FromPemFile("socket/apn_production.pem", "")
 	if pemErr != nil {
 		beego.Error("APNSCertError|err", pemErr)
 		return
@@ -189,11 +194,13 @@ func iosPush(userAccount *models.UserAccount, nid string, msg *domain.MessageSen
 	notification.DeviceToken = nid
 	notification.Payload = []byte("{\"aps\":{\"alert\":\"" + msg.Body + "\"}}") // See Payload section below
 
-	client := apns.NewClient(cert).Development()
-	_, err := client.Push(notification)
+	client := apns.NewClient(cert).Production()
+	resp, err := client.Push(notification)
 
 	if err != nil {
 		beego.Error("APNSPushError|err=", err)
 		return
+	} else {
+		beego.Info("APNSResponse=", resp)
 	}
 }
