@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"github.com/astaxie/beego"
 	"github.com/satori/go.uuid"
+	"strings"
 )
 
 type LoginController struct {
@@ -30,6 +31,7 @@ func (this *LoginController) Post()  {
 
 	var sid, uid string
 	if userAccount == nil {
+		request.ProfilePicture = strings.Replace(request.ProfilePicture, "http://", "https://", 1)
 		userAccount, err = models.AddUserAccount(request.FirstName, request.LastName, request.Email, request.About, request.FBID, request.Locale, request.ProfilePicture, request.FBVerified)
 		if err != nil {
 			beego.Error("Unable to create user Account|Err=", err)
