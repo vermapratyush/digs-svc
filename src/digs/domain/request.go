@@ -11,6 +11,7 @@ type BaseRequest struct {
 type NotificationRequest struct {
 	BaseRequest
 	NotificationID string `json:"notificationId" bson:"notificationId"`
+	OldNotificationID string `json:"oldNotificationId" bson:"oldNotificationId"`
 	OSType string `json:"osType" bson:"osType"`
 }
 

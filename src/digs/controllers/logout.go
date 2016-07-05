@@ -30,10 +30,10 @@ func (this *LogoutController) Post()  {
 		return
 	}
 
-	err = models.DeleteNotification(request.NotificationId)
+	err = models.DeleteNotificationId(userAuth.UID, request.NotificationId)
 
 	if err != nil {
-		beego.Error("NotificationDeleteFailed|notificationId=", request.NotificationId)
+		beego.Error("NotificationDeleteFailed|notificationId=", request.NotificationId, "|err=", err)
 	}
 
 	err = models.DeleteUserAuth(userAuth.Id)

@@ -5,6 +5,16 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+
+func DeleteNotificationId(uid string, nid string) error {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("notifications")
+	defer conn.Close()
+
+	err := c.Remove(bson.M{"uid": uid, "notificationId": nid})
+	return err
+}
+
 func AddNotificationId(uid string, nid string, os string) error {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("notifications")
@@ -34,15 +44,4 @@ func GetNotificationIds(uid string) (*[]Notification, error) {
 
 	return &notifications, err
 
-}
-
-func DeleteNotification(did string) error {
-	conn := Session.Clone()
-	c := conn.DB(DefaultDatabase).C("notifications")
-	defer conn.Close()
-	_, err := c.RemoveAll(bson.M{
-		"notificationId": did,
-	})
-
-	return err
 }

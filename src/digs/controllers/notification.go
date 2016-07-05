@@ -32,6 +32,9 @@ func (this *NotificationController) Post() {
 	if err != nil {
 		this.Serve500(errors.New("Unable to register device"))
 	} else {
+		if request.NotificationID != request.OldNotificationID {
+			models.DeleteNotificationId(session.UID, request.OldNotificationID)
+		}
 		this.Serve204()
 	}
 
