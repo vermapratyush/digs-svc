@@ -184,7 +184,7 @@ func androidPush(userAccount *models.UserAccount, nid string, msg *domain.Messag
 
 func iosPush(userAccount *models.UserAccount, nid string, msg *domain.MessageSendRequest)  {
 	beego.Info("IOSPush|From=", userAccount.UID, "|To=", nid)
-	cert, pemErr := certificate.FromPemFile("socket/apn_production.pem", "")
+	cert, pemErr := certificate.FromPemFile("socket/final.pem", "")
 	if pemErr != nil {
 		beego.Error("APNSCertError|err", pemErr)
 		return
@@ -192,9 +192,10 @@ func iosPush(userAccount *models.UserAccount, nid string, msg *domain.MessageSen
 
 	notification := &apns.Notification{}
 	notification.DeviceToken = nid
+	notification.Topic = "info.powow.app"
 	notification.Payload = []byte("{\"aps\":{\"alert\":\"" + msg.Body + "\"}}") // See Payload section below
 
-	client := apns.NewClient(cert).Production()
+	client := apns.NewClient(cert).Development()
 	resp, err := client.Push(notification)
 
 	if err != nil {
