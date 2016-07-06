@@ -113,7 +113,7 @@ func addStub() ([]*domain.MessageGetResponse) {
 		From: "Powow",
 		Message: "Hi, Welcome to powow. We do not have any message to show you right now. Please type in a message below and it will be viewed by someone in your locality. In the settings page you can specity your influence range (currently: 10 KM). Depending on the value you will be able to reach as many people as possible.",
 		Timestamp: time.Now().Unix() * int64(1000),
-		ProfilePicture:"",
+		ProfilePicture:"https://i.imgur.com/ZzVINk9.png",
 	})
 	return feed
 }
