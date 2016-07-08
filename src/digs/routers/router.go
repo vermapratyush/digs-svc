@@ -20,6 +20,7 @@ func init() {
 	beego.Router("/v1/people", &controllers.PeopleController{})
 	beego.Router("/v1/feed", &controllers.FeedController{})
 	beego.Router("/v1/setting", &controllers.SettingController{})
+	beego.Router("/v1/abuse", &controllers.AbuseController{})
 	beego.Router("/v1/debug", &controllers.DebugController{})
 
 	//WS

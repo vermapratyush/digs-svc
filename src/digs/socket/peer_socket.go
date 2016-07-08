@@ -102,9 +102,14 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 		if toUID == "" || toUID == userAccount.UID {
 			continue
 		}
-		pushEnabled, _ := models.GetUserAccount("uid", toUID)
+		toUserAccount, _ := models.GetUserAccount("uid", toUID)
 		models.AddToUserFeed(toUID, msg.MID)
-		if (!present && pushEnabled.Settings.PushNotification) {
+		userLocation, err := models.GetUserLocation(toUID)
+		if err != nil || toUserAccount.Settings.Range >= common.Distance(msg.Location.Latitude, msg.Location.Longitude, userLocation.Location.Coordinates[1], userLocation.Location.Coordinates[0]) {
+			continue
+		}
+
+		if (!present && toUserAccount.Settings.PushNotification) {
 			beego.Info("Push|from", userAccount.UID, "to=", toUID)
 			sendPushMessage(userAccount, toUID, msg)
 
@@ -121,7 +126,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 				ProfilePicture:userAccount.ProfilePicture,
 			})
 			err := sendWSMessage(peer, userAccount.UID, response)
-			if err != nil && pushEnabled.Settings.PushNotification {
+			if err != nil && toUserAccount.Settings.PushNotification {
 				sendPushMessage(userAccount, toUID, msg)
 			}
 		}
