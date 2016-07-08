@@ -6,10 +6,7 @@ import (
 	"digs/models"
 	"encoding/json"
 	"github.com/astaxie/beego"
-	"github.com/NaySoftware/go-fcm"
 	"digs/common"
-	"github.com/sideshow/apns2/certificate"
-	apns "github.com/sideshow/apns2"
 	"sync"
 )
 
@@ -118,6 +115,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 				From:common.GetName(userAccount.FirstName, userAccount.LastName),
 				UID:userAccount.UID,
 				MID:msg.MID,
+				About: userAccount.About,
 				Message: msg.Body,
 				Timestamp: msg.Timestamp,
 				ProfilePicture:userAccount.ProfilePicture,
@@ -131,7 +129,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 }
 
 func sendWSMessage(toPeer Peer, fromUID string, data []byte) error {
-		defer DeadSocketWrite(toPeer.UID)
+	defer DeadSocketWrite(toPeer.UID)
 	beego.Info("SendingWSMessage|From=", fromUID, "|To=", toPeer.UID)
 
 	err := SendData(toPeer.UID, data)
@@ -163,47 +161,10 @@ func sendPushMessage(userAccount *models.UserAccount, toUID string, msg *domain.
 }
 
 func androidPush(userAccount *models.UserAccount, nid string, msg *domain.MessageSendRequest) {
-	beego.Info("AndroidPush|From=", userAccount.UID, "|To=", nid)
-	fcm := fcm.NewFcmClient(common.PushNotification_API_KEY)
-
-	data := map[string]string{
-		"title": "powow",
-		"message": msg.Body,
-		"image": "twitter",
-		"style": "inbox",
-		"summaryText": "There are %n% notification",
-	}
-
-	fcm.NewFcmMsgTo(nid, data)
-	status, err := fcm.Send(1)
-	if err == nil {
-		beego.Info(status)
-	} else {
-		beego.Error(err)
-	}
+	models.AndroidMessagePush(userAccount.UID, nid, msg.Body)
 
 }
 
 func iosPush(userAccount *models.UserAccount, nid string, msg *domain.MessageSendRequest)  {
-	beego.Info("IOSPush|From=", userAccount.UID, "|To=", nid)
-	cert, pemErr := certificate.FromPemFile("socket/final.pem", "")
-	if pemErr != nil {
-		beego.Error("APNSCertError|err", pemErr)
-		return
-	}
-
-	notification := &apns.Notification{}
-	notification.DeviceToken = nid
-	notification.Topic = "info.powow.app"
-	notification.Payload = []byte("{\"aps\":{\"alert\":\"" + msg.Body + "\"}}") // See Payload section below
-
-	client := apns.NewClient(cert).Development()
-	resp, err := client.Push(notification)
-
-	if err != nil {
-		beego.Error("APNSPushError|err=", err)
-		return
-	} else {
-		beego.Info("APNSResponse=", resp)
-	}
+	models.IOSMessagePush(userAccount.UID, nid, msg.Body)
 }

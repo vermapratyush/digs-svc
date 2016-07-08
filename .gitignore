@@ -36,3 +36,5 @@ pkg/
 /src/golang.org/
 /swagger
 /src/digs/digs
+
+*.log

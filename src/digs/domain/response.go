@@ -28,6 +28,7 @@ type MessageGetResponse struct {
 	UID string `json:"userId" bson:"userId"`
 	MID string `json:"messageId" bson:"messageId"`
 	From string `json:"name" bson:"name"`
+	About string `json:"about" bson:"about"`
 	Message string `json:"body" bson:"body"`
 	Timestamp int64 `json:"timestamp" bson:"timestamp"`
 	ProfilePicture string `json:"picture" bson:"picture"`

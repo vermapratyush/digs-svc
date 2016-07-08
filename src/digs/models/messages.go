@@ -3,11 +3,17 @@ package models
 import (
 	"time"
 	"gopkg.in/mgo.v2/bson"
+	"github.com/afex/hystrix-go/hystrix"
+	"digs/common"
+)
+
+var (
+	collectionName = "messages"
 )
 
 func CreateMessage(from string, mid string, longitude float64, latitude float64, content string) (*Message, error) {
 	conn := Session.Clone()
-	c := conn.DB(DefaultDatabase).C("messages")
+	c := conn.DB(DefaultDatabase).C(collectionName)
 	defer conn.Close()
 
 	message := &Message{
@@ -20,18 +26,28 @@ func CreateMessage(from string, mid string, longitude float64, latitude float64,
 		Content: content,
 		CreationTime: time.Now(),
 	}
-	err := c.Insert(message)
+	err := hystrix.Do(common.MessageWrite, func() error {
+		err := c.Insert(message)
+		return err
+	}, nil)
+
+
 	return message, err
 }
 
 
 func GetAllMessages(fieldValue []string) (*[]Message, error) {
 	conn := Session.Clone()
-	c := conn.DB(DefaultDatabase).C("messages")
+	c := conn.DB(DefaultDatabase).C(collectionName)
 	defer conn.Close()
 
 	res := []Message{}
-	err := c.Find(bson.M{"mid": bson.M{"$in": fieldValue}}).All(&res)
+
+	err := hystrix.Do(common.MessageGetAll, func() error {
+		err := c.Find(bson.M{"mid": bson.M{"$in": fieldValue}}).All(&res)
+		return err
+	}, nil)
+
 
 	return &res, err
 }
