@@ -20,7 +20,7 @@ func AddNotificationId(uid string, nid string, os string) error {
 	c := conn.DB(DefaultDatabase).C("notifications")
 	defer conn.Close()
 
-	key := bson.M{"uid": uid, "nid": nid}
+	key := bson.M{"uid": uid, "notificationId": nid}
 	value := bson.M{
 		"uid": uid,
 		"notificationId": nid,
