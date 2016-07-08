@@ -7,3 +7,4 @@ go get github.com/gorilla/websocket
 go get github.com/NaySoftware/go-fcm
 go get github.com/sideshow/apns2
 go get golang.org/x/crypto/pkcs12
+go get github.com/afex/hystrix-go/hystrix
