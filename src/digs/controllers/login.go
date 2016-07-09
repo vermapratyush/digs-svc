@@ -16,13 +16,11 @@ type LoginController struct {
 
 func (this *LoginController) Post()  {
 	var request domain.UserLoginRequest
-	beego.Info("Login Request", string(this.Ctx.Input.RequestBody))
+	beego.Info("REQUEST|LoginRequest|", string(this.Ctx.Input.RequestBody))
 	this.Super(&request.BaseRequest)
 	json.Unmarshal(this.Ctx.Input.RequestBody, &request)
-	beego.Info("login request obj=", request)
 	//Check if the person is already registered
 	userAccount, err := models.GetUserAccount("uid", request.FBID)
-	beego.Info("////////////", userAccount)
 	if err != nil {
 		beego.Error("Unable to get user Account|Err=", err)
 		this.Serve500(errors.New("Unable to look up account table"))
@@ -40,7 +38,6 @@ func (this *LoginController) Post()  {
 		}
 	}
 	uid = userAccount.UID
-	beego.Info("Creating new session", sid)
 	sid, err = createSession(userAccount, request.AccessToken)
 	if sid == "" || err != nil {
 		beego.Critical("SessionCreationFailed|err=", err)

@@ -47,9 +47,10 @@ func (this *WSMessengerController) Get() {
 			beego.Critical("NodeConnectionLost|Error", err)
 			return
 		}
+		beego.Info("REQUEST|Sid=", userAuth.UID, "|WSRequest=", string(request))
 		response, _ := serve(request, userAuth)
 		if (response != nil) {
-			beego.Info("From sid=", userAuth, "Response", response)
+			beego.Info("RESPONSE|Sid=", userAuth, "Response", response)
 			this.Respond(response)
 		}
 
@@ -70,12 +71,10 @@ func serve(requestBody []byte, userAuth *models.UserAuth) (interface{}, error) {
 		return nil, nil
 
 	case strings.HasPrefix(message, socket.SendMessage):
-		beego.Info("From sid=", userAuth, "Request", string(requestBody))
 
 		var msg = domain.MessageSendRequest{}
 		_ = json.Unmarshal(requestBody[len(socket.SendMessage):], &msg)
 		updateLocation(&location, &msg.Location, userAuth)
-		beego.Info("SendMessage|Message=", msg)
 
 		err := handleMessage(userAuth.UID, &msg)
 		if err != nil {

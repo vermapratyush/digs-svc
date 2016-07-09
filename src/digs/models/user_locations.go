@@ -108,6 +108,5 @@ func GetLiveUIDForFeed(longitude, latitude float64, maxDistance, minDistance flo
 		uidArray[idx] = k
 		idx++
 	}
-	beego.Info(uidArray)
 	return uidArray
 }

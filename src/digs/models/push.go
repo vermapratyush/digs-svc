@@ -15,7 +15,6 @@ var (
 
 func AndroidMessagePush(uid, nid, message string)  {
 	_ = hystrix.Go(common.AndroidPush, func() error {
-		beego.Info("AndroidPush|From=", uid, "|To=", nid)
 		fcm := fcm.NewFcmClient(common.PushNotification_API_KEY)
 
 		data := map[string]string{
@@ -27,10 +26,8 @@ func AndroidMessagePush(uid, nid, message string)  {
 		}
 
 		fcm.NewFcmMsgTo(nid, data)
-		status, err := fcm.Send(1)
-		if err == nil {
-			beego.Info(status)
-		} else {
+		_, err := fcm.Send(1)
+		if err != nil {
 			beego.Error(err)
 		}
 		return err
@@ -39,7 +36,6 @@ func AndroidMessagePush(uid, nid, message string)  {
 
 func IOSMessagePush(uid, nid, message string) {
 	_ = hystrix.Go(common.IOSPush, func() error {
-		beego.Info("IOSPush|From=", uid, "|To=", nid)
 
 		if pemErr != nil {
 			beego.Error("APNSCertError|err", pemErr)
@@ -52,12 +48,10 @@ func IOSMessagePush(uid, nid, message string) {
 		notification.Payload = []byte("{\"aps\":{\"alert\":\"" + message + "\"}}") // See Payload section below
 
 		client := apns.NewClient(APNSCert).Development()
-		resp, err := client.Push(notification)
+		_, err := client.Push(notification)
 
 		if err != nil {
 			beego.Error("APNSPushError|err=", err)
-		} else {
-			beego.Info("APNSResponse=", resp)
 		}
 		return err
 	}, nil)

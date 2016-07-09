@@ -63,7 +63,6 @@ func MulticastPerson(uid string, activity string) {
 	}
 	userAccount, _ := models.GetUserAccount("uid", uid)
 	uidList := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], userAccount.Settings.Range, -1)
-	beego.Info(uidList)
 	MulticastPersonCustom(activity, userAccount, userLocation.Location, uidList)
 
 }
@@ -72,7 +71,6 @@ func MulticastPersonCustom(activity string, userAccount *models.UserAccount, use
 
 	for _, toUID := range(uids) {
 		peer, present := GetLookUp(toUID)
-		beego.Info("From=", userAccount.UID, "|To=", toUID, "|present=", present)
 		if toUID == "" || userAccount.UID == toUID || present == false {
 			continue
 		} else if (activity == "hide" || activity == "show" || userAccount.Settings.PublicProfile) {
@@ -92,11 +90,16 @@ func MulticastPersonCustom(activity string, userAccount *models.UserAccount, use
 	}
 }
 
+
 func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRequest) {
 
 	beego.Info("Searching people in radius of ", userAccount.Settings.Range, " from ", msg.Location)
 	uids := models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, userAccount.Settings.Range, -1)
 	beego.Info("TotalUsers|Size=", len(uids))
+	sendingWS := make([]string, 0)
+	sendingPush := make([]string, 0)
+	notSending := make([]string, 0)
+
 	for _, toUID := range(uids) {
 		peer, present := GetLookUp(toUID)
 		if toUID == "" || toUID == userAccount.UID {
@@ -105,24 +108,17 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 		toUserAccount, _ := models.GetUserAccount("uid", toUID)
 		models.AddToUserFeed(toUID, msg.MID)
 		userLocation, err := models.GetUserLocation(toUID)
-		beego.Info("ToUser=", userLocation)
 		dist := common.Distance(msg.Location.Latitude, msg.Location.Longitude, userLocation.Location.Coordinates[1], userLocation.Location.Coordinates[0])
-		beego.Info("ToUser=", toUID, "|Dist=", dist, "|Range=", toUserAccount.Settings.Range)
-		if(err != nil) {
-			beego.Info("error=",err)
-		}
-		beego.Info(toUserAccount.Settings.Range >= dist)
 		if err != nil || toUserAccount.Settings.Range < dist {
+			notSending = append(notSending, toUID)
 			continue
 		}
 
 		if (!present && toUserAccount.Settings.PushNotification) {
-			beego.Info("Push|from", userAccount.UID, "to=", toUID)
+			sendingPush = append(sendingPush, toUID)
 			sendPushMessage(userAccount, toUID, msg)
 
 		} else if (present) {
-			beego.Info("WS|from", userAccount.UID, "to=", toUID)
-			beego.Info("Peer=", peer)
 			response, _ := json.Marshal(domain.MessageGetResponse{
 				From:common.GetName(userAccount.FirstName, userAccount.LastName),
 				UID:userAccount.UID,
@@ -134,15 +130,20 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			})
 			err := sendWSMessage(peer, userAccount.UID, response)
 			if err != nil && toUserAccount.Settings.PushNotification {
+				sendingPush = append(sendingPush, toUID)
 				sendPushMessage(userAccount, toUID, msg)
+			} else if err == nil {
+				sendingWS = append(sendingWS, toUID)
 			}
 		}
 	}
+	beego.Info("WSMessage|len=", len(sendingWS), "|uid=", sendingWS)
+	beego.Info("PushMessage|len=", len(sendingPush), "|uid=", sendingPush)
+	beego.Info("NotSendingMessage|len=", len(notSending), "|uid=", notSending)
 }
 
 func sendWSMessage(toPeer Peer, fromUID string, data []byte) error {
 	defer DeadSocketWrite(toPeer.UID)
-	beego.Info("SendingWSMessage|From=", fromUID, "|To=", toPeer.UID)
 
 	err := SendData(toPeer.UID, data)
 	if err != nil {
@@ -154,7 +155,6 @@ func sendWSMessage(toPeer Peer, fromUID string, data []byte) error {
 }
 
 func sendPushMessage(userAccount *models.UserAccount, toUID string, msg *domain.MessageSendRequest) {
-	beego.Info("SendingPushMessage|From=", userAccount.UID, "|To=", toUID)
 
 	notifications, err := models.GetNotificationIds(toUID)
 	if err != nil {
@@ -163,7 +163,6 @@ func sendPushMessage(userAccount *models.UserAccount, toUID string, msg *domain.
 	}
 
 	for _, notification := range(*notifications) {
-		beego.Info(notification.OSType)
 		if notification.OSType == "android" {
 			androidPush(userAccount, notification.NotificationId, msg)
 		} else {

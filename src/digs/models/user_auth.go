@@ -41,6 +41,9 @@ func FindSession(fieldName, fieldValue string) (*UserAuth, error) {
 		}
 		return err
 	}, nil)
+	if err != nil {
+		beego.Critical(err, string(debug.Stack()))
+	}
 
 	return &res, err
 }
