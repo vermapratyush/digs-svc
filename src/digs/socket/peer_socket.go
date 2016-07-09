@@ -112,7 +112,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			beego.Info("error=",err)
 		}
 		beego.Info(toUserAccount.Settings.Range >= dist)
-		if err != nil || toUserAccount.Settings.Range >= dist {
+		if err != nil || toUserAccount.Settings.Range < dist {
 			continue
 		}
 
