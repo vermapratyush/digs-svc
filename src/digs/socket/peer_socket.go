@@ -108,6 +108,10 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 		beego.Info("ToUser=", userLocation)
 		dist := common.Distance(msg.Location.Latitude, msg.Location.Longitude, userLocation.Location.Coordinates[1], userLocation.Location.Coordinates[0])
 		beego.Info("ToUser=", toUID, "|Dist=", dist, "|Range=", toUserAccount.Settings.Range)
+		if(err != nil) {
+			beego.Info("error=",err)
+		}
+		beego.Info(toUserAccount.Settings.Range >= dist)
 		if err != nil || toUserAccount.Settings.Range >= dist {
 			continue
 		}
