@@ -23,12 +23,21 @@ const (
 	SessionDel = "SessionDel"
 	FeedAdd = "FeedInsert"
 	FeedGet = "FeedGet"
+	FeedDel = "FeedDel"
 	LocationUpdate = "LocationUpdate"
 	LocationGet = "LocationGet"
 	LocationUserFind = "LocationUserFind"
 	AndroidPush = "AndroidPush"
 	IOSPush = "IOSPush"
 )
+
+func GetStringArrayAsMap(array []string) (map[string]struct{}) {
+	arrayAsMap := make(map[string]struct{})
+	for _, user := range(array) {
+		arrayAsMap[user] = struct{}{}
+	}
+	return arrayAsMap
+}
 
 func GetName(firstName, lastName string) string {
 	return firstName + " " + lastName
@@ -43,6 +52,14 @@ func IndexOf(haystack []string, needle string) int {
 	return -1
 }
 
+func IsUserBlocked(blockedUsers []string, fromUID string) bool {
+	for _, blockedUser := range(blockedUsers) {
+		if fromUID == blockedUser {
+			return true
+		}
+	}
+	return false
+}
 
 // http://en.wikipedia.org/wiki/Haversine_formula
 func Distance(pointA, pointB *domain.Coordinate) float64 {

@@ -48,14 +48,20 @@ func (this *PeopleController) Get() {
 		beego.Info(err)
 		return
 	}
+
+	blockedMap := common.GetStringArrayAsMap(userAccount.BlockedUsers)
+
 	//TODO: Find a better solution, too make realloc
 	people := make([]domain.PersonResponse, 0, len(uidList))
 	for idx := 0; idx < len(users); idx = idx + 1 {
 		user := users[idx]
 		_, present := socket.GetLookUp(user.UID)
-		if !present || user.UID == userAccount.UID {
+		_, presentInBlock := blockedMap[user.UID]
+
+		if !present || user.UID == userAccount.UID || presentInBlock  {
 			continue
 		}
+
 		people = append(people, domain.PersonResponse{
 			Name: common.GetName(user.FirstName, user.LastName),
 			UID: user.UID,

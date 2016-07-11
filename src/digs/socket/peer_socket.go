@@ -68,10 +68,13 @@ func MulticastPerson(uid string, activity string) {
 }
 
 func MulticastPersonCustom(activity string, userAccount *models.UserAccount, userLocation models.Coordinate, uids []string)  {
+	blockedMap := common.GetStringArrayAsMap(userAccount.BlockedUsers)
 
 	for _, toUID := range(uids) {
 		peer, present := GetLookUp(toUID)
-		if toUID == "" || userAccount.UID == toUID || present == false {
+		_, presentInBlock := blockedMap[toUID]
+
+		if toUID == "" || userAccount.UID == toUID || present == false || presentInBlock {
 			continue
 		} else if (activity == "hide" || activity == "show" || userAccount.Settings.PublicProfile) {
 			beego.Info("Person=", userAccount.UID, " activity=", activity, " to=", toUID)
@@ -106,6 +109,11 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 		}
 		toUserAccount, _ := models.GetUserAccount("uid", toUID)
 		models.AddToUserFeed(toUID, msg.MID)
+		blocked := common.IsUserBlocked(toUserAccount.BlockedUsers, userAccount.UID)
+		if blocked {
+			beego.Info("Blocked|User=", toUID, "|BlockedUser=", userAccount.UID)
+			continue
+		}
 
 		if (!present && toUserAccount.Settings.PushNotification) {
 			sendingPush = append(sendingPush, toUID)

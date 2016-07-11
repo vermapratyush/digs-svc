@@ -60,5 +60,10 @@ type SettingRequest struct {
 	Range float64 `json:"messageRange" bson:"messageRange"`
 	PublicProfile bool `json:"publicProfile" bson:"publicProfile"`
 	PushNotification bool `json:"enableNotification" bson:"enableNotification"`
+}
 
+type AbuseRequest struct {
+	BaseRequest
+	MID string `json:"messageId" bson:"messageId"`
+	UID string `json:"userId" bson:"userId"`
 }

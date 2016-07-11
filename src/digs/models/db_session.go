@@ -39,6 +39,8 @@ type UserAccount struct {
 	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
 	FBVerified bool `bson:"fbVerified" json:"fbVerified"`
 	Settings Setting `json:"settings" bson:"settings"`
+	BlockedUsers []string `json:"blockedUsers" bson:"blockedUsers"`
+	BlockedMessages []string `json:"blockedMessages" bson:"blockedMessages"`
 }
 
 type Setting struct {

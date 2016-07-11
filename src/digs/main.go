@@ -69,6 +69,7 @@ func setCommandParameters() {
 	commandConfigMap[common.SessionDel] = singleCommandConfig
 	commandConfigMap[common.FeedAdd] = singleCommandHighConcurrencyConfig
 	commandConfigMap[common.FeedGet] = singleCommandConfig
+	commandConfigMap[common.FeedDel] = singleCommandConfig
 	commandConfigMap[common.LocationGet] = singleCommandHighConcurrencyConfig
 	commandConfigMap[common.LocationUpdate] = singleCommandHighConcurrencyConfig
 	commandConfigMap[common.LocationUserFind] = batchCommandConfig
