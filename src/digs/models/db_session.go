@@ -59,8 +59,9 @@ type UserAuth struct {
 
 
 type UserLocation struct {
-	UID string `json:"uid" bson:"uid"`
-	Location Coordinate `json:"location" bson:"location"`
+	UID          string `json:"uid" bson:"uid"`
+	Location     Coordinate `json:"location" bson:"location"`
+	MessageRange float64 `json:"messageRange" bson:"messageRange"`
 	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
 }
 

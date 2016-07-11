@@ -57,8 +57,8 @@ func LeaveNode(uid string) {
 
 func MulticastPerson(uid string, activity string) {
 	userLocation, err := models.GetUserLocation(uid)
-	if err != nil {
-		beego.Error("UserLocationNotFound|err=", err)
+	if err != nil || len(userLocation.Location.Coordinates) == 0 {
+		beego.Error("UserLocationNotFound|uid=",uid, "|err=", err)
 		return
 	}
 	userAccount, _ := models.GetUserAccount("uid", uid)
@@ -98,7 +98,6 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 	beego.Info("TotalUsers|Size=", len(uids))
 	sendingWS := make([]string, 0)
 	sendingPush := make([]string, 0)
-	notSending := make([]string, 0)
 
 	for _, toUID := range(uids) {
 		peer, present := GetLookUp(toUID)
@@ -107,12 +106,6 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 		}
 		toUserAccount, _ := models.GetUserAccount("uid", toUID)
 		models.AddToUserFeed(toUID, msg.MID)
-		userLocation, err := models.GetUserLocation(toUID)
-		dist := common.Distance(msg.Location.Latitude, msg.Location.Longitude, userLocation.Location.Coordinates[1], userLocation.Location.Coordinates[0])
-		if err != nil || toUserAccount.Settings.Range < dist {
-			notSending = append(notSending, toUID)
-			continue
-		}
 
 		if (!present && toUserAccount.Settings.PushNotification) {
 			sendingPush = append(sendingPush, toUID)
@@ -139,7 +132,6 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 	}
 	beego.Info("WSMessage|len=", len(sendingWS), "|uid=", sendingWS)
 	beego.Info("PushMessage|len=", len(sendingPush), "|uid=", sendingPush)
-	beego.Info("NotSendingMessage|len=", len(notSending), "|uid=", notSending)
 }
 
 func sendWSMessage(toPeer Peer, fromUID string, data []byte) error {

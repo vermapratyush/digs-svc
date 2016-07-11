@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"digs/socket"
 	"github.com/astaxie/beego"
+	"digs/common"
 )
 
 type WSMessengerController struct {
@@ -36,6 +37,7 @@ func (this *WSMessengerController) Get() {
 
 	socket.AddNode(userAuth.UID, this.ws)
 	defer socket.LeaveNode(userAuth.UID)
+	var location = domain.Coordinate{}
 
 	for {
 		_, request, err := this.ws.ReadMessage()
@@ -48,7 +50,8 @@ func (this *WSMessengerController) Get() {
 			return
 		}
 		beego.Info("REQUEST|Sid=", userAuth.UID, "|WSRequest=", string(request))
-		response, _ := serve(request, userAuth)
+		response, _ := serve(request, userAuth, &location)
+
 		if (response != nil) {
 			beego.Info("RESPONSE|Sid=", userAuth, "Response", response)
 			this.Respond(response)
@@ -57,24 +60,23 @@ func (this *WSMessengerController) Get() {
 	}
 }
 
-func serve(requestBody []byte, userAuth *models.UserAuth) (interface{}, error) {
-
-	var location = domain.Coordinate{}
+func serve(requestBody []byte, userAuth *models.UserAuth, location *domain.Coordinate) (interface{}, error) {
 	message := string(requestBody)
 
 	switch  {
 	case strings.HasPrefix(message, socket.UpdateLocation):
 		var newLocation = domain.Coordinate{}
 		_ = json.Unmarshal(requestBody[len(socket.UpdateLocation):], &newLocation)
-		updateLocation(&location, &newLocation, userAuth)
+		updateLocation(location, &newLocation, userAuth)
 
 		return nil, nil
 
 	case strings.HasPrefix(message, socket.SendMessage):
 
+
 		var msg = domain.MessageSendRequest{}
 		_ = json.Unmarshal(requestBody[len(socket.SendMessage):], &msg)
-		updateLocation(&location, &msg.Location, userAuth)
+		updateLocation(location, &msg.Location, userAuth)
 
 		err := handleMessage(userAuth.UID, &msg)
 		if err != nil {
@@ -98,7 +100,7 @@ func serve(requestBody []byte, userAuth *models.UserAuth) (interface{}, error) {
 
 func updateLocation(oldLocation, newLocation *domain.Coordinate, userAuth *models.UserAuth) {
 
-	if oldLocation == nil || oldLocation.Longitude != newLocation.Longitude || oldLocation.Latitude != newLocation.Latitude {
+	if oldLocation == nil || (oldLocation != nil && common.Distance(oldLocation, newLocation) > 5000) {
 		if oldLocation == nil {
 			oldLocation = &domain.Coordinate{}
 		}

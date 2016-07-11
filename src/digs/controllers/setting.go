@@ -50,6 +50,7 @@ func (this *SettingController) Post() {
 
 func updatePersonActivity(userAccount *models.UserAccount, oldRange, newRange float64)  {
 	userLocation, err := models.GetUserLocation(userAccount.UID)
+	_ = models.UpdateMessageRange(userAccount.UID, newRange)
 	if (err == nil) {
 		if oldRange > newRange {
 			uidList := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], oldRange, newRange)

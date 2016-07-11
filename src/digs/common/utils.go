@@ -1,10 +1,16 @@
 package common
 
-import "math"
+import (
+	"math"
+	"digs/domain"
+)
 
 const (
 	PushNotification_API_KEY = "AIzaSyCMYdgQUqL8X7D5OaY7hvADMOQzA6WaqPI"
 	MessageBatchSize = 50
+
+	//Constant-Variables
+	DefaultReach = 10000.0
 
 	//Hystrix Commands
 	MessageWrite = "MessageWrite"
@@ -39,14 +45,14 @@ func IndexOf(haystack []string, needle string) int {
 
 
 // http://en.wikipedia.org/wiki/Haversine_formula
-func Distance(lat1, lon1, lat2, lon2 float64) float64 {
+func Distance(pointA, pointB *domain.Coordinate) float64 {
 	// convert to radians
 	// must cast radius as float to multiply later
 	var la1, lo1, la2, lo2, r float64
-	la1 = lat1 * math.Pi / 180
-	lo1 = lon1 * math.Pi / 180
-	la2 = lat2 * math.Pi / 180
-	lo2 = lon2 * math.Pi / 180
+	la1 = pointA.Latitude * math.Pi / 180
+	lo1 = pointA.Longitude * math.Pi / 180
+	la2 = pointB.Latitude * math.Pi / 180
+	lo2 = pointB.Longitude * math.Pi / 180
 
 	r = 6378100 // Earth radius in METERS
 

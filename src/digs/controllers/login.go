@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"fmt"
 	awsSession "github.com/aws/aws-sdk-go/aws/session"
+	"digs/common"
 )
 
 type LoginController struct {
@@ -35,7 +36,7 @@ func (this *LoginController) Post()  {
 	if userAccount == nil {
 		request.ProfilePicture = strings.Replace(request.ProfilePicture, "http://", "https://", 1)
 		userAccount, err = models.AddUserAccount(request.FirstName, request.LastName, request.Email, request.About, request.FBID, request.Locale, request.ProfilePicture, request.FBVerified)
-
+		models.UpdateMessageRange(userAccount.UID, common.DefaultReach)
 		go sendWelcomeMail(userAccount)
 
 		if err != nil {

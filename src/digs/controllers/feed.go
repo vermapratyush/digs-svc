@@ -92,6 +92,7 @@ func (this *FeedController) Get() {
 				UID: user.UID,
 				MID: messageId,
 				From: common.GetName(user.FirstName, user.LastName),
+				About: user.About,
 				Message: msg.Content,
 				Timestamp: msg.CreationTime.Unix() * int64(1000),
 				ProfilePicture: user.ProfilePicture,

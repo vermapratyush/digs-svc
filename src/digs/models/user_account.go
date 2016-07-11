@@ -26,7 +26,7 @@ func AddUserAccount(firstName, lastName, email, about, fbid, locale, profilePict
 		FBVerified: fbVerified,
 		CreationTime:time.Now(),
 		Settings:Setting{
-			Range: 10000.0,
+			Range: common.DefaultReach,
 			PublicProfile: true,
 			PushNotification: true,
 		},
