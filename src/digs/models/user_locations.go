@@ -99,8 +99,12 @@ func GetLiveUIDForFeed(longitude, latitude float64, maxDistance, minDistance flo
 				"$cond": bson.M{
 					"if": bson.M{
 						"$lte": []interface{} {
-							"$distance",
-							"$messageRange",
+							"$distance", bson.M{
+								"$ifNull": []interface{} {
+									"$messageRange", common.DefaultReach,
+								},
+							},
+
 						},
 					},
 					"then": "$$KEEP",
