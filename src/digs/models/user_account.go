@@ -7,7 +7,7 @@ import (
 	"digs/domain"
 	"github.com/afex/hystrix-go/hystrix"
 	"digs/common"
-	"github.com/astaxie/beego"
+	"digs/logger"
 )
 
 func AddUserAccount(firstName, lastName, email, about, fbid, locale, profilePicture string, fbVerified bool) (*UserAccount, error) {
@@ -105,7 +105,7 @@ func AddToBlockedContent(uid, contentType, contentValue string) error {
 
 		err := c.Update(query, update)
 		if err != nil {
-			beego.Error("AbusiveContent|UnableToDelete|err=", err)
+			logger.Error("AbusiveContent|UnableToAdd|UID=", uid, "|ContentType=", contentType, "|ContentValue=", contentValue, "|err=", err)
 		}
 		return err
 	}, nil)

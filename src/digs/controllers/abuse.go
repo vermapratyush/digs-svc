@@ -1,11 +1,11 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
 	"encoding/json"
 	"digs/domain"
 	"digs/models"
 	"gopkg.in/mgo.v2"
+	"digs/logger"
 )
 
 type AbuseController struct {
@@ -15,7 +15,7 @@ type AbuseController struct {
 func (this *AbuseController) Post() {
 	var request domain.AbuseRequest
 
-	beego.Info("REQUEST|AbuseRequest|", string(this.Ctx.Input.RequestBody))
+	logger.Debug("REQUEST|AbuseRequest|", string(this.Ctx.Input.RequestBody))
 	this.Super(&request.BaseRequest)
 	json.Unmarshal(this.Ctx.Input.RequestBody, &request)
 	session, err := models.FindSession("sid", request.SessionID)

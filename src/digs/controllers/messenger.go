@@ -6,8 +6,8 @@ import (
 	"digs/models"
 	"encoding/json"
 	"digs/socket"
-	"github.com/astaxie/beego"
 	"digs/common"
+	"digs/logger"
 )
 
 type WSMessengerController struct {
@@ -17,7 +17,7 @@ type WSMessengerController struct {
 func (this *WSMessengerController) Get() {
 	sid := this.GetString("sessionId")
 
-	beego.Info("WSConnection|SID=", sid)
+	logger.Debug("WSConnection|SID=", sid)
 
 	userAuth, err := models.FindSession("sid", sid)
 	if err != nil {
@@ -28,7 +28,7 @@ func (this *WSMessengerController) Get() {
 		})
 		return
 	}
-	beego.Info("UserConnected|UID=", userAuth)
+	logger.Debug("UserConnected|UID=", userAuth)
 	this.Respond(&domain.GenericResponse{
 		StatusCode: 200,
 		Message: "Connection Established",
@@ -43,17 +43,14 @@ func (this *WSMessengerController) Get() {
 		_, request, err := this.ws.ReadMessage()
 
 		if err != nil {
-			beego.Info("Err", err.Error())
-		}
-		if err != nil {
-			beego.Critical("NodeConnectionLost|Error", err)
+			logger.Error("MessageReadFailed|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Err=", err.Error())
 			return
 		}
-		beego.Info("REQUEST|Sid=", userAuth.UID, "|WSRequest=", string(request))
+		logger.Debug("REQUEST|Sid=", userAuth.UID, "UID=", userAuth.UID, "|WSRequest=", string(request))
 		response, _ := serve(request, userAuth, &location)
 
 		if (response != nil) {
-			beego.Info("RESPONSE|Sid=", userAuth, "Response", response)
+			logger.Debug("RESPONSE|Sid=", userAuth, "|UID=", userAuth.UID, "|Response", response)
 			this.Respond(response)
 		}
 
@@ -80,7 +77,7 @@ func serve(requestBody []byte, userAuth *models.UserAuth, location *domain.Coord
 
 		err := handleMessage(userAuth.UID, &msg)
 		if err != nil {
-			beego.Critical("Unable to handle message %s", err)
+			logger.Critical("MessageRecv|NotHandled|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Err=", err)
 			return &domain.MessageReceivedResponse{
 				StatusCode:500,
 				RequestId:msg.MID,
@@ -92,7 +89,7 @@ func serve(requestBody []byte, userAuth *models.UserAuth, location *domain.Coord
 			}, nil
 		}
 	default:
-		beego.Warn("UnknownCommand|Request=", string(requestBody))
+		logger.Critical("UnknownCommand|NotHandled|SID=", userAuth.SID, "|UID=", userAuth.UID)
 		return nil, nil
 	}
 

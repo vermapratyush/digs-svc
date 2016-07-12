@@ -5,11 +5,11 @@ import (
 	_ "digs/routers"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/plugins/cors"
-	"github.com/astaxie/beego/logs"
 	"github.com/afex/hystrix-go/hystrix"
 	"net"
 	"net/http"
 	"digs/common"
+	"digs/logger"
 )
 
 func main() {
@@ -27,10 +27,7 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	//Configure logger
-	log := logs.NewLogger(1)
-	log.EnableFuncCallDepth(true)
-	log.SetLogger("multifile", `{"filename":"test.log","separate":["emergency", "alert", "critical", "error", "warning", "notice", "info", "debug"]}`)
+	logger.Initialize()
 
 	//Configure hystrix/monitoring
 	setCommandParameters()

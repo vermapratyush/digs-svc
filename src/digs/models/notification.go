@@ -5,7 +5,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"github.com/afex/hystrix-go/hystrix"
 	"digs/common"
-	"github.com/astaxie/beego"
+	"digs/logger"
 )
 
 
@@ -17,11 +17,12 @@ func DeleteNotificationId(uid string, nid string) error {
 	err := hystrix.Do(common.Notification, func() error {
 		err := c.Remove(bson.M{"uid": uid, "notificationId": nid})
 		if err != nil {
-			beego.Error(err)
+			logger.Error("UID=", uid, "|NID=", nid, "|Err=", err)
 		}
 		return err
 	}, nil)
 
+	logger.Debug("UID=", uid, "|NID=", nid)
 	return err
 }
 
@@ -30,22 +31,24 @@ func AddNotificationId(uid string, nid string, os string) error {
 	c := conn.DB(DefaultDatabase).C("notifications")
 	defer conn.Close()
 
-	key := bson.M{"uid": uid, "notificationId": nid}
-	value := bson.M{
-		"uid": uid,
-		"notificationId": nid,
-		"os": os,
-		"creationTime": time.Now(),
-	}
-
 	err := hystrix.Do(common.Notification, func() error {
+
+		key := bson.M{"uid": uid, "notificationId": nid}
+		value := bson.M{
+			"uid": uid,
+			"notificationId": nid,
+			"os": os,
+			"creationTime": time.Now(),
+		}
+
 		_, err := c.Upsert(key, value)
 		if err != nil {
-			beego.Error(err)
+			logger.Error("UID=", uid, "|NID=", nid, "|OS=", os, "|Err=", err)
 		}
 		return err
 	}, nil)
 
+	logger.Debug("DB|UID=", uid, "|NID=", nid, "|OS=", os)
 	return err
 }
 
@@ -61,12 +64,12 @@ func GetNotificationIds(uid string) (*[]Notification, error) {
 			"uid": uid,
 		}).All(&notifications)
 		if err != nil {
-			beego.Error(err)
+			logger.Error("DB|UID=", uid, "|Err=", err)
 		}
 		return err
 	}, nil)
 
-
+	logger.Debug("DB|UID=", uid, "|Result=", notifications)
 	return &notifications, err
 
 }

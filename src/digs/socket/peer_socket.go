@@ -5,9 +5,9 @@ import (
 	"digs/domain"
 	"digs/models"
 	"encoding/json"
-	"github.com/astaxie/beego"
 	"digs/common"
 	"sync"
+	"digs/logger"
 )
 
 
@@ -25,7 +25,7 @@ func AddNode(uid string, ws *websocket.Conn) {
 	if uid == "" {
 		return
 	}
-	beego.Info("NodeAdded|UID=", uid)
+	logger.Debug("PEER|NodeAdded|UID=", uid)
 
 	SetLookUp(uid, Peer{
 		Conn:ws,
@@ -39,7 +39,7 @@ func LeaveNode(uid string) {
 	if uid == "" {
 		return
 	}
-	beego.Info("NodeLeft|UID=", uid)
+	logger.Debug("PEER|NodeLeft|UID=", uid)
 	ws, present := GetLookUp(uid)
 	RemoveLookUp(uid)
 
@@ -49,7 +49,7 @@ func LeaveNode(uid string) {
 		defer DeadSocketWrite(uid)
 		ws.Conn.Close()
 	} else if present {
-		beego.Info("WSAlredyClosed|uid=", uid)
+		logger.Debug("PEER|WSAlredyClosed|uid=", uid)
 	}
 
 
@@ -58,7 +58,7 @@ func LeaveNode(uid string) {
 func MulticastPerson(uid string, activity string) {
 	userLocation, err := models.GetUserLocation(uid)
 	if err != nil || len(userLocation.Location.Coordinates) == 0 {
-		beego.Error("UserLocationNotFound|uid=",uid, "|err=", err)
+		logger.Error("PEER|UserLocationNotFound|uid=",uid, "|err=", err)
 		return
 	}
 	userAccount, _ := models.GetUserAccount("uid", uid)
@@ -75,9 +75,10 @@ func MulticastPersonCustom(activity string, userAccount *models.UserAccount, use
 		_, presentInBlock := blockedMap[toUID]
 
 		if toUID == "" || userAccount.UID == toUID || present == false || presentInBlock {
+			logger.Debug("PEER|NotSendingActivity|toUID=", toUID, "|FromUID=", userAccount.UID, "|Present=", present, "|Blocked=", presentInBlock)
 			continue
 		} else if (activity == "hide" || activity == "show" || userAccount.Settings.PublicProfile) {
-			beego.Info("Person=", userAccount.UID, " activity=", activity, " to=", toUID)
+			logger.Debug("PEER|NotSendingActivity|toUID=", toUID, "|FromUID=", userAccount.UID, "|Activity=", activity)
 			response, _ := json.Marshal(&domain.PersonResponse{
 				Name: common.GetName(userAccount.FirstName, userAccount.LastName),
 				UID: userAccount.UID,
@@ -87,7 +88,7 @@ func MulticastPersonCustom(activity string, userAccount *models.UserAccount, use
 			})
 			err := sendWSMessage(peer, userAccount.UID, response)
 			if err != nil {
-				beego.Error("MessageSendFailed|err=", err)
+				logger.Error("PEER|MessageSendFailed|ToUID=", toUID, "|From=", userAccount.UID, "|err=", err)
 			}
 		}
 	}
@@ -96,9 +97,8 @@ func MulticastPersonCustom(activity string, userAccount *models.UserAccount, use
 
 func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRequest) {
 
-	beego.Info("Searching people in radius of ", userAccount.Settings.Range, " from ", msg.Location)
 	uids := models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, userAccount.Settings.Range, -1)
-	beego.Info("TotalUsers|Size=", len(uids))
+	logger.Debug("TotalUsers|UID=", userAccount.UID, "|MID=", msg.MID, "|Location=", msg.Location, "|Size=", len(uids))
 	sendingWS := make([]string, 0)
 	sendingPush := make([]string, 0)
 
@@ -111,7 +111,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 		models.AddToUserFeed(toUID, msg.MID)
 		blocked := common.IsUserBlocked(toUserAccount.BlockedUsers, userAccount.UID)
 		if blocked {
-			beego.Info("Blocked|User=", toUID, "|BlockedUser=", userAccount.UID)
+			logger.Debug("PEER|NotSendingMessage|toUID=", toUID, "|FromUID=", userAccount.UID, "|Blocked=", blocked)
 			continue
 		}
 
@@ -138,8 +138,8 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			}
 		}
 	}
-	beego.Info("WSMessage|len=", len(sendingWS), "|uid=", sendingWS)
-	beego.Info("PushMessage|len=", len(sendingPush), "|uid=", sendingPush)
+	logger.Debug("WSMessage|len=", len(sendingWS), "|uid=", sendingWS)
+	logger.Debug("PushMessage|len=", len(sendingPush), "|uid=", sendingPush)
 }
 
 func sendWSMessage(toPeer Peer, fromUID string, data []byte) error {
@@ -147,7 +147,7 @@ func sendWSMessage(toPeer Peer, fromUID string, data []byte) error {
 
 	err := SendData(toPeer.UID, data)
 	if err != nil {
-		beego.Critical("MessageSendFailed|Error=", toPeer.UID)
+		logger.Critical("MessageSendFailed|ToUID=", toPeer.UID, "|From=", fromUID, "|Error=", err)
 		LeaveNode(fromUID)
 		return err
 	}
@@ -158,7 +158,7 @@ func sendPushMessage(userAccount *models.UserAccount, toUID string, msg *domain.
 
 	notifications, err := models.GetNotificationIds(toUID)
 	if err != nil {
-		beego.Error("NotificationIdFetch|err=", err)
+		logger.Error("PEER|NotificationIdFetch|toUID=", toUID, "|err=", err)
 		return
 	}
 

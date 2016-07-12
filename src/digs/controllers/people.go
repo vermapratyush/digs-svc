@@ -2,12 +2,12 @@ package controllers
 
 import (
 	"digs/models"
-	"github.com/astaxie/beego"
 	"errors"
 	"digs/domain"
 	"digs/common"
 	"digs/socket"
 	"gopkg.in/mgo.v2"
+	"digs/logger"
 )
 
 type PeopleController struct {
@@ -19,25 +19,25 @@ func (this *PeopleController) Get() {
 	longitude, longErr := this.GetFloat("longitude")
 	latitude, latErr := this.GetFloat("latitude")
 
+	userAuth, err := models.FindSession("sid", sid)
+
 	if longErr != nil || latErr != nil {
-		beego.Error("LatLongFormatError")
+		logger.Error("PEOPLE|LatLongFormatError|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Lat=", latitude, "|Long=", longitude, "|Err=", err)
 		this.Serve500(errors.New("Location cordinate not provided in proper format"))
 		return
 	}
-
-	userAuth, err := models.FindSession("sid", sid)
 	if err != nil {
-		beego.Info(err)
 		if err == mgo.ErrNotFound {
 			this.InvalidSessionResponse()
 			return
 		}
 		this.Serve500(err)
+		logger.Error("PEOPLE|SessionRetrieveError|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Lat=", latitude, "|Long=", longitude, "|Err=", err)
 		return
 	}
 	userAccount, err := models.GetUserAccount("uid", userAuth.UID)
 	if err != nil {
-		beego.Error("UserAccount|err=", err)
+		logger.Error("PEOPLE|UserNotFound|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Lat=", latitude, "|Long=", longitude, "|Err=", err)
 		this.Serve500(errors.New("User not found"))
 		return
 	}
@@ -45,7 +45,7 @@ func (this *PeopleController) Get() {
 	uidList := models.GetLiveUIDForFeed(longitude, latitude, userAccount.Settings.Range, -1)
 	users, err := models.GetAllUserAccount(uidList)
 	if err != nil {
-		beego.Info(err)
+		logger.Error("PEOPLE|GetUserAccountFailed|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Lat=", latitude, "|Long=", longitude, "|Err=", err)
 		return
 	}
 

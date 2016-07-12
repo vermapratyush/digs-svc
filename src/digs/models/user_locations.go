@@ -3,9 +3,9 @@ package models
 import (
 	"time"
 	"gopkg.in/mgo.v2/bson"
-	"github.com/astaxie/beego"
 	"github.com/afex/hystrix-go/hystrix"
 	"digs/common"
+	"digs/logger"
 )
 
 func AddUserNewLocation(longitude, latitude float64, uid string) error {
@@ -145,7 +145,7 @@ func GetLiveUIDForFeed(longitude, latitude float64, maxDistance, minDistance flo
 		pipe := c.Pipe(pipeFilters)
 		err := pipe.All(&result)
 		if(err != nil) {
-			beego.Error(err)
+			logger.Error("UIDForFeed|lat=", latitude, "|long=", longitude, "|maxDist=", maxDistance, "|minDist=", minDistance, "|Err=", err)
 		}
 		return err
 	}, nil)
@@ -158,6 +158,6 @@ func GetLiveUIDForFeed(longitude, latitude float64, maxDistance, minDistance flo
 			idx++
 		}
 	}
-	beego.Info("UIDFromFeed|DBResult=", uidArray)
+	logger.Debug("UIDForFeed|Users=", uidArray)
 	return uidArray
 }

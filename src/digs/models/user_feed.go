@@ -2,9 +2,9 @@ package models
 
 import (
 	"gopkg.in/mgo.v2/bson"
-	"github.com/astaxie/beego"
 	"github.com/afex/hystrix-go/hystrix"
 	"digs/common"
+	"digs/logger"
 )
 
 func AddToUserFeed(uid string, mid string) error {
@@ -18,7 +18,7 @@ func AddToUserFeed(uid string, mid string) error {
 
 		change, err := c.Upsert(query, update)
 		if err != nil {
-			beego.Info(change)
+			logger.Error("UnableToAdToFeed|UID=", uid, "|MID=", mid, "|change=", change, "|Err=", err)
 		}
 		return err
 	}, nil)
@@ -38,6 +38,7 @@ func GetUserFeed(uid string) (*MessageHistory, error) {
 		return err
 	}, nil)
 
+	logger.Debug("GetFeed|UID=", uid, "|ContentInFeed=", len(history.MID))
 
 	return &history, err
 }
@@ -56,7 +57,7 @@ func RemoveMessage(uid, mid string) error {
 		}
 		err := c.Update(query, update)
 		if err != nil {
-			beego.Error("Abuse|RemoveMessageFailed|err=", err)
+			logger.Error("Abuse|RemoveMessageFailed|UID=", uid, "|MID=", mid, "|err=", err)
 		}
 		return err
 	}, nil)
@@ -81,7 +82,7 @@ func RemoveUserFromFeed(uid, abusiveUID string) error {
 		}).All(&blockableMessages)
 
 		if err != nil {
-			beego.Error("Abuse|RemoveMessageFailedBeforeFetch|err=", err)
+			logger.Error("Abuse|RemoveMessageFailedBeforeFetch|err=", err)
 			return err
 		}
 
@@ -100,11 +101,9 @@ func RemoveUserFromFeed(uid, abusiveUID string) error {
 
 		err = c.Update(query, update)
 		if err != nil {
-			beego.Error("Abuse|RemoveMessageFailedAfterFetch|err=", err)
+			logger.Error("Abuse|RemoveMessageFailedAfterFetch|UID=", uid, "|AbusiveUID=", abusiveUID, "|err=", err)
 		}
 		return err
-
-
 	}, nil)
 
 

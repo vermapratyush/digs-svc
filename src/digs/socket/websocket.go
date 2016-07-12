@@ -3,7 +3,7 @@ package socket
 import (
 	"github.com/gorilla/websocket"
 	"sync"
-	"github.com/astaxie/beego"
+	"digs/logger"
 )
 
 type Peer struct {
@@ -46,14 +46,13 @@ func SendData(uid string, data []byte) error {
 	defer lookUpLock.RUnlock()
 
 	peer := lookUp[uid];
-	beego.Info("peer=", peer)
 
 	peer.wsLock.Lock()
 	defer peer.wsLock.Unlock()
 
 	err := peer.Conn.WriteMessage(websocket.TextMessage, data)
 	if err != nil {
-		beego.Info("error=", err)
+		logger.Error("SOCKET|UnableToWriteToSocket|UID=", uid, "|Error=", err)
 	}
 	return err
 }

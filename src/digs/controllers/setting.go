@@ -1,13 +1,13 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
 	"encoding/json"
 	"digs/models"
 	"errors"
 	"digs/socket"
 	"digs/domain"
 	"gopkg.in/mgo.v2"
+	"digs/logger"
 )
 
 type SettingController struct {
@@ -18,15 +18,15 @@ func (this *SettingController) Post() {
 
 	var request domain.SettingRequest
 	json.Unmarshal(this.Ctx.Input.RequestBody, &request)
-	beego.Info("UpdateSetting|postData=", request)
+	logger.Debug("SETTING|UpdateSetting|postData=", request)
 
 	userAuth, err := models.FindSession("sid", request.SessionID)
 	if err != nil {
-		beego.Error("SessionNotFound|err=", err)
 		if err == mgo.ErrNotFound {
 			this.InvalidSessionResponse()
 			return
 		}
+		logger.Error("SESSION|UnableToFindSession|SID=", request.SessionID, "|Err=", err)
 		this.Serve500(err)
 		return
 	} else {
@@ -41,7 +41,7 @@ func (this *SettingController) Post() {
 	err = models.UpdateUserAccount(userAuth.UID, &request)
 
 	if err != nil {
-		beego.Error("SettingUpdateFailed|", err)
+		logger.Error("SESSION|SettingUpdateFailed|SID=", request.SessionID, "|SettingRequest=", request, "|Err=", err)
 		this.Serve500(errors.New("Update Failed."))
 	} else {
 		this.Serve204()
@@ -54,11 +54,11 @@ func updatePersonActivity(userAccount *models.UserAccount, oldRange, newRange fl
 	if (err == nil && len(userLocation.Location.Coordinates) != 0 && err1 == nil) {
 		if oldRange > newRange {
 			uidList := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], oldRange, newRange)
-			beego.Info("SettingsChanged|InformPartialUser=", uidList)
+			logger.Debug("SettingsChanged|UID=", userAccount.UID, "|InformPartialUser=", uidList)
 			socket.MulticastPersonCustom("leave", userAccount, userLocation.Location, uidList)
 		} else {
 			uidList := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], newRange, oldRange)
-			beego.Info("SettingsChanged|InformPartialUser=", uidList)
+			logger.Debug("SettingsChanged|UID=", userAccount.UID, "|InformPartialUser=", uidList)
 			socket.MulticastPersonCustom("join", userAccount, userLocation.Location, uidList)
 		}
 	}
@@ -77,18 +77,19 @@ func hideJoinPersonActivity(settingRequest domain.SettingRequest, uid string) {
 func (this *SettingController) Get()  {
 	sid := this.GetString("sessionId")
 	userAuth, err := models.FindSession("sid", sid)
-	beego.Info("GetSetting|sid=", sid)
+	logger.Debug("GetSetting|SID=", sid, "|UID=", userAuth.UID)
 	if err != nil {
-		beego.Error(err)
+
 		if err == mgo.ErrNotFound {
 			this.InvalidSessionResponse()
 			return
 		}
+		logger.Error("SESSION|UnableToFindSession|SID=", sid, "|Err=", err)
 		this.Serve500(err)
 		return
 	}
 	userAccount, _ := models.GetUserAccount("uid", userAuth.UID)
-	beego.Info("Setting=", userAccount.Settings)
+	logger.Debug("RESPONSE|GetSetting|SID=", sid, "|UID=", userAuth.UID, "|Response=", userAccount.Settings)
 	this.Serve200(&userAccount.Settings)
 
 }

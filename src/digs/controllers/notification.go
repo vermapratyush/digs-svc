@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"digs/domain"
-	"github.com/astaxie/beego"
 	"encoding/json"
 	"digs/models"
 	"errors"
 	"gopkg.in/mgo.v2"
+	"digs/logger"
 )
 
 type NotificationController struct {
@@ -15,7 +15,7 @@ type NotificationController struct {
 
 func (this *NotificationController) Post() {
 	var request domain.NotificationRequest
-	beego.Info(string(this.Ctx.Input.RequestBody))
+	logger.Debug("NOTIFICATION|Request=", string(this.Ctx.Input.RequestBody))
 	this.Super(&request.BaseRequest)
 	json.Unmarshal(this.Ctx.Input.RequestBody, &request)
 
@@ -25,11 +25,13 @@ func (this *NotificationController) Post() {
 			this.InvalidSessionResponse()
 			return
 		}
+		logger.Error("NOTIFICATION|SID=", session.SID, "|UID=", session.UID, "|Err=", err)
 		this.Serve500(err)
 		return
 	}
 	err = models.AddNotificationId(session.UID, request.NotificationID, request.OSType)
 	if err != nil {
+		logger.Error("NOTIFICATION|NotificationAddFialed|SID=", session.SID, "|UID=", session.UID, "|Err=", err)
 		this.Serve500(errors.New("Unable to register device"))
 	} else {
 		if request.NotificationID != request.OldNotificationID && request.OldNotificationID != "" {

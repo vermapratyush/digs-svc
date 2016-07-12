@@ -4,10 +4,10 @@ import (
 	"digs/models"
 	"digs/domain"
 	"digs/common"
-	"github.com/astaxie/beego"
 	"sort"
 	"time"
 	"gopkg.in/mgo.v2"
+	"digs/logger"
 )
 
 type FeedController struct {
@@ -24,7 +24,7 @@ func (this *FeedController) Get() {
 	sid := this.GetString("sessionId")
 	lastMessageId := this.GetString("messageId", "")
 
-	beego.Info("FEEDRequest|Sid=", sid, "|LastID=", lastMessageId)
+	logger.Debug("FEEDRequest|Sid=", sid, "|LastID=", lastMessageId)
 	userAuth, err := models.FindSession("sid", sid)
 	if err != nil {
 		if err == mgo.ErrNotFound {
@@ -42,10 +42,10 @@ func (this *FeedController) Get() {
 	}
 
 	feed := make([]*domain.MessageGetResponse, 0, len(history.MID))
-	beego.Info(len(history.MID))
+	logger.Debug("FeedResponse|SID=", sid, "|UID=", userAuth.UID, "|FeedSize=", len(history.MID))
+
 	if len(history.MID) == 0 {
 		feed = addStub()
-		beego.Info(feed)
 		this.Serve200(feed);
 		return
 	}
@@ -101,7 +101,7 @@ func (this *FeedController) Get() {
 	}
 
 	sort.Sort(ByTime{feed})
-	beego.Info("FEEDResponse|Sid=", sid, "|LastID=", lastMessageId, "|ResponseSize=", len(feed))
+	logger.Debug("FEEDResponse|Sid=", sid, "|UID=", userAuth.UID, "|LastID=", lastMessageId, "|ResponseSize=", len(feed))
 	this.Serve200(feed)
 
 }

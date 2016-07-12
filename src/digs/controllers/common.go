@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"net/http"
+	"digs/logger"
 )
 
 type HttpBaseController struct {
@@ -27,10 +28,11 @@ func (this *WSBaseController) Prepare() {
 
 	ws, err := websocket.Upgrade(this.Ctx.ResponseWriter, this.Ctx.Request, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
+		logger.Critical("Not a websocket handshake", err)
 		http.Error(this.Ctx.ResponseWriter, "Not a websocket handshake", 400)
 		return
 	} else if err != nil {
-		beego.Error("Cannot setup WebSocket connection:", err)
+		logger.Critical("Cannot setup WebSocket connection:", err)
 		return
 	}
 	this.ws = ws
@@ -77,12 +79,12 @@ func (this *HttpBaseController) Serve204() {
 func (this *WSBaseController) Respond(obj interface{})  {
 	data, err := json.Marshal(obj)
 	if err != nil {
-		beego.Critical("Unable to repoly back to the message sender Err=%s", err)
+		logger.Critical("Unable to reply back to the message sender Err=%s", err, "|obj=", obj)
 		this.ws.WriteMessage(websocket.TextMessage, []byte("Unable to respond"))
 		return
 	}
 	err = this.ws.WriteMessage(websocket.TextMessage, data)
 	if err != nil {
-		beego.Critical("Error writing to websocket")
+		logger.Critical("Error writing to websocket|Obj=", obj)
 	}
 }
