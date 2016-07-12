@@ -18,7 +18,7 @@ func AddToUserFeed(uid string, mid string) error {
 
 		change, err := c.Upsert(query, update)
 		if err != nil {
-			logger.Error("UnableToAdToFeed|UID=", uid, "|MID=", mid, "|change=", change, "|Err=", err)
+			logger.Error("UnableToAdToFeed|UID=", uid, "|MID=", mid, "|change=%v", change, "|Err=%v", err)
 		}
 		return err
 	}, nil)
@@ -57,7 +57,7 @@ func RemoveMessage(uid, mid string) error {
 		}
 		err := c.Update(query, update)
 		if err != nil {
-			logger.Error("Abuse|RemoveMessageFailed|UID=", uid, "|MID=", mid, "|err=", err)
+			logger.Error("Abuse|RemoveMessageFailed|UID=", uid, "|MID=", mid, "|err=%v", err)
 		}
 		return err
 	}, nil)
@@ -82,7 +82,7 @@ func RemoveUserFromFeed(uid, abusiveUID string) error {
 		}).All(&blockableMessages)
 
 		if err != nil {
-			logger.Error("Abuse|RemoveMessageFailedBeforeFetch|err=", err)
+			logger.Error("Abuse|RemoveMessageFailedBeforeFetch|err=%v", err)
 			return err
 		}
 
@@ -101,7 +101,7 @@ func RemoveUserFromFeed(uid, abusiveUID string) error {
 
 		err = c.Update(query, update)
 		if err != nil {
-			logger.Error("Abuse|RemoveMessageFailedAfterFetch|UID=", uid, "|AbusiveUID=", abusiveUID, "|err=", err)
+			logger.Error("Abuse|RemoveMessageFailedAfterFetch|UID=", uid, "|AbusiveUID=", abusiveUID, "|err=%v", err)
 		}
 		return err
 	}, nil)

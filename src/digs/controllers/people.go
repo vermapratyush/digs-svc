@@ -22,7 +22,7 @@ func (this *PeopleController) Get() {
 	userAuth, err := models.FindSession("sid", sid)
 
 	if longErr != nil || latErr != nil {
-		logger.Error("PEOPLE|LatLongFormatError|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Lat=", latitude, "|Long=", longitude, "|Err=", err)
+		logger.Error("PEOPLE|LatLongFormatError|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Lat=", latitude, "|Long=", longitude, "|Err=%v", err)
 		this.Serve500(errors.New("Location cordinate not provided in proper format"))
 		return
 	}
@@ -32,12 +32,12 @@ func (this *PeopleController) Get() {
 			return
 		}
 		this.Serve500(err)
-		logger.Error("PEOPLE|SessionRetrieveError|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Lat=", latitude, "|Long=", longitude, "|Err=", err)
+		logger.Error("PEOPLE|SessionRetrieveError|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Lat=", latitude, "|Long=", longitude, "|Err=%v", err)
 		return
 	}
 	userAccount, err := models.GetUserAccount("uid", userAuth.UID)
 	if err != nil {
-		logger.Error("PEOPLE|UserNotFound|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Lat=", latitude, "|Long=", longitude, "|Err=", err)
+		logger.Error("PEOPLE|UserNotFound|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Lat=", latitude, "|Long=", longitude, "|Err=%v", err)
 		this.Serve500(errors.New("User not found"))
 		return
 	}
@@ -45,7 +45,7 @@ func (this *PeopleController) Get() {
 	uidList := models.GetLiveUIDForFeed(longitude, latitude, userAccount.Settings.Range, -1)
 	users, err := models.GetAllUserAccount(uidList)
 	if err != nil {
-		logger.Error("PEOPLE|GetUserAccountFailed|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Lat=", latitude, "|Long=", longitude, "|Err=", err)
+		logger.Error("PEOPLE|GetUserAccountFailed|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Lat=", latitude, "|Long=", longitude, "|Err=%v", err)
 		return
 	}
 

@@ -18,7 +18,7 @@ func (this *SettingController) Post() {
 
 	var request domain.SettingRequest
 	json.Unmarshal(this.Ctx.Input.RequestBody, &request)
-	logger.Debug("SETTING|UpdateSetting|postData=", request)
+	logger.Debug("SETTING|UpdateSetting|postData=%v", request)
 
 	userAuth, err := models.FindSession("sid", request.SessionID)
 	if err != nil {
@@ -26,7 +26,7 @@ func (this *SettingController) Post() {
 			this.InvalidSessionResponse()
 			return
 		}
-		logger.Error("SESSION|UnableToFindSession|SID=", request.SessionID, "|Err=", err)
+		logger.Error("SESSION|UnableToFindSession|SID=", request.SessionID, "|Err=%v", err)
 		this.Serve500(err)
 		return
 	} else {
@@ -41,7 +41,7 @@ func (this *SettingController) Post() {
 	err = models.UpdateUserAccount(userAuth.UID, &request)
 
 	if err != nil {
-		logger.Error("SESSION|SettingUpdateFailed|SID=", request.SessionID, "|SettingRequest=", request, "|Err=", err)
+		logger.Error("SESSION|SettingUpdateFailed|SID=", request.SessionID, "|SettingRequest=%v", request, "|Err=%v", err)
 		this.Serve500(errors.New("Update Failed."))
 	} else {
 		this.Serve204()
@@ -54,11 +54,11 @@ func updatePersonActivity(userAccount *models.UserAccount, oldRange, newRange fl
 	if (err == nil && len(userLocation.Location.Coordinates) != 0 && err1 == nil) {
 		if oldRange > newRange {
 			uidList := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], oldRange, newRange)
-			logger.Debug("SettingsChanged|UID=", userAccount.UID, "|InformPartialUser=", uidList)
+			logger.Debug("SettingsChanged|UID=", userAccount.UID, "|InformPartialUser=%v", uidList)
 			socket.MulticastPersonCustom("leave", userAccount, userLocation.Location, uidList)
 		} else {
 			uidList := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], newRange, oldRange)
-			logger.Debug("SettingsChanged|UID=", userAccount.UID, "|InformPartialUser=", uidList)
+			logger.Debug("SettingsChanged|UID=", userAccount.UID, "|InformPartialUser=%v", uidList)
 			socket.MulticastPersonCustom("join", userAccount, userLocation.Location, uidList)
 		}
 	}
@@ -84,7 +84,7 @@ func (this *SettingController) Get()  {
 			this.InvalidSessionResponse()
 			return
 		}
-		logger.Error("SESSION|UnableToFindSession|SID=", sid, "|Err=", err)
+		logger.Error("SESSION|UnableToFindSession|SID=", sid, "|Err=%v", err)
 		this.Serve500(err)
 		return
 	}

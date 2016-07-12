@@ -25,7 +25,7 @@ func (this *LogoutController) Post()  {
 			this.InvalidSessionResponse()
 			return
 		}
-		logger.Error("LOGOUT|LogoutFailed=", err)
+		logger.Error("LOGOUT|LogoutFailed=%v", err)
 		this.Serve500(err)
 		return
 	}
@@ -33,12 +33,12 @@ func (this *LogoutController) Post()  {
 	err = models.DeleteNotificationId(userAuth.UID, request.NotificationId)
 
 	if err != nil {
-		logger.Error("NotificationDeleteFailed|SID=", userAuth, "|UID=", userAuth.UID, "|NotificationId=", request.NotificationId, "|err=", err)
+		logger.Error("NotificationDeleteFailed|SID=", userAuth, "|UID=", userAuth.UID, "|NotificationId=", request.NotificationId, "|err=%v", err)
 	}
 
 	err = models.DeleteUserAuth(userAuth.Id)
 	if err != nil {
-		logger.Error("UserAuthDeleteFailed|SID=", userAuth, "|UID=", userAuth.UID, "|NotificationId=", request.NotificationId, "|err=", err)
+		logger.Error("UserAuthDeleteFailed|SID=", userAuth, "|UID=", userAuth.UID, "|NotificationId=", request.NotificationId, "|err=%v", err)
 		this.Serve500(err)
 		return
 	}

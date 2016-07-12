@@ -17,7 +17,7 @@ func DeleteNotificationId(uid string, nid string) error {
 	err := hystrix.Do(common.Notification, func() error {
 		err := c.Remove(bson.M{"uid": uid, "notificationId": nid})
 		if err != nil {
-			logger.Error("UID=", uid, "|NID=", nid, "|Err=", err)
+			logger.Error("UID=", uid, "|NID=", nid, "|Err=%v", err)
 		}
 		return err
 	}, nil)
@@ -43,7 +43,7 @@ func AddNotificationId(uid string, nid string, os string) error {
 
 		_, err := c.Upsert(key, value)
 		if err != nil {
-			logger.Error("UID=", uid, "|NID=", nid, "|OS=", os, "|Err=", err)
+			logger.Error("UID=", uid, "|NID=", nid, "|OS=", os, "|Err=%v", err)
 		}
 		return err
 	}, nil)
@@ -64,12 +64,12 @@ func GetNotificationIds(uid string) (*[]Notification, error) {
 			"uid": uid,
 		}).All(&notifications)
 		if err != nil {
-			logger.Error("DB|UID=", uid, "|Err=", err)
+			logger.Error("DB|UID=", uid, "|Err=%v", err)
 		}
 		return err
 	}, nil)
 
-	logger.Debug("DB|UID=", uid, "|Result=", notifications)
+	logger.Debug("DB|UID=", uid, "|Result=%v", notifications)
 	return &notifications, err
 
 }

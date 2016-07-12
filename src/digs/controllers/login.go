@@ -27,7 +27,7 @@ func (this *LoginController) Post()  {
 	//Check if the person is already registered
 	userAccount, err := models.GetUserAccount("uid", request.FBID)
 	if err != nil {
-		logger.Error("LOGIN|UID=", request.FBID, "|Unable to get user Account|Err=", err)
+		logger.Error("LOGIN|UID=", request.FBID, "|Unable to get user Account|Err=%v", err)
 		this.Serve500(errors.New("Unable to look up account table"))
 		return
 	}
@@ -40,7 +40,7 @@ func (this *LoginController) Post()  {
 		go sendWelcomeMail(userAccount)
 
 		if err != nil {
-			logger.Error("LOGIN|Request=", request, "|Unable to create user Account|Err=", err)
+			logger.Error("LOGIN|Request=", request, "|Unable to create user Account|Err=%v", err)
 			this.Serve500(err)
 			return
 		}
@@ -48,7 +48,7 @@ func (this *LoginController) Post()  {
 	uid = userAccount.UID
 	sid, err = createSession(userAccount, request.AccessToken)
 	if sid == "" || err != nil {
-		logger.Critical("LOGIN|Request=", request, "|SessionCreationFailed|err=", err)
+		logger.Critical("LOGIN|Request=%v", request, "|SessionCreationFailed|err=%v", err)
 		this.Serve500(errors.New("Unable to create new session"))
 		return
 	}

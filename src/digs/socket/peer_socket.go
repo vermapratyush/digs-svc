@@ -58,7 +58,7 @@ func LeaveNode(uid string) {
 func MulticastPerson(uid string, activity string) {
 	userLocation, err := models.GetUserLocation(uid)
 	if err != nil || len(userLocation.Location.Coordinates) == 0 {
-		logger.Error("PEER|UserLocationNotFound|uid=",uid, "|err=", err)
+		logger.Error("PEER|UserLocationNotFound|uid=",uid, "|err=%v", err)
 		return
 	}
 	userAccount, _ := models.GetUserAccount("uid", uid)
@@ -88,7 +88,7 @@ func MulticastPersonCustom(activity string, userAccount *models.UserAccount, use
 			})
 			err := sendWSMessage(peer, userAccount.UID, response)
 			if err != nil {
-				logger.Error("PEER|MessageSendFailed|ToUID=", toUID, "|From=", userAccount.UID, "|err=", err)
+				logger.Error("PEER|MessageSendFailed|ToUID=", toUID, "|From=", userAccount.UID, "|err=%v", err)
 			}
 		}
 	}
@@ -98,7 +98,7 @@ func MulticastPersonCustom(activity string, userAccount *models.UserAccount, use
 func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRequest) {
 
 	uids := models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, userAccount.Settings.Range, -1)
-	logger.Debug("TotalUsers|UID=", userAccount.UID, "|MID=", msg.MID, "|Location=", msg.Location, "|Size=", len(uids))
+	logger.Debug("TotalUsers|UID=", userAccount.UID, "|MID=", msg.MID, "|Location=%v", msg.Location, "|Size=", len(uids))
 	sendingWS := make([]string, 0)
 	sendingPush := make([]string, 0)
 
@@ -147,7 +147,7 @@ func sendWSMessage(toPeer Peer, fromUID string, data []byte) error {
 
 	err := SendData(toPeer.UID, data)
 	if err != nil {
-		logger.Critical("MessageSendFailed|ToUID=", toPeer.UID, "|From=", fromUID, "|Error=", err)
+		logger.Critical("MessageSendFailed|ToUID=", toPeer.UID, "|From=", fromUID, "|Error=%v", err)
 		LeaveNode(fromUID)
 		return err
 	}
@@ -158,7 +158,7 @@ func sendPushMessage(userAccount *models.UserAccount, toUID string, msg *domain.
 
 	notifications, err := models.GetNotificationIds(toUID)
 	if err != nil {
-		logger.Error("PEER|NotificationIdFetch|toUID=", toUID, "|err=", err)
+		logger.Error("PEER|NotificationIdFetch|toUID=", toUID, "|err=%v", err)
 		return
 	}
 

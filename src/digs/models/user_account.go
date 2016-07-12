@@ -105,7 +105,7 @@ func AddToBlockedContent(uid, contentType, contentValue string) error {
 
 		err := c.Update(query, update)
 		if err != nil {
-			logger.Error("AbusiveContent|UnableToAdd|UID=", uid, "|ContentType=", contentType, "|ContentValue=", contentValue, "|err=", err)
+			logger.Error("AbusiveContent|UnableToAdd|UID=", uid, "|ContentType=", contentType, "|ContentValue=", contentValue, "|err=%v", err)
 		}
 		return err
 	}, nil)

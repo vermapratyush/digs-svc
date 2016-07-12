@@ -145,7 +145,7 @@ func GetLiveUIDForFeed(longitude, latitude float64, maxDistance, minDistance flo
 		pipe := c.Pipe(pipeFilters)
 		err := pipe.All(&result)
 		if(err != nil) {
-			logger.Error("UIDForFeed|lat=", latitude, "|long=", longitude, "|maxDist=", maxDistance, "|minDist=", minDistance, "|Err=", err)
+			logger.Error("UIDForFeed|lat=", latitude, "|long=", longitude, "|maxDist=", maxDistance, "|minDist=", minDistance, "|Err=%v", err)
 		}
 		return err
 	}, nil)
@@ -158,6 +158,6 @@ func GetLiveUIDForFeed(longitude, latitude float64, maxDistance, minDistance flo
 			idx++
 		}
 	}
-	logger.Debug("UIDForFeed|Users=", uidArray)
+	logger.Debug("UIDForFeed|Users=%v", uidArray)
 	return uidArray
 }

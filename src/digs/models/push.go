@@ -28,7 +28,7 @@ func AndroidMessagePush(uid, nid, message string)  {
 		fcm.NewFcmMsgTo(nid, data)
 		response, err := fcm.Send(1)
 		if err != nil || response.StatusCode != 200 {
-			logger.Error("PUSH|Android|UID=", uid, "|NID=", nid, "|OS=", "|Response=", response, "|Err=", err)
+			logger.Error("PUSH|Android|UID=", uid, "|NID=", nid, "|OS=", "|Response=%v", response, "|Err=%v", err)
 		}
 		return err
 	}, nil)
@@ -38,7 +38,7 @@ func IOSMessagePush(uid, nid, message string) {
 	_ = hystrix.Go(common.IOSPush, func() error {
 
 		if pemErr != nil {
-			logger.Error("APNSCertError|err", pemErr)
+			logger.Error("APNSCertError|err=%v", pemErr)
 			return pemErr
 		}
 
@@ -51,7 +51,7 @@ func IOSMessagePush(uid, nid, message string) {
 		response, err := client.Push(notification)
 
 		if err != nil || response.StatusCode != 200 {
-			logger.Error("PUSH|ios|UID=", uid, "|NID=", nid, "|OS=", "|Response=", response, "|Err=", err)
+			logger.Error("PUSH|ios|UID=", uid, "|NID=", nid, "|OS=", "|Response=%v", response, "|Err=%v", err)
 		}
 		return err
 	}, nil)

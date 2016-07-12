@@ -37,7 +37,7 @@ func FindSession(fieldName, fieldValue string) (*UserAuth, error) {
 	err := hystrix.Do(common.SessionGet, func() error {
 		err := c.Find(bson.M{fieldName: fieldValue}).Sort("-creationTime").One(&res);
 		if err != nil {
-			logger.Critical("SessionNotFound|", fieldName, "=", fieldValue, "|err=", err,"|Stacktrace=", string(debug.Stack()))
+			logger.Critical("SessionNotFound|", fieldName, "=", fieldValue, "|err=%v", err,"|Stacktrace=", string(debug.Stack()))
 		}
 		return err
 	}, nil)

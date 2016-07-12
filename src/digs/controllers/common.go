@@ -28,11 +28,11 @@ func (this *WSBaseController) Prepare() {
 
 	ws, err := websocket.Upgrade(this.Ctx.ResponseWriter, this.Ctx.Request, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
-		logger.Critical("Not a websocket handshake", err)
+		logger.Critical("Not a websocket handshake|Err=%v", err)
 		http.Error(this.Ctx.ResponseWriter, "Not a websocket handshake", 400)
 		return
 	} else if err != nil {
-		logger.Critical("Cannot setup WebSocket connection:", err)
+		logger.Critical("Cannot setup WebSocket connection:%v", err)
 		return
 	}
 	this.ws = ws
@@ -79,12 +79,12 @@ func (this *HttpBaseController) Serve204() {
 func (this *WSBaseController) Respond(obj interface{})  {
 	data, err := json.Marshal(obj)
 	if err != nil {
-		logger.Critical("Unable to reply back to the message sender Err=%s", err, "|obj=", obj)
+		logger.Critical("Unable to reply back to the message sender Err=%v", err, "|obj=%v", obj)
 		this.ws.WriteMessage(websocket.TextMessage, []byte("Unable to respond"))
 		return
 	}
 	err = this.ws.WriteMessage(websocket.TextMessage, data)
 	if err != nil {
-		logger.Critical("Error writing to websocket|Obj=", obj)
+		logger.Critical("Error writing to websocket|Obj=%v", obj)
 	}
 }

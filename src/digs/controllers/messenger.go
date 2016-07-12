@@ -28,7 +28,7 @@ func (this *WSMessengerController) Get() {
 		})
 		return
 	}
-	logger.Debug("UserConnected|UID=", userAuth)
+	logger.Debug("UserConnected|UID=%v", userAuth)
 	this.Respond(&domain.GenericResponse{
 		StatusCode: 200,
 		Message: "Connection Established",
@@ -43,14 +43,14 @@ func (this *WSMessengerController) Get() {
 		_, request, err := this.ws.ReadMessage()
 
 		if err != nil {
-			logger.Error("MessageReadFailed|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Err=", err.Error())
+			logger.Error("MessageReadFailed|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Err=%v", err)
 			return
 		}
 		logger.Debug("REQUEST|Sid=", userAuth.UID, "UID=", userAuth.UID, "|WSRequest=", string(request))
 		response, _ := serve(request, userAuth, &location)
 
 		if (response != nil) {
-			logger.Debug("RESPONSE|Sid=", userAuth, "|UID=", userAuth.UID, "|Response", response)
+			logger.Debug("RESPONSE|Sid=", userAuth.SID, "|UID=", userAuth.UID, "|Response=%v", response)
 			this.Respond(response)
 		}
 
@@ -77,7 +77,7 @@ func serve(requestBody []byte, userAuth *models.UserAuth, location *domain.Coord
 
 		err := handleMessage(userAuth.UID, &msg)
 		if err != nil {
-			logger.Critical("MessageRecv|NotHandled|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Err=", err)
+			logger.Critical("MessageRecv|NotHandled|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Err=%v", err)
 			return &domain.MessageReceivedResponse{
 				StatusCode:500,
 				RequestId:msg.MID,

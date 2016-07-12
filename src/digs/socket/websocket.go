@@ -52,7 +52,7 @@ func SendData(uid string, data []byte) error {
 
 	err := peer.Conn.WriteMessage(websocket.TextMessage, data)
 	if err != nil {
-		logger.Error("SOCKET|UnableToWriteToSocket|UID=", uid, "|Error=", err)
+		logger.Error("SOCKET|UnableToWriteToSocket|UID=", uid, "|Error=%v", err)
 	}
 	return err
 }
