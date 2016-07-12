@@ -9,7 +9,7 @@ import (
 	"github.com/NaySoftware/go-fcm"
 )
 var (
-	APNSCert, pemErr = certificate.FromPemFile("models/final.pem", "")
+	APNSCert, pemErr = certificate.FromPemFile("models/apn_production.pem", "")
 )
 
 
@@ -47,7 +47,7 @@ func IOSMessagePush(uid, nid, message string) {
 		notification.Topic = "info.powow.app"
 		notification.Payload = []byte("{\"aps\":{\"alert\":\"" + message + "\"}}") // See Payload section below
 
-		client := apns.NewClient(APNSCert).Development()
+		client := apns.NewClient(APNSCert).Production()
 		_, err := client.Push(notification)
 
 		if err != nil {
