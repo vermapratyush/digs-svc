@@ -8,6 +8,7 @@ import (
 	"digs/common"
 	"sync"
 	"digs/logger"
+	"fmt"
 )
 
 
@@ -172,10 +173,10 @@ func sendPushMessage(userAccount *models.UserAccount, toUID string, msg *domain.
 }
 
 func androidPush(userAccount *models.UserAccount, nid string, msg *domain.MessageSendRequest) {
-	models.AndroidMessagePush(userAccount.UID, nid, msg.Body)
+	models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s: %s", userAccount.FirstName, msg.Body))
 
 }
 
 func iosPush(userAccount *models.UserAccount, nid string, msg *domain.MessageSendRequest)  {
-	models.IOSMessagePush(userAccount.UID, nid, msg.Body)
+	models.IOSMessagePush(userAccount.UID, nid, fmt.Sprintf("%s: %s", userAccount.FirstName, msg.Body))
 }
