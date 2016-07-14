@@ -272,7 +272,7 @@ ol li {
           <a href="http://powow.info"><img src="https://raw.githubusercontent.com/PowowInfo/powowinfo.github.io/master/img/icon.png"  target="_blank" style="width:90px; height:90px;margin:10px" /></a>
           </center>
             <h3>Hi ` + userAccount.FirstName + `,</h3>
-            <p>First of all thank you for signing up on <a href="http://powow.info" target="_blank">Powow</a> and welcome to the Powow community. Powow is a your geo-location based community with no central organizer. You decide how wide or narrow your comfort radius for community is and you are implicitly part of it.</p>
+            <p>First of all thank you for signing up on <a href="http://powow.info" target="_blank">Powow</a> and welcome to the Powow community. Powow is your de-centralised geo-location based community. You decide n how wide or narrow your comfort radius for community is and you are implicitly part of it.</p>
 
             <h3>How is Powow different?</h3>
             <p>In contrast to previous generations which lived, worked and enjoyed at fixed locations current generation is mobile, dynamic and globally minded. But, moving is still too hard. Not any more! Powow allows you to immediately discover people, events and activities happening in your locality by simply getting on the app.</p>
