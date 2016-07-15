@@ -8,6 +8,7 @@ import (
 	"digs/socket"
 	"gopkg.in/mgo.v2"
 	"digs/logger"
+	"strconv"
 )
 
 type PeopleController struct {
@@ -25,7 +26,12 @@ func (this *PeopleController) Get() {
 		logger.Error("PEOPLE|LatLongFormatError|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Lat=", latitude, "|Long=", longitude, "|Err=%v", err)
 		this.Serve500(errors.New("Location cordinate not provided in proper format"))
 		return
+	} else {
+		latFloat, _ := strconv.ParseFloat(this.GetString("latitude"), 64)
+		longFloat, _ := strconv.ParseFloat(this.GetString("longitude"), 64)
+		models.AddUserNewLocation(longFloat, latFloat, userAuth.UID)
 	}
+
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			this.InvalidSessionResponse()

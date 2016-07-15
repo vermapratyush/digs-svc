@@ -8,6 +8,7 @@ import (
 	"digs/socket"
 	"digs/common"
 	"digs/logger"
+	"strconv"
 )
 
 type WSMessengerController struct {
@@ -35,9 +36,20 @@ func (this *WSMessengerController) Get() {
 		MessageCode: 3000,
 	})
 
+	var location = domain.Coordinate{}
+	if (this.GetString("longitude") != "" && this.GetString("latitude") != "") {
+		latFloat, _ := strconv.ParseFloat(this.GetString("latitude"), 64)
+		longFloat, _ := strconv.ParseFloat(this.GetString("longitude"), 64)
+		models.AddUserNewLocation(longFloat, latFloat, userAuth.UID)
+		location = domain.Coordinate{
+			Longitude:longFloat,
+			Latitude:latFloat,
+		}
+	}
+
 	socket.AddNode(userAuth.UID, this.ws)
 	defer socket.LeaveNode(userAuth.UID)
-	var location = domain.Coordinate{}
+
 
 	for {
 		_, request, err := this.ws.ReadMessage()

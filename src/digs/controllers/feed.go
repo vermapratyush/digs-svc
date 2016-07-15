@@ -8,6 +8,7 @@ import (
 	"time"
 	"gopkg.in/mgo.v2"
 	"digs/logger"
+	"strconv"
 )
 
 type FeedController struct {
@@ -34,7 +35,11 @@ func (this *FeedController) Get() {
 		this.Serve500(err)
 		return
 	}
-
+	if (this.GetString("longitude") != "" && this.GetString("latitude") != "") {
+		latFloat, _ := strconv.ParseFloat(this.GetString("latitude"), 64)
+		longFloat, _ := strconv.ParseFloat(this.GetString("longitude"), 64)
+		models.AddUserNewLocation(longFloat, latFloat, userAuth.UID)
+	}
 	//TODO: Fix the following, should be done in one query
 	history, err := models.GetUserFeed(userAuth.UID)
 	if err != nil && err != mgo.ErrNotFound {
