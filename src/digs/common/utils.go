@@ -10,7 +10,7 @@ const (
 	MessageBatchSize = 50
 
 	//Constant-Variables
-	DefaultReach = 10000.0
+	DefaultReach = 10000000.0
 
 	//Hystrix Commands
 	MessageWrite = "MessageWrite"
