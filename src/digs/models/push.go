@@ -14,10 +14,10 @@ var (
 )
 
 type Payload struct {
-	aps *APS `json:"aps"`
+	Aps *APS `json:"aps"`
 }
 type APS struct {
-	alert string `json:"alert"`
+	Alert string `json:"alert"`
 }
 
 func AndroidMessagePush(uid, nid, message string)  {
@@ -53,13 +53,12 @@ func IOSMessagePush(uid, nid, message string) {
 		notification.DeviceToken = nid
 		notification.Topic = "info.powow.app"
 		payload := &Payload{
-			aps:&APS{
-				alert:message,
+			Aps:&APS{
+				Alert:message,
 			},
 		}
 		payloadByte, _ := json.Marshal(payload)
 		notification.Payload = payloadByte
-
 		client := apns.NewClient(APNSCert).Production()
 		response, err := client.Push(notification)
 		if err != nil || response.StatusCode != 200 {
