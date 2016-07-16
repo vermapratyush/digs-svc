@@ -66,6 +66,7 @@ func (this *MeetupBotcontroller) Post() {
 			processed[user.UID] = struct {}{}
 		}
 	}
+	this.Serve200(processed)
 }
 
 func GetUserProfile(uid string) *models.UserAccount {
