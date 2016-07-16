@@ -7,11 +7,18 @@ import (
 	apns "github.com/sideshow/apns2"
 	"github.com/NaySoftware/go-fcm"
 	"digs/logger"
+	"encoding/json"
 )
 var (
 	APNSCert, pemErr = certificate.FromPemFile("models/apn_production.pem", "")
 )
 
+type Payload struct {
+	aps *APS `json:"aps"`
+}
+type APS struct {
+	alert string `json:"alert"`
+}
 
 func AndroidMessagePush(uid, nid, message string)  {
 	_ = hystrix.Go(common.AndroidPush, func() error {
@@ -45,11 +52,16 @@ func IOSMessagePush(uid, nid, message string) {
 		notification := &apns.Notification{}
 		notification.DeviceToken = nid
 		notification.Topic = "info.powow.app"
-		notification.Payload = []byte("{\"aps\":{\"alert\":\"" + message + "\"}}") // See Payload section below
+		payload := &Payload{
+			aps:&APS{
+				alert:message,
+			},
+		}
+		payloadByte, _ := json.Marshal(payload)
+		notification.Payload = payloadByte
 
 		client := apns.NewClient(APNSCert).Production()
 		response, err := client.Push(notification)
-
 		if err != nil || response.StatusCode != 200 {
 			logger.Error("PUSH|ios|UID=", uid, "|NID=", nid, "|OS=", "|Response=%v", response, "|Err=%v", err)
 		}

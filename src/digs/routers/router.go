@@ -10,6 +10,7 @@ package routers
 import (
 	"digs/controllers"
 	"github.com/astaxie/beego"
+	"digs/bots"
 )
 
 func init() {
@@ -25,4 +26,7 @@ func init() {
 
 	//WS
 	beego.Router("/ws/v1/messenger", &controllers.WSMessengerController{})
+
+	//BOTS
+	beego.Router("/bots/meetup", &bots.MeetupBotcontroller{})
 }

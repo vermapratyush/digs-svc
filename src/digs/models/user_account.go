@@ -40,7 +40,21 @@ func AddUserAccount(firstName, lastName, email, about, fbid, locale, profilePict
 	return userAccount, err
 }
 
-func GetAllUserAccount(fieldValue []string) ([]UserAccount, error) {
+func GetAllUserAccount() ([]UserAccount, error) {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("accounts")
+	defer conn.Close()
+
+	res := []UserAccount{}
+	err := hystrix.Do(common.UserAccountGetAll, func() error {
+		err := c.Find(bson.M{}).All(&res)
+		return err
+	}, nil)
+
+	return res, err
+}
+
+func GetAllUserAccountIn(fieldValue []string) ([]UserAccount, error) {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("accounts")
 	defer conn.Close()

@@ -49,7 +49,7 @@ func (this *PeopleController) Get() {
 	}
 
 	uidList := models.GetLiveUIDForFeed(longitude, latitude, userAccount.Settings.Range, -1)
-	users, err := models.GetAllUserAccount(uidList)
+	users, err := models.GetAllUserAccountIn(uidList)
 	if err != nil {
 		logger.Error("PEOPLE|GetUserAccountFailed|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Lat=", latitude, "|Long=", longitude, "|Err=%v", err)
 		return

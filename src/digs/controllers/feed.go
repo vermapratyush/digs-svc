@@ -82,7 +82,7 @@ func (this *FeedController) Get() {
 		feedUID = append(feedUID, message.From)
 	}
 
-	users, _ := models.GetAllUserAccount(feedUID)
+	users, _ := models.GetAllUserAccountIn(feedUID)
 	mapUID := make(map[string]models.UserAccount, len(users))
 	for _, user := range(users) {
 		mapUID[user.UID] = user
@@ -119,7 +119,7 @@ func addStub() ([]*domain.MessageGetResponse) {
 		From: "Powow",
 		Message: "Hi, Welcome to powow. We do not have any message to show you right now. Please type in a message below and it will be viewed by people in your locality. In the settings page you can specify your influence range (currently: 10,000 KM). Depending on the value you will be able to reach as many people as possible.",
 		Timestamp: time.Now().Unix() * int64(1000),
-		ProfilePicture:"https://i.imgur.com/ZzVINk9.png",
+		ProfilePicture:"https://raw.githubusercontent.com/PowowInfo/powowinfo.github.io/master/img/image_300.png",
 	})
 	return feed
 }

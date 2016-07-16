@@ -51,7 +51,7 @@ func setCommandParameters() {
 		Timeout:                1000,
 		MaxConcurrentRequests:  50,
 	}
-	extrnalUnthrottled := hystrix.CommandConfig{
+	externalUnthrottled := hystrix.CommandConfig{
 		Timeout:                1000,
 		MaxConcurrentRequests:  10000,
 	}
@@ -70,8 +70,10 @@ func setCommandParameters() {
 	commandConfigMap[common.LocationGet] = singleCommandHighConcurrencyConfig
 	commandConfigMap[common.LocationUpdate] = singleCommandHighConcurrencyConfig
 	commandConfigMap[common.LocationUserFind] = batchCommandConfig
-	commandConfigMap[common.AndroidPush] = extrnalUnthrottled
-	commandConfigMap[common.IOSPush] = extrnalUnthrottled
+	commandConfigMap[common.AndroidPush] = externalUnthrottled
+	commandConfigMap[common.IOSPush] = externalUnthrottled
+	commandConfigMap[common.MeetupAPI] = externalUnthrottled
+	commandConfigMap[common.BitlyAPI] = externalUnthrottled
 
 	hystrix.Configure(commandConfigMap)
 

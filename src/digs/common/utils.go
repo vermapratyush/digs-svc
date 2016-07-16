@@ -7,6 +7,9 @@ import (
 
 const (
 	PushNotification_API_KEY = "AIzaSyCMYdgQUqL8X7D5OaY7hvADMOQzA6WaqPI"
+	Meetup_API_KEY = "06f4d95e5f7e7e6775682b25106f17"
+	Bitly_Login = "vermapratyush"
+	Bitly_API_KEY = "R_4d0b283da71e99ec6c0eb703f289982f"
 	MessageBatchSize = 50
 
 	//Constant-Variables
@@ -29,6 +32,8 @@ const (
 	LocationUserFind = "LocationUserFind"
 	AndroidPush = "AndroidPush"
 	IOSPush = "IOSPush"
+	MeetupAPI = "MeetupAPI"
+	BitlyAPI = "BitlyAPI"
 )
 
 func GetStringArrayAsMap(array []string) (map[string]struct{}) {
@@ -61,6 +66,17 @@ func IsUserBlocked(blockedUsers []string, fromUID string) bool {
 	return false
 }
 
+func DistanceLong(long1, lat1, long2, lat2 float64) float64 {
+	pointA := domain.Coordinate{
+		Latitude:lat1,
+		Longitude:long1,
+	}
+	pointB := domain.Coordinate{
+		Latitude:lat2,
+		Longitude:long2,
+	}
+	return Distance(&pointA, &pointB)
+}
 // http://en.wikipedia.org/wiki/Haversine_formula
 func Distance(pointA, pointB *domain.Coordinate) float64 {
 	// convert to radians
