@@ -32,6 +32,9 @@ func (this *MeetupBotcontroller) Post() {
 
 	processed := make(map[string]struct{})
 	for _, user := range(users)  {
+		if user.UID == "10154310369017354" || user.UID == "1426599657353800" || user.UID == "10210133003863715" || user.UID == "10154310369017354" || user.UID == "10153552959752680" || user.UID == "10210069299268520" || user.UID == "1369650759763795" || user.UID == "10153534223541736" || user.UID == "10210066351560539" || user.UID == "10154168592560450" || user.UID == "10210146992256811" || user.UID == "1150125341717008"{
+			continue
+		}
 		_, present := processed[user.UID]
 		if !present {
 			userLocation := GetUserLocation(user.UID)
@@ -43,6 +46,9 @@ func (this *MeetupBotcontroller) Post() {
 			meetupList := GetTopMeetup(userLocation.Location)
 			if (len(meetupList) > 0) {
 				for _, near := range(nearBy) {
+					if near == "10154310369017354" || near == "1426599657353800" || near == "10210133003863715" || near == "10154310369017354" || near == "10153552959752680" || near == "10210069299268520" || near == "1369650759763795" || near == "10153534223541736" || near == "10210066351560539" || near == "10154168592560450" || near == "10210146992256811" || near == "1150125341717008"{
+						continue
+					}
 					_, present := processed[near]
 					if present {
 						continue
