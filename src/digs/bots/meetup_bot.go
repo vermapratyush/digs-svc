@@ -20,7 +20,7 @@ type MeetupBotcontroller struct {
 	controllers.HttpBaseController
 }
 
-func (this *MeetupBotcontroller) Get() {
+func (this *MeetupBotcontroller) Post() {
 	userId := this.GetString("userId")
 	users := make([]models.UserAccount, 0)
 	if userId != "" {
