@@ -10,13 +10,13 @@ import (
 	"errors"
 )
 
-type MeetupBotController struct {
+type GrouponBotController struct {
 	controllers.HttpBaseController
 }
 
-type MeetupBot Bot
+type GrouponBot Bot
 
-func (this *MeetupBotController) Post() {
+func (this *GrouponBotController) Post() {
 
 	userId := this.GetString("userId")
 	users := make([]models.UserAccount, 0)
@@ -27,13 +27,13 @@ func (this *MeetupBotController) Post() {
 		users, _ = models.GetAllUserAccount()
 	}
 
-	botInfo := MeetupBot{
-		BotName: "MeetupBot",
+	botInfo := GrouponBot{
+		BotName: "GrouponBot",
 		FromUser: "PowowInfo",
 		Users:users,
 		Radius:10000.0,
-		BotIntegration:meetupBotIntegration,
-		BotMessageGeneration:meetupGenerateMessage,
+		BotIntegration:grouponBotIntegration,
+		BotMessageGeneration:grouponGenerateMessage,
 	}
 
 	processed := SpiderWebStrategy(Bot(botInfo))
@@ -42,7 +42,7 @@ func (this *MeetupBotController) Post() {
 }
 
 
-func meetupGenerateMessage(toUser models.UserAccount, toLocation models.Coordinate, nearBy []string, meetupList interface{}) string {
+func grouponGenerateMessage(toUser models.UserAccount, toLocation models.Coordinate, nearBy []string, meetupList interface{}) string {
 	body := ""
 	if len (nearBy) == 1 {
 		body = fmt.Sprintf("Hey %s, We found few meetups for tomorrow which you might like to try out with people nearby. Why don't you give it a shot!.<br/>", toUser.FirstName)
@@ -57,7 +57,7 @@ func meetupGenerateMessage(toUser models.UserAccount, toLocation models.Coordina
 	return body
 }
 
-func meetupBotIntegration(bot Bot, toUser models.UserAccount, location models.Coordinate) (interface{}, error) {
+func grouponBotIntegration(bot Bot, toUser models.UserAccount, location models.Coordinate) (interface{}, error) {
 
 	events := models.GetMeetup(location.Coordinates[0], location.Coordinates[1], bot.Radius)
 	sort.Sort(models.ByYesCount{events.Results})

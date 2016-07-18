@@ -28,5 +28,5 @@ func init() {
 	beego.Router("/ws/v1/messenger", &controllers.WSMessengerController{})
 
 	//BOTS
-	beego.Router("/bots/meetup", &bots.MeetupBotcontroller{})
+	beego.Router("/bots/meetup", &bots.MeetupBotController{})
 }
