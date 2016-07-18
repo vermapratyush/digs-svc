@@ -38,7 +38,7 @@ type PersonResponse struct {
 	Name           string `json:"name" bson:"name"`
 	UID            string `json:"userId" bson:"userId"`
 	About          string `json:"about" bson:"about"`
-	IsPreset       bool `json:"isActive" bson:"isActive"`
+	IsActive       bool `json:"isActive" bson:"isActive"`
 	Activity       string `json:"activity" bson:"activity"`
 	ProfilePicture string `json:"picture" bson:"picture"`
 }
