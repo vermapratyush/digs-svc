@@ -64,7 +64,7 @@ func (this *PeopleController) Get() {
 		_, present := socket.GetLookUp(user.UID)
 		_, presentInBlock := blockedMap[user.UID]
 
-		if !present || user.UID == userAccount.UID || presentInBlock  {
+		if user.UID == userAccount.UID || presentInBlock  {
 			continue
 		}
 
@@ -73,6 +73,7 @@ func (this *PeopleController) Get() {
 			UID: user.UID,
 			About: user.About,
 			Activity: "join",
+			IsActive: present,
 			ProfilePicture: user.ProfilePicture,
 		})
 	}
