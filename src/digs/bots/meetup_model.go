@@ -1,4 +1,4 @@
-package models
+package bots
 
 
 type MeetupEvents []MeetupEvent

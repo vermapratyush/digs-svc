@@ -1,4 +1,4 @@
-package models
+package bots
 
 import (
 	"github.com/afex/hystrix-go/hystrix"
