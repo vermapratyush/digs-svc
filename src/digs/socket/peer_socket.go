@@ -14,12 +14,13 @@ import (
 
 const (
 	//MessageToServer
-	UpdateLocation = "1:"
-	SendMessage    = "2:"
-	GroupMessage   = "3:"
-	Exit           = "4:"
+	UpdateLocation  = "1:"
+	SendMessage     = "2:"
+	GroupMessage    = "3:"
+	TypingMessage   = "4:"
+	Exit            = "5:"
 	//MessageToClient
-	Message        = "5:"
+	Message         = "6:"
 )
 
 func AddNode(uid string, ws *websocket.Conn) {

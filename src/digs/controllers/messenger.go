@@ -106,6 +106,13 @@ func serve(requestBody []byte, userAuth *models.UserAuth, location *domain.Coord
 		} else {
 			return serveMessageRecvOk(msg), nil
 		}
+	case strings.HasPrefix(message, socket.TypingMessage):
+
+		var msg = domain.MessageTypingRequest{}
+		_ = json.Unmarshal(requestBody[len(socket.TypingMessage):], &msg)
+
+		handleTyping(userAuth.UID, &msg)
+		return nil, nil
 	default:
 		logger.Critical("UnknownCommand|NotHandled|SID=", userAuth.SID, "|UID=", userAuth.UID)
 		return nil, nil
@@ -113,17 +120,11 @@ func serve(requestBody []byte, userAuth *models.UserAuth, location *domain.Coord
 
 }
 
-func serveMessageRecvErr(msg domain.MessageSendRequest) *domain.MessageReceivedResponse {
-	return &domain.MessageReceivedResponse{
-		StatusCode:500,
-		RequestId:msg.MID,
-	}
-}
-
-func serveMessageRecvOk(msg domain.MessageSendRequest) *domain.MessageReceivedResponse {
-	return &domain.MessageReceivedResponse{
-		StatusCode:200,
-		RequestId:msg.MID,
+func handleTyping(uid string, msg *domain.MessageTypingRequest) {
+	if msg.IsTyping {
+		go socket.MulticastPerson(uid, "typing")
+	} else {
+		go socket.MulticastPerson(uid, "nottyping")
 	}
 }
 
@@ -157,3 +158,17 @@ func handleMessage(uid string, msg *domain.MessageSendRequest) (error) {
 	return nil
 }
 
+
+func serveMessageRecvErr(msg domain.MessageSendRequest) *domain.MessageReceivedResponse {
+	return &domain.MessageReceivedResponse{
+		StatusCode:500,
+		RequestId:msg.MID,
+	}
+}
+
+func serveMessageRecvOk(msg domain.MessageSendRequest) *domain.MessageReceivedResponse {
+	return &domain.MessageReceivedResponse{
+		StatusCode:200,
+		RequestId:msg.MID,
+	}
+}

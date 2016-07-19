@@ -43,6 +43,11 @@ type MessageSendRequest struct {
 	Timestamp int64 `json:"timestamp" bson:"timestamp"`
 }
 
+type MessageTypingRequest struct {
+	BaseRequest
+	IsTyping bool `json:"isTyping" bson:"isTyping"`
+}
+
 type Coordinate struct  {
 	BaseRequest
 	Latitude float64 `json:"latitude" bson:"latitude"`
