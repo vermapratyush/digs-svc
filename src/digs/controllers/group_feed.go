@@ -31,19 +31,7 @@ func (this *GroupController) Get() {
 	messages, _ := models.GetMessageFromGroup(gid, from, common.MessageBatchSize)
 	logger.Debug("GROUPGetResponse|Sid=", sid, "|UID=", userAuth.UID, "|ResponseSize=", len(messages))
 
-	response := make([]domain.MessageGetResponse, len(messages))
-	for idx, message := range (messages) {
-		response[idx] = domain.MessageGetResponse {
-			UID:message.UID,
-			MID: message.MID,
-			From: common.GetName(message.UserAccount.FirstName, message.UserAccount.LastName),
-			About: message.UserAccount.About,
-			Message: message.Content,
-			Timestamp: message.UserAccount.CreationTime.Unix() * int64(1000),
-			ProfilePicture: message.UserAccount.ProfilePicture,
-		}
-	}
-
+	response := composeResponse(messages)
 	this.Serve200(response)
 }
 
@@ -94,19 +82,24 @@ func (this *GroupController) Post() {
 	response.GID = userGroup.GID
 	response.GroupName = userGroup.GroupName
 	response.GroupAbout = userGroup.GroupAbout
-	response.Messages = make([]domain.MessageGetResponse, len(messages))
+	response.Messages = composeResponse(messages)
+
+	logger.Debug("GROUPCreateResponse|Sid=", sid, "|UID=", userAuth.UID, "|ResponseSize=", len(response.Messages))
+	this.Serve200(response)
+}
+
+func composeResponse(messages []models.UserGroupMessageResolved) []domain.MessageGetResponse {
+	responseMessage := make([]domain.MessageGetResponse, len(messages))
 	for idx, message := range (messages) {
-		response.Messages[idx] = domain.MessageGetResponse{
+		responseMessage[idx] = domain.MessageGetResponse{
 			UID:message.UID,
 			MID: message.MID,
 			From: common.GetName(message.UserAccount.FirstName, message.UserAccount.LastName),
 			About: message.UserAccount.About,
 			Message: message.Content,
-			Timestamp: message.UserAccount.CreationTime.Unix() * int64(1000),
+			Timestamp: message.CreationTime.Unix() * int64(1000),
 			ProfilePicture: message.UserAccount.ProfilePicture,
 		}
 	}
-
-	logger.Debug("GROUPCreateResponse|Sid=", sid, "|UID=", userAuth.UID, "|ResponseSize=", len(response.Messages))
-	this.Serve200(response)
+	return responseMessage
 }

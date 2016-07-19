@@ -87,8 +87,9 @@ type UserGroup struct {
 }
 
 type UserGroupMessageResolved struct {
-	MID         string `json:"mid" bson:"mid"`
-	UID         string `json:"uid" bson:"uid"`
-	Content     string `json:"content" bson:"content"`
-	UserAccount UserAccount `json:"userAccount" bson:"userAccount"`
+	MID          string `json:"mid" bson:"mid"`
+	UID          string `json:"uid" bson:"uid"`
+	Content      string `json:"content" bson:"content"`
+	UserAccount  UserAccount `json:"userAccount" bson:"userAccount"`
+	CreationTime time.Time `json:"creationTime" bson:"creationTime"`
 }
