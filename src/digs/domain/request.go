@@ -67,3 +67,10 @@ type AbuseRequest struct {
 	MID string `json:"messageId" bson:"messageId"`
 	UID string `json:"userId" bson:"userId"`
 }
+
+type GroupCreateRequest struct {
+	BaseRequest
+	UIDS []string `json:"userIds" bson:"userIds"`
+	GroupName string `json:"groupName" bson:"groupName"`
+	GroupAbout string `json:"groupAbout" bson:"groupAbout"`
+}

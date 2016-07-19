@@ -30,6 +30,8 @@ const (
 	LocationUpdate = "LocationUpdate"
 	LocationGet = "LocationGet"
 	LocationUserFind = "LocationUserFind"
+	UserGroup = "UserGroup"
+	UserGroupBatch = "UserGroupBatch"
 	AndroidPush = "AndroidPush"
 	IOSPush = "IOSPush"
 	MeetupAPI = "MeetupAPI"

@@ -52,3 +52,10 @@ type SettingResponse struct {
 	PublicProfile    bool `json:"publicProfile" bson:"publicProfile"`
 	PushNotification bool `json:"enableNotification" bson:"enableNotification"`
 }
+
+type CreateGroupResponse struct {
+	GID        string `json:"groupId" bson:"groupId"`
+	GroupName  string `json:"groupName" bson:"groupName"`
+	GroupAbout string `json:"groupAbout" bson:"groupAbout"`
+	Messages   []MessageGetResponse `json:"messages" bson:"messages"`
+}

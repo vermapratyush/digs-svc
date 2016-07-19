@@ -70,6 +70,8 @@ func setCommandParameters() {
 	commandConfigMap[common.LocationGet] = singleCommandHighConcurrencyConfig
 	commandConfigMap[common.LocationUpdate] = singleCommandHighConcurrencyConfig
 	commandConfigMap[common.LocationUserFind] = batchCommandConfig
+	commandConfigMap[common.UserGroup] = singleCommandHighConcurrencyConfig
+	commandConfigMap[common.UserGroupBatch] = batchCommandConfig
 	commandConfigMap[common.AndroidPush] = externalUnthrottled
 	commandConfigMap[common.IOSPush] = externalUnthrottled
 	commandConfigMap[common.MeetupAPI] = externalUnthrottled
