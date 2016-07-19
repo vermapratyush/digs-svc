@@ -14,6 +14,39 @@ type GroupController struct {
 	HttpBaseController
 }
 
+func (this *GroupController) Get() {
+	gid := this.GetString("groupId")
+	from, _ := this.GetInt64("from", 0)
+
+	sid := this.GetString("sessionId")
+	userAuth, err := models.FindSession("sid", sid)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			this.InvalidSessionResponse()
+			return
+		}
+		this.Serve500(err)
+		return
+	}
+	messages, _ := models.GetMessageFromGroup(gid, from, common.MessageBatchSize)
+	logger.Debug("GROUPGetResponse|Sid=", sid, "|UID=", userAuth.UID, "|ResponseSize=", len(messages))
+
+	response := make([]domain.MessageGetResponse, len(messages))
+	for idx, message := range (messages) {
+		response[idx] = domain.MessageGetResponse {
+			UID:message.UID,
+			MID: message.MID,
+			From: common.GetName(message.UserAccount.FirstName, message.UserAccount.LastName),
+			About: message.UserAccount.About,
+			Message: message.Content,
+			Timestamp: message.UserAccount.CreationTime.Unix() * int64(1000),
+			ProfilePicture: message.UserAccount.ProfilePicture,
+		}
+	}
+
+	this.Serve200(response)
+}
+
 func (this *GroupController) Post() {
 	var request domain.GroupCreateRequest
 	logger.Debug("REQUEST|GroupCreateRequest|", string(this.Ctx.Input.RequestBody))
@@ -48,7 +81,7 @@ func (this *GroupController) Post() {
 				return
 			}
 		} else {
-			messages, _ = models.GetMessageFromGroup(userGroup.GID)
+			messages, _ = models.GetMessageFromGroup(userGroup.GID, 0, common.MessageBatchSize)
 		}
 	} else {
 		userGroup, err = models.CreateGroup(request.GroupName, request.GroupAbout, request.UIDS)
@@ -74,6 +107,6 @@ func (this *GroupController) Post() {
 		}
 	}
 
-	logger.Debug("GROUPResponse|Sid=", sid, "|UID=", userAuth.UID, "|ResponseSize=", len(response.Messages))
+	logger.Debug("GROUPCreateResponse|Sid=", sid, "|UID=", userAuth.UID, "|ResponseSize=", len(response.Messages))
 	this.Serve200(response)
 }
