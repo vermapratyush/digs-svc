@@ -16,7 +16,7 @@ const (
 	//MessageToServer
 	UpdateLocation = "1:"
 	SendMessage    = "2:"
-	GetMessage     = "3:"
+	GroupMessage   = "3:"
 	Exit           = "4:"
 	//MessageToClient
 	Message        = "5:"
@@ -98,7 +98,14 @@ func MulticastPersonCustom(activity string, userAccount *models.UserAccount, use
 
 func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRequest) {
 
-	uids := models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, userAccount.Settings.Range, -1)
+	uids := []string{}
+
+	if msg.GID != "" {
+		groupAccount, _ := models.GetGroupAccount(msg.GID)
+		uids = groupAccount.UIDS
+	} else {
+		uids = models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, userAccount.Settings.Range, -1)
+	}
 	logger.Debug("TotalUsers|UID=", userAccount.UID, "|MID=", msg.MID, "|Location=%v", msg.Location, "|Size=", len(uids))
 	sendingWS := make([]string, 0)
 	sendingPush := make([]string, 0)
@@ -109,7 +116,11 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			continue
 		}
 		toUserAccount, _ := models.GetUserAccount("uid", toUID)
-		models.AddToUserFeed(toUID, msg.MID)
+
+		//Add to feed of the user or group accordingly
+		AddToFeed(toUID, msg.GID, msg)
+
+		//Blocking only works for group messages
 		blocked := common.IsUserBlocked(toUserAccount.BlockedUsers, userAccount.UID)
 		if blocked {
 			logger.Debug("PEER|NotSendingMessage|toUID=", toUID, "|FromUID=", userAccount.UID, "|Blocked=", blocked)

@@ -90,21 +90,41 @@ func serve(requestBody []byte, userAuth *models.UserAuth, location *domain.Coord
 		err := handleMessage(userAuth.UID, &msg)
 		if err != nil {
 			logger.Critical("MessageRecv|NotHandled|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Err=%v", err)
-			return &domain.MessageReceivedResponse{
-				StatusCode:500,
-				RequestId:msg.MID,
-			}, nil
+			return serveMessageRecvErr(msg), nil
 		} else {
-			return &domain.MessageReceivedResponse{
-				StatusCode:200,
-				RequestId:msg.MID,
-			}, nil
+			return serveMessageRecvOk(msg), nil
+		}
+	case strings.HasPrefix(message, socket.GroupMessage):
+
+		var msg = domain.MessageSendRequest{}
+		_ = json.Unmarshal(requestBody[len(socket.SendMessage):], &msg)
+
+		err := handleMessage(userAuth.UID, &msg)
+		if err != nil {
+			logger.Critical("MessageRecv|NotHandled|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Err=%v", err)
+			return serveMessageRecvErr(msg), nil
+		} else {
+			return serveMessageRecvOk(msg), nil
 		}
 	default:
 		logger.Critical("UnknownCommand|NotHandled|SID=", userAuth.SID, "|UID=", userAuth.UID)
 		return nil, nil
 	}
 
+}
+
+func serveMessageRecvErr(msg domain.MessageSendRequest) *domain.MessageReceivedResponse {
+	return &domain.MessageReceivedResponse{
+		StatusCode:500,
+		RequestId:msg.MID,
+	}
+}
+
+func serveMessageRecvOk(msg domain.MessageSendRequest) *domain.MessageReceivedResponse {
+	return &domain.MessageReceivedResponse{
+		StatusCode:200,
+		RequestId:msg.MID,
+	}
 }
 
 func updateLocation(oldLocation, newLocation *domain.Coordinate, userAuth *models.UserAuth) {

@@ -56,7 +56,23 @@ func CreateGroup(groupName, groupAbout string, members []string) (UserGroup, err
 	return userGroup, err
 }
 
-func AddMessageToGroup(gid, mid string) error {
+func GetGroupAccount(gid string) (UserGroup, error) {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("user_groups")
+	defer conn.Close()
+
+	userGroup := UserGroup{}
+	err := hystrix.Do(common.UserGroup, func() error {
+		err := c.Find(bson.M{"gid": gid}).One(&userGroup)
+		return err
+	}, nil)
+	if err != nil {
+		logger.Error("CreateGroup|UserGroup=", userGroup, "|Err=", err)
+	}
+	return userGroup, err
+}
+
+func AddToGroupFeed(gid, mid string) error {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("user_groups")
 	defer conn.Close()

@@ -36,6 +36,7 @@ type UserLoginRequest struct {
 type MessageSendRequest struct {
 	BaseRequest
 	Body      string `json:"body" bson:"body"`
+	GID      string `json:"groupId" bson:"groupId"`
 	Location  Coordinate `json:"location" bson:"location"`
 	Reach int64 `json:"reach" bson:"reach"`
 	MID string `json:"messageId" json:"messageId"`
