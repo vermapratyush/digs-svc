@@ -63,7 +63,7 @@ func (this *GroupController) Post() {
 			this.Serve500(err)
 			return
 		} else if err == mgo.ErrNotFound {
-			userGroup, err = models.CreateGroup("One-To-One-Group", fmt.Sprintf("Betweem %s and %s", request.UIDS[0], request.UIDS[1]), request.UIDS)
+			userGroup, err = CreateGroupChat("One-To-One-Group", fmt.Sprintf("Betweem %s and %s", request.UIDS[0], request.UIDS[1]), request.UIDS)
 			if err != nil {
 				this.Serve500(err)
 				return

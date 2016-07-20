@@ -127,28 +127,26 @@ func AddToBlockedContent(uid, contentType, contentValue string) error {
 	return err
 }
 
-//func GetUIDForFeed(longitude, latitude float64, distInMeter int64) ([]string) {
-//	conn := Session.Clone()
-//	c := conn.DB(DefaultDatabase).C("accounts")
-//	defer conn.Close()
-//
-//	results := []UserAccount{}
-//
-//	_ = c.Find(bson.M{
-//		"location": bson.M{
-//			"$nearSphere": bson.M{
-//				"$geometry": bson.M{
-//					"type":        "Point",
-//					"coordinates": []float64{longitude, latitude},
-//				},
-//				"$maxDistance": distInMeter,
-//			},
-//		},
-//	}).Select(bson.M{"uid": "1", "firstName": "1"}).Sort("-creationTime").All(&results)
-//
-//	uids := make([]string, len(results))
-//	for idx := 0; idx < len(results); idx++ {
-//		uids[idx] = results[idx].UID
-//	}
-//	return uids
-//}
+//TODO: This field is not being used as of now.
+func AddUserToGroupChat(uid, gid string) error {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("accounts")
+	defer conn.Close()
+
+	err := hystrix.Do(common.UserAccount, func() error {
+		query := bson.M{"uid": uid}
+		update := bson.M {
+			"$push": bson.M{
+				"groupIds": gid,
+			},
+		}
+		err := c.Update(query, update)
+		return err
+	}, nil)
+
+	if err != nil {
+		logger.Error("AddUserToGroup|UID=", uid, "|Gid=", gid, "|Err=", err)
+	}
+
+	return err
+}

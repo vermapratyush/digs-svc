@@ -170,3 +170,55 @@ func GetMessageFromGroup(gid string, upto, size int64) ([]UserGroupMessageResolv
 
 	return result, err
 }
+
+//TODO: Hack for one-one past messages
+func GetGroupsUserIsMemberOf(uid string) ([]OneToOnePeopleFeed, error) {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("user_groups")
+	defer conn.Close()
+
+	result := []OneToOnePeopleFeed{}
+	err := hystrix.Do(common.UserGroup, func() error {
+		match1 := bson.M{
+			"$match": bson.M{
+				"uids": bson.M{
+					"$in": []interface{}{
+						uid,
+					},
+				},
+			},
+		}
+		unwind1 := bson.M{
+			"$unwind": "$uids",
+		}
+		match2 := bson.M{
+			"$match": bson.M{
+				"uids": bson.M{
+					"$nin": []interface{}{
+						uid,
+					},
+				},
+			},
+		}
+		lookUp := bson.M{
+			"$lookup": bson.M{
+				"from": "accounts",
+				"localField":"uids",
+				"foreignField":"uid",
+				"as":"userAccount",
+			},
+		}
+		unwind2 := bson.M{
+			"$unwind": "$userAccount",
+		}
+		pipe := c.Pipe([]bson.M{match1, unwind1, match2, lookUp, unwind2})
+		err := pipe.All(&result)
+		return err
+	}, nil)
+
+	if err != nil {
+		logger.Error("GetGroupsUserIsMemberOf|UID=", uid, "|Err=", err)
+	}
+	return result, err
+
+}

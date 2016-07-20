@@ -68,19 +68,89 @@ func (this *PeopleController) Get() {
 			continue
 		}
 
+		activeState := "active"
+		if !present {
+			activeState = "inactive"
+		}
 		people = append(people, domain.PersonResponse{
 			Name: common.GetName(user.FirstName, user.LastName),
 			UID: user.UID,
 			About: user.About,
 			Activity: "join",
-			IsActive: present,
+			ActiveState: activeState,
 			ProfilePicture: user.ProfilePicture,
 		})
 	}
 
+	people = addPeopleWhoCommunicatedOneOnOne(userAuth.UID, people)
+
+	//addAlwaysActiveBot(people)
+
+	logger.Debug("PEOPLE|SID=", userAuth.SID, "|UID=", userAuth.UID, "|FeedSize=", len(people))
+
 	this.Serve200(people)
 }
 
+func addPeopleWhoCommunicatedOneOnOne(uid string, people []domain.PersonResponse) []domain.PersonResponse {
+	oneOneOne, _ := models.GetGroupsUserIsMemberOf(uid)
+
+	for _, user := range (oneOneOne) {
+		addUser := true
+		for _, person := range(people) {
+			if user.UserAccount.UID == person.UID {
+				addUser = false
+			}
+		}
+		if addUser {
+			logger.Debug("adding")
+			people = append(people, domain.PersonResponse {
+				Name: common.GetName(user.UserAccount.FirstName, user.UserAccount.LastName),
+				UID: user.UserAccount.UID,
+				About: user.UserAccount.About,
+				Activity: "join",
+				ActiveState: "out-of-range",
+				ProfilePicture: user.UserAccount.ProfilePicture,
+			})
+		}
+	}
+	return people
+}
+
+func addAlwaysActiveBot(people []domain.PersonResponse) {
+	containsSitesh := false
+	containsPratyush := false
+	for _, person := range(people) {
+		if person.UID == "10210146992256811" {
+			containsSitesh = true
+			person.ActiveState = "active"
+		} else if person.UID == "10154168592560450" {
+			containsPratyush = true
+			person.ActiveState = "active"
+		}
+	}
+	user, _ := models.GetUserAccount("uid", "10210146992256811")
+	if !containsSitesh {
+		people = append(people, domain.PersonResponse{
+			Name: common.GetName(user.FirstName, user.LastName),
+			UID: user.UID,
+			About: user.About,
+			Activity: "join",
+			ActiveState: "active",
+			ProfilePicture: user.ProfilePicture,
+		})
+	}
+	user, _ = models.GetUserAccount("uid", "10154168592560450")
+	if !containsPratyush {
+		people = append(people, domain.PersonResponse{
+			Name: common.GetName(user.FirstName, user.LastName),
+			UID: user.UID,
+			About: user.About,
+			Activity: "join",
+			ActiveState: "active",
+			ProfilePicture: user.ProfilePicture,
+		})
+	}
+}
 
 
 

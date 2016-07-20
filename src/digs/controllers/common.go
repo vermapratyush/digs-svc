@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 	"net/http"
 	"digs/logger"
+	"digs/models"
 )
 
 type HttpBaseController struct {
@@ -87,4 +88,14 @@ func (this *WSBaseController) Respond(obj interface{})  {
 	if err != nil {
 		logger.Critical("Error writing to websocket|Obj=%v", obj)
 	}
+}
+
+func CreateGroupChat(groupName, groupAbout string, members []string) (models.UserGroup, error) {
+	userGroup, err := models.CreateGroup(groupName, groupAbout, members)
+
+	for _, uid := range (members) {
+		_ = models.AddUserToGroupChat(uid, userGroup.GID)
+	}
+
+	return userGroup, err
 }

@@ -39,6 +39,7 @@ type UserAccount struct {
 	CreationTime    time.Time `bson:"creationTime" json:"creationTime"`
 	FBVerified      bool `bson:"fbVerified" json:"fbVerified"`
 	Settings        Setting `json:"settings" bson:"settings"`
+	GroupIds        []string `json:"groupIds" bson:"groupIds"`
 	BlockedUsers    []string `json:"blockedUsers" bson:"blockedUsers"`
 	BlockedMessages []string `json:"blockedMessages" bson:"blockedMessages"`
 }
@@ -92,4 +93,10 @@ type UserGroupMessageResolved struct {
 	Content      string `json:"content" bson:"content"`
 	UserAccount  UserAccount `json:"userAccount" bson:"userAccount"`
 	CreationTime time.Time `json:"creationTime" bson:"creationTime"`
+}
+
+//TODO: Hack for one-to-one conversation
+type OneToOnePeopleFeed struct {
+	UserAccount UserAccount `json:"userAccount" bson:"userAccount"`
+
 }
