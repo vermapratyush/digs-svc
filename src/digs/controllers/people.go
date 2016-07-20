@@ -108,7 +108,7 @@ func addPeopleWhoCommunicatedOneOnOne(uid string, people []domain.PersonResponse
 				UID: user.UserAccount.UID,
 				About: user.UserAccount.About,
 				Activity: "join",
-				ActiveState: "out_of_range",
+				out_of_range: "out_of_range",
 				ProfilePicture: user.UserAccount.ProfilePicture,
 			})
 		}
