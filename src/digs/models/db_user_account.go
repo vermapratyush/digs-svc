@@ -10,7 +10,7 @@ import (
 	"digs/logger"
 )
 
-func AddUserAccount(firstName, lastName, email, about, fbid, locale, profilePicture string, fbVerified bool) (*UserAccount, error) {
+func AddUserAccount(firstName, lastName, email, about, fbid, locale, profilePicture string, verified bool) (*UserAccount, error) {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("accounts")
 	defer conn.Close()
@@ -24,7 +24,7 @@ func AddUserAccount(firstName, lastName, email, about, fbid, locale, profilePict
 		FBID: fbid,
 		Locale: locale,
 		ProfilePicture: profilePicture,
-		FBVerified: fbVerified,
+		Verified: verified,
 		CreationTime:time.Now(),
 		Settings:Setting{
 			Range: common.DefaultReach,

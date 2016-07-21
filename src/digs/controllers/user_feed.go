@@ -96,6 +96,7 @@ func (this *FeedController) Get() {
 			&domain.MessageGetResponse{
 				UID: user.UID,
 				MID: messageId,
+				Verified:user.Verified,
 				From: common.GetName(user.FirstName, user.LastName),
 				About: user.About,
 				Message: msg.Content,

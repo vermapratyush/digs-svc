@@ -81,12 +81,18 @@ func MulticastPersonCustom(activity string, userAccount *models.UserAccount, use
 			continue
 		} else if (activity == "hide" || activity == "show" || userAccount.Settings.PublicProfile) {
 			logger.Debug("PEER|SendingActivity|toUID=", toUID, "|FromUID=", userAccount.UID, "|Activity=", activity)
+			activeState := "active"
+			if activity == "hide" || activity == "leave" {
+				activeState = "inactive"
+			}
 			response, _ := json.Marshal(&domain.PersonResponse{
 				Name: common.GetName(userAccount.FirstName, userAccount.LastName),
 				UID: userAccount.UID,
 				GID: gid,
 				Activity: activity,
 				About: userAccount.About,
+				ActiveState:activeState,
+				Verified:userAccount.Verified,
 				ProfilePicture: userAccount.ProfilePicture,
 			})
 			err := sendWSMessage(peer, userAccount.UID, response)
@@ -135,6 +141,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			UID:userAccount.UID,
 			GID:msg.GID,
 			MID:msg.MID,
+			Verified:userAccount.Verified,
 			About: userAccount.About,
 			Message: msg.Body,
 			Timestamp: msg.Timestamp,

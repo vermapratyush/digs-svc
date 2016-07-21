@@ -58,7 +58,7 @@ func (this *PeopleController) Get() {
 	blockedMap := common.GetStringArrayAsMap(userAccount.BlockedUsers)
 
 	//TODO: Find a better solution, too make realloc
-	people := make([]domain.PersonResponse, 0, len(uidList))
+	people := make([]*domain.PersonResponse, 0, len(uidList))
 	for idx := 0; idx < len(users); idx = idx + 1 {
 		user := users[idx]
 		_, present := socket.GetLookUp(user.UID)
@@ -72,17 +72,19 @@ func (this *PeopleController) Get() {
 		if !present {
 			activeState = "inactive"
 		}
-		people = append(people, domain.PersonResponse{
+		people = append(people, &domain.PersonResponse{
 			Name: common.GetName(user.FirstName, user.LastName),
 			UID: user.UID,
 			About: user.About,
 			Activity: "join",
 			ActiveState: activeState,
+			Verified:user.Verified,
 			ProfilePicture: user.ProfilePicture,
 		})
 	}
 
-	people = addPeopleWhoCommunicatedOneOnOne(userAuth.UID, people)
+	people = addPeopleWhoCommunicatedOneOnOne(userAuth.UID, people[0:])
+	people = addUnreadCount(userAuth.UID, people[0:])
 
 	//addAlwaysActiveBot(people)
 
@@ -91,7 +93,31 @@ func (this *PeopleController) Get() {
 	this.Serve200(people)
 }
 
-func addPeopleWhoCommunicatedOneOnOne(uid string, people []domain.PersonResponse) []domain.PersonResponse {
+func addUnreadCount(uid string, people []*domain.PersonResponse) []*domain.PersonResponse {
+
+	userGroups, _ := models.GetUnreadMessageCountOneOnOne(uid)
+	userGroupMap := map[string]models.UserGroup{}
+	for _, userGroup := range (userGroups) {
+		otherUserInGroup := userGroup.UIDS[0]
+		if otherUserInGroup == uid {
+			otherUserInGroup = userGroup.UIDS[1]
+		}
+		userGroupMap[otherUserInGroup] = userGroup
+	}
+
+	for _, person := range (people) {
+		idx := common.IndexOf(userGroupMap[person.UID].MIDS, userGroupMap[person.UID].MessageRead[uid])
+		logger.Debug("otherId=", person.UID, "|MyId=", uid, "|idx=", idx)
+		if idx < 0 {
+			idx = 0
+		}
+		person.UnreadCount = int64(idx)
+	}
+
+	return people
+}
+
+func addPeopleWhoCommunicatedOneOnOne(uid string, people []*domain.PersonResponse) []*domain.PersonResponse {
 	oneOneOne, _ := models.GetGroupsUserIsMemberOf(uid)
 
 	for _, user := range (oneOneOne) {
@@ -102,13 +128,13 @@ func addPeopleWhoCommunicatedOneOnOne(uid string, people []domain.PersonResponse
 			}
 		}
 		if addUser {
-			logger.Debug("adding")
-			people = append(people, domain.PersonResponse {
+			people = append(people, &domain.PersonResponse {
 				Name: common.GetName(user.UserAccount.FirstName, user.UserAccount.LastName),
 				UID: user.UserAccount.UID,
 				About: user.UserAccount.About,
 				Activity: "join",
 				ActiveState: "out_of_range",
+				Verified:user.UserAccount.Verified,
 				ProfilePicture: user.UserAccount.ProfilePicture,
 			})
 		}
@@ -116,7 +142,7 @@ func addPeopleWhoCommunicatedOneOnOne(uid string, people []domain.PersonResponse
 	return people
 }
 
-func addAlwaysActiveBot(people []domain.PersonResponse) {
+func addAlwaysActiveBot(people []*domain.PersonResponse) {
 	containsSitesh := false
 	containsPratyush := false
 	for _, person := range(people) {
@@ -130,23 +156,25 @@ func addAlwaysActiveBot(people []domain.PersonResponse) {
 	}
 	user, _ := models.GetUserAccount("uid", "10210146992256811")
 	if !containsSitesh {
-		people = append(people, domain.PersonResponse{
+		people = append(people, &domain.PersonResponse{
 			Name: common.GetName(user.FirstName, user.LastName),
 			UID: user.UID,
 			About: user.About,
 			Activity: "join",
 			ActiveState: "active",
+			Verified:user.Verified,
 			ProfilePicture: user.ProfilePicture,
 		})
 	}
 	user, _ = models.GetUserAccount("uid", "10154168592560450")
 	if !containsPratyush {
-		people = append(people, domain.PersonResponse{
+		people = append(people, &domain.PersonResponse{
 			Name: common.GetName(user.FirstName, user.LastName),
 			UID: user.UID,
 			About: user.About,
 			Activity: "join",
 			ActiveState: "active",
+			Verified:user.Verified,
 			ProfilePicture: user.ProfilePicture,
 		})
 	}

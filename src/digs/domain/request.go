@@ -30,7 +30,6 @@ type UserLoginRequest struct {
 	About          string `json:"about" bson:"about"`
 	ProfilePicture string `bson:"picture" json:"picture"`
 	AccessToken    string `json:"accessToken" bson:"accessToken"`
-	FBVerified     bool `bson:"fbVerified" json:"fbVerified"`
 }
 
 type MessageSendRequest struct {
@@ -80,4 +79,10 @@ type GroupCreateRequest struct {
 	UIDS       []string `json:"userIds" bson:"userIds"`
 	GroupName  string `json:"groupName" bson:"groupName"`
 	GroupAbout string `json:"groupAbout" bson:"groupAbout"`
+}
+
+type UnreadRequest struct {
+	BaseRequest
+	GID string `json:"groupId" bson:"groupId"`
+	MID string `json:"messageId" bson:"messageId"`
 }

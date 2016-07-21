@@ -95,6 +95,7 @@ func composeResponse(gid string, messages []models.UserGroupMessageResolved) []d
 			UID:message.UID,
 			MID: message.MID,
 			GID: gid,
+			Verified:message.UserAccount.Verified,
 			From: common.GetName(message.UserAccount.FirstName, message.UserAccount.LastName),
 			About: message.UserAccount.About,
 			Message: message.Content,

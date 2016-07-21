@@ -5,6 +5,7 @@ type UserLoginResponse struct {
 	SessionId  string `json:"sessionId" bson:"sessionId"`
 	UserId     string `json:"userId" bson:"userId"`
 	Settings   SettingResponse `json:"settings" bson:"settings"`
+	Verified   bool `json:"verified" bson:"verified"`
 }
 
 type MessageReceivedResponse struct {
@@ -32,6 +33,7 @@ type MessageGetResponse struct {
 	From           string `json:"name" bson:"name"`
 	About          string `json:"about" bson:"about"`
 	Message        string `json:"body" bson:"body"`
+	Verified       bool `json:"verified" bson:"verified"`
 	Timestamp      int64 `json:"timestamp" bson:"timestamp"`
 	ProfilePicture string `json:"picture" bson:"picture"`
 }
@@ -41,6 +43,8 @@ type PersonResponse struct {
 	UID            string `json:"userId" bson:"userId"`
 	GID            string `json:"groupId" bson:"groupId"`
 	About          string `json:"about" bson:"about"`
+	Verified       bool `json:"verified" bson:"verified"`
+	UnreadCount    int64 `json:"unreadCount" bson:"unreadCount"`
 	ActiveState    string `json:"state" bson:"state"`
 	Activity       string `json:"activity" bson:"activity"`
 	ProfilePicture string `json:"picture" bson:"picture"`

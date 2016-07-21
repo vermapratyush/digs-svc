@@ -35,7 +35,7 @@ func (this *LoginController) Post()  {
 	var sid, uid string
 	if userAccount == nil {
 		request.ProfilePicture = strings.Replace(request.ProfilePicture, "http://", "https://", 1)
-		userAccount, err = models.AddUserAccount(request.FirstName, request.LastName, request.Email, request.About, request.FBID, request.Locale, request.ProfilePicture, request.FBVerified)
+		userAccount, err = models.AddUserAccount(request.FirstName, request.LastName, request.Email, request.About, request.FBID, request.Locale, request.ProfilePicture, false)
 		models.UpdateMessageRange(userAccount.UID, common.DefaultReach)
 		go sendWelcomeMail(userAccount)
 

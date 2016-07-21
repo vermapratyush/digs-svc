@@ -37,7 +37,7 @@ type UserAccount struct {
 	FBID            string `json:"fbid" bson:"fbid"`
 	Locale          string `json:"locale" bson:"locale"`
 	CreationTime    time.Time `bson:"creationTime" json:"creationTime"`
-	FBVerified      bool `bson:"fbVerified" json:"fbVerified"`
+	Verified        bool `bson:"verified" json:"verified"`
 	Settings        Setting `json:"settings" bson:"settings"`
 	GroupIds        []string `json:"groupIds" bson:"groupIds"`
 	BlockedUsers    []string `json:"blockedUsers" bson:"blockedUsers"`
@@ -80,11 +80,12 @@ type MessageHistory struct {
 }
 
 type UserGroup struct {
-	GID        string `json:"gid" bson:"gid"`
-	GroupName  string `json:"groupName" bson:"groupName"`
-	GroupAbout string `json:"groupAbout" bson:"groupAbout"`
-	UIDS       []string `json:"uids" bson:"uids"`
-	MIDS       []string `json:"mids" bson:"mids"`
+	GID         string `json:"gid" bson:"gid"`
+	UIDS        []string `json:"uids" bson:"uids"`
+	MIDS        []string `json:"mids" bson:"mids"`
+	GroupName   string `json:"groupName" bson:"groupName"`
+	GroupAbout  string `json:"groupAbout" bson:"groupAbout"`
+	MessageRead map[string]string `json:"messageRead" bson:"messageRead"`
 }
 
 type UserGroupMessageResolved struct {
@@ -98,5 +99,4 @@ type UserGroupMessageResolved struct {
 //TODO: Hack for one-to-one conversation
 type OneToOnePeopleFeed struct {
 	UserAccount UserAccount `json:"userAccount" bson:"userAccount"`
-
 }

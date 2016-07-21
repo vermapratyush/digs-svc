@@ -7,9 +7,10 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"github.com/satori/go.uuid"
 	"gopkg.in/mgo.v2"
+	"fmt"
 )
 
-func CheckOneToOneGroupExist(sid1, sid2 string) (UserGroup, error) {
+func CheckOneToOneGroupExist(uid1, uid2 string) (UserGroup, error) {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("user_groups")
 	defer conn.Close()
@@ -19,7 +20,7 @@ func CheckOneToOneGroupExist(sid1, sid2 string) (UserGroup, error) {
 		query := bson.M{
 			"uids": bson.M{
 				"$size": 2,
-				"$all": []string{sid1, sid2},
+				"$all": []string{uid1, uid2},
 			},
 		}
 		err := c.Find(query).One(&result)
@@ -28,7 +29,7 @@ func CheckOneToOneGroupExist(sid1, sid2 string) (UserGroup, error) {
 	}, nil)
 
 	if err != nil && err != mgo.ErrNotFound {
-		logger.Error("DB|CheckIfOneToOneExist|sid1=", sid1, "|sid2=", sid2, "|err=", err)
+		logger.Error("DB|CheckIfOneToOneExist|sid1=", uid1, "|sid2=", uid2, "|err=", err)
 	}
 
 	return result, err
@@ -223,4 +224,51 @@ func GetGroupsUserIsMemberOf(uid string) ([]OneToOnePeopleFeed, error) {
 	}
 	return result, err
 
+}
+
+//TODO: Hack specific to 1-1 chat
+func GetUnreadMessageCountOneOnOne(uid string) ([]UserGroup, error) {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("user_groups")
+	defer conn.Close()
+
+	result := []UserGroup{}
+	err := hystrix.Do(common.UserGroupBatch, func() error {
+		query := bson.M{
+			"uids": bson.M{
+				"$in": []string{uid},
+			},
+		}
+		err := c.Find(query).All(&result)
+
+		return err
+	}, nil)
+
+	if err != nil {
+		logger.Error("UnreadMessageError|UID=", uid, "|Err=", err)
+	}
+
+	return result, err
+}
+
+func UpdateUnreadPointer(gid, uid, mid string) error {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("user_groups")
+	defer conn.Close()
+
+	err := hystrix.Do(common.UserGroup, func() error {
+		query := bson.M{"gid": gid}
+		update := bson.M{
+			"$set": bson.M{
+				fmt.Sprintf("messageRead.%s", uid): mid,
+			},
+		}
+		err := c.Update(query, update)
+		return err
+	}, nil)
+	if err != nil {
+		logger.Error("UpdateUnreadPointer|UID=", uid, "|Gid=", gid, "|Mid=", mid, "|Err=", err)
+	}
+
+	return err
 }
