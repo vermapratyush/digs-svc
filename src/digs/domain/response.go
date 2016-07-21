@@ -10,6 +10,7 @@ type UserLoginResponse struct {
 type MessageReceivedResponse struct {
 	RequestId  string `json:"messageId" bson:"messageId"`
 	StatusCode int32 `json:"statusCode" bson:"statusCode"`
+	GID        string `json:"groupId" bson:"groupId"`
 }
 
 type GenericResponse struct {
@@ -27,6 +28,7 @@ type MessageSendResponse struct {
 type MessageGetResponse struct {
 	UID            string `json:"userId" bson:"userId"`
 	MID            string `json:"messageId" bson:"messageId"`
+	GID            string `json:"groupId" bson:"groupId"`
 	From           string `json:"name" bson:"name"`
 	About          string `json:"about" bson:"about"`
 	Message        string `json:"body" bson:"body"`
@@ -37,6 +39,7 @@ type MessageGetResponse struct {
 type PersonResponse struct {
 	Name           string `json:"name" bson:"name"`
 	UID            string `json:"userId" bson:"userId"`
+	GID            string `json:"groupId" bson:"groupId"`
 	About          string `json:"about" bson:"about"`
 	ActiveState    string `json:"state" bson:"state"`
 	Activity       string `json:"activity" bson:"activity"`

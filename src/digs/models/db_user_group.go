@@ -18,6 +18,7 @@ func CheckOneToOneGroupExist(sid1, sid2 string) (UserGroup, error) {
 	err := hystrix.Do(common.UserGroup, func() error {
 		query := bson.M{
 			"uids": bson.M{
+				"$size": 2,
 				"$all": []string{sid1, sid2},
 			},
 		}
@@ -29,6 +30,7 @@ func CheckOneToOneGroupExist(sid1, sid2 string) (UserGroup, error) {
 	if err != nil && err != mgo.ErrNotFound {
 		logger.Error("DB|CheckIfOneToOneExist|sid1=", sid1, "|sid2=", sid2, "|err=", err)
 	}
+
 	return result, err
 
 }

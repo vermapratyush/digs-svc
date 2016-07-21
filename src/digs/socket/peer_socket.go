@@ -65,11 +65,11 @@ func MulticastPerson(uid string, activity string) {
 	}
 	userAccount, _ := models.GetUserAccount("uid", uid)
 	uidList := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], userAccount.Settings.Range, -1)
-	MulticastPersonCustom(activity, userAccount, userLocation.Location, uidList)
+	MulticastPersonCustom(activity, userAccount, userLocation.Location, uidList, "")
 
 }
 
-func MulticastPersonCustom(activity string, userAccount *models.UserAccount, userLocation models.Coordinate, uids []string)  {
+func MulticastPersonCustom(activity string, userAccount *models.UserAccount, userLocation models.Coordinate, uids []string, gid string)  {
 	blockedMap := common.GetStringArrayAsMap(userAccount.BlockedUsers)
 
 	for _, toUID := range(uids) {
@@ -80,10 +80,11 @@ func MulticastPersonCustom(activity string, userAccount *models.UserAccount, use
 			logger.Debug("PEER|NotSendingActivity|toUID=", toUID, "|FromUID=", userAccount.UID, "|Present=", present, "|Blocked=", presentInBlock)
 			continue
 		} else if (activity == "hide" || activity == "show" || userAccount.Settings.PublicProfile) {
-			logger.Debug("PEER|NotSendingActivity|toUID=", toUID, "|FromUID=", userAccount.UID, "|Activity=", activity)
+			logger.Debug("PEER|SendingActivity|toUID=", toUID, "|FromUID=", userAccount.UID, "|Activity=", activity)
 			response, _ := json.Marshal(&domain.PersonResponse{
 				Name: common.GetName(userAccount.FirstName, userAccount.LastName),
 				UID: userAccount.UID,
+				GID: gid,
 				Activity: activity,
 				About: userAccount.About,
 				ProfilePicture: userAccount.ProfilePicture,
@@ -107,7 +108,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 	} else {
 		uids = models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, userAccount.Settings.Range, -1)
 	}
-	logger.Debug("TotalUsers|UID=", userAccount.UID, "|MID=", msg.MID, "|Location=%v", msg.Location, "|Size=", len(uids))
+	logger.Debug("TotalUsers|UID=", userAccount.UID, "|MID=", msg.MID, "|Location=%v", msg.Location, "|Size=", uids)
 	sendingWS := make([]string, 0)
 	sendingPush := make([]string, 0)
 
@@ -119,7 +120,9 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 		toUserAccount, _ := models.GetUserAccount("uid", toUID)
 
 		//Add to feed of the user or group accordingly
-		AddToFeed(toUID, msg.GID, msg)
+		if msg.GID == "" {
+			models.AddToUserFeed(toUID, msg.MID)
+		}
 
 		//Blocking only works for group messages
 		blocked := common.IsUserBlocked(toUserAccount.BlockedUsers, userAccount.UID)
@@ -127,25 +130,27 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			logger.Debug("PEER|NotSendingMessage|toUID=", toUID, "|FromUID=", userAccount.UID, "|Blocked=", blocked)
 			continue
 		}
+		response := &domain.MessageGetResponse{
+			From:common.GetName(userAccount.FirstName, userAccount.LastName),
+			UID:userAccount.UID,
+			GID:msg.GID,
+			MID:msg.MID,
+			About: userAccount.About,
+			Message: msg.Body,
+			Timestamp: msg.Timestamp,
+			ProfilePicture:userAccount.ProfilePicture,
+		}
+		responseString, _ := json.Marshal(response)
 
 		if (!present && toUserAccount.Settings.PushNotification) {
 			sendingPush = append(sendingPush, toUID)
-			sendPushMessage(userAccount, toUID, msg)
+			sendPushMessage(userAccount, toUID, response)
 
 		} else if (present) {
-			response, _ := json.Marshal(domain.MessageGetResponse{
-				From:common.GetName(userAccount.FirstName, userAccount.LastName),
-				UID:userAccount.UID,
-				MID:msg.MID,
-				About: userAccount.About,
-				Message: msg.Body,
-				Timestamp: msg.Timestamp,
-				ProfilePicture:userAccount.ProfilePicture,
-			})
-			err := sendWSMessage(peer, userAccount.UID, response)
+			err := sendWSMessage(peer, userAccount.UID, responseString)
 			if err != nil && toUserAccount.Settings.PushNotification {
 				sendingPush = append(sendingPush, toUID)
-				sendPushMessage(userAccount, toUID, msg)
+				sendPushMessage(userAccount, toUID, response)
 			} else if err == nil {
 				sendingWS = append(sendingWS, toUID)
 			}
@@ -167,7 +172,7 @@ func sendWSMessage(toPeer Peer, fromUID string, data []byte) error {
 	return nil
 }
 
-func sendPushMessage(userAccount *models.UserAccount, toUID string, msg *domain.MessageSendRequest) {
+func sendPushMessage(userAccount *models.UserAccount, toUID string, response *domain.MessageGetResponse) {
 
 	notifications, err := models.GetNotificationIds(toUID)
 	if err != nil {
@@ -177,18 +182,19 @@ func sendPushMessage(userAccount *models.UserAccount, toUID string, msg *domain.
 
 	for _, notification := range(*notifications) {
 		if notification.OSType == "android" {
-			androidPush(userAccount, notification.NotificationId, msg)
+			androidPush(userAccount, notification.NotificationId, response)
 		} else {
-			iosPush(userAccount, notification.NotificationId, msg)
+			iosPush(userAccount, notification.NotificationId, response)
 		}
 	}
 }
 
-func androidPush(userAccount *models.UserAccount, nid string, msg *domain.MessageSendRequest) {
-	models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s: %s", userAccount.FirstName, msg.Body))
+func androidPush(userAccount *models.UserAccount, nid string, msg *domain.MessageGetResponse) {
+	additionalData, _ := json.Marshal(msg)
+	models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s: %s", userAccount.FirstName, msg.Message), string(additionalData))
 
 }
 
-func iosPush(userAccount *models.UserAccount, nid string, msg *domain.MessageSendRequest)  {
-	models.IOSMessagePush(userAccount.UID, nid, fmt.Sprintf("%s: %s", userAccount.FirstName, msg.Body))
+func iosPush(userAccount *models.UserAccount, nid string, msg *domain.MessageGetResponse)  {
+	models.IOSMessagePush(userAccount.UID, nid, fmt.Sprintf("%s: %s", userAccount.FirstName, msg.Message))
 }

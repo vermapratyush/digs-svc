@@ -121,10 +121,21 @@ func serve(requestBody []byte, userAuth *models.UserAuth, location *domain.Coord
 }
 
 func handleTyping(uid string, msg *domain.MessageTypingRequest) {
-	if msg.IsTyping {
-		go socket.MulticastPerson(uid, "typing")
+	if msg.GID == "" {
+		if msg.IsTyping {
+			go socket.MulticastPerson(uid, "typing")
+		} else {
+			go socket.MulticastPerson(uid, "nottyping")
+		}
 	} else {
-		go socket.MulticastPerson(uid, "nottyping")
+		userAccount, _ := models.GetUserAccount("uid", uid)
+		userLocation, _ := models.GetUserLocation(uid)
+		userGroup, _ := models.GetGroupAccount(msg.GID)
+		if msg.IsTyping {
+			go socket.MulticastPersonCustom("typing", userAccount, userLocation.Location, userGroup.UIDS, userGroup.GID)
+		} else {
+			go socket.MulticastPersonCustom("nottyping", userAccount, userLocation.Location, userGroup.UIDS, userGroup.GID)
+		}
 	}
 }
 
@@ -144,11 +155,11 @@ func updateLocation(oldLocation, newLocation *domain.Coordinate, userAuth *model
 func handleMessage(uid string, msg *domain.MessageSendRequest) (error) {
 
 	_, err := models.CreateMessage(uid, msg.MID, msg.Location.Longitude, msg.Location.Latitude, msg.Body)
+
 	if err != nil {
 		return err
 	}
-	models.AddToUserFeed(uid, msg.MID)
-
+	socket.AddToFeed(uid, msg.GID, msg)
 	userAccount, err := models.GetUserAccount("uid", uid)
 	if err != nil {
 		return err
@@ -163,6 +174,7 @@ func serveMessageRecvErr(msg domain.MessageSendRequest) *domain.MessageReceivedR
 	return &domain.MessageReceivedResponse{
 		StatusCode:500,
 		RequestId:msg.MID,
+		GID: msg.GID,
 	}
 }
 
@@ -170,5 +182,6 @@ func serveMessageRecvOk(msg domain.MessageSendRequest) *domain.MessageReceivedRe
 	return &domain.MessageReceivedResponse{
 		StatusCode:200,
 		RequestId:msg.MID,
+		GID: msg.GID,
 	}
 }

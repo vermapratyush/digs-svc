@@ -20,7 +20,7 @@ type APS struct {
 	Alert string `json:"alert"`
 }
 
-func AndroidMessagePush(uid, nid, message string)  {
+func AndroidMessagePush(uid, nid, message, additionalData string)  {
 	_ = hystrix.Go(common.AndroidPush, func() error {
 		fcm := fcm.NewFcmClient(common.PushNotification_API_KEY)
 
@@ -29,9 +29,12 @@ func AndroidMessagePush(uid, nid, message string)  {
 			"message": message,
 			"image": "twitter",
 			"style": "inbox",
+			"additionalData": additionalData,
+			"content-available": "1",
 			"summaryText": "There are %n% notification",
 		}
 
+		fcm.SetContentAvailable(true)
 		fcm.NewFcmMsgTo(nid, data)
 		response, err := fcm.Send(1)
 		if err != nil || response.StatusCode != 200 {

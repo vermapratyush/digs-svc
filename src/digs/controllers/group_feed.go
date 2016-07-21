@@ -31,7 +31,7 @@ func (this *GroupController) Get() {
 	messages, _ := models.GetMessageFromGroup(gid, from, common.MessageBatchSize)
 	logger.Debug("GROUPGetResponse|Sid=", sid, "|UID=", userAuth.UID, "|ResponseSize=", len(messages))
 
-	response := composeResponse(messages)
+	response := composeResponse(gid, messages)
 	this.Serve200(response)
 }
 
@@ -82,18 +82,19 @@ func (this *GroupController) Post() {
 	response.GID = userGroup.GID
 	response.GroupName = userGroup.GroupName
 	response.GroupAbout = userGroup.GroupAbout
-	response.Messages = composeResponse(messages)
+	response.Messages = composeResponse(userGroup.GID, messages)
 
-	logger.Debug("GROUPCreateResponse|Sid=", sid, "|UID=", userAuth.UID, "|ResponseSize=", len(response.Messages))
+	logger.Debug("GROUPCreateResponse|Sid=", sid, "|UID=", userAuth.UID, "GID=", response.GID, "|ResponseSize=", len(response.Messages))
 	this.Serve200(response)
 }
 
-func composeResponse(messages []models.UserGroupMessageResolved) []domain.MessageGetResponse {
+func composeResponse(gid string, messages []models.UserGroupMessageResolved) []domain.MessageGetResponse {
 	responseMessage := make([]domain.MessageGetResponse, len(messages))
 	for idx, message := range (messages) {
 		responseMessage[idx] = domain.MessageGetResponse{
 			UID:message.UID,
 			MID: message.MID,
+			GID: gid,
 			From: common.GetName(message.UserAccount.FirstName, message.UserAccount.LastName),
 			About: message.UserAccount.About,
 			Message: message.Content,
