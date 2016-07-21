@@ -161,8 +161,13 @@ func GetMessageFromGroup(gid string, upto, size int64) ([]UserGroupMessageResolv
 		unwind3 := bson.M{
 			"$unwind": "$userAccount",
 		}
+		sort := bson.M{
+			"$sort": bson.M{
+				"creationTime": 1,
+			},
+		}
 
-		pipe := c.Pipe([]bson.M{match, project1, unwind1, lookUp1, unwind2, project2, lookUp2, unwind3})
+		pipe := c.Pipe([]bson.M{match, project1, unwind1, lookUp1, unwind2, project2, lookUp2, unwind3, sort})
 		err := pipe.All(&result)
 		return err
 	}, nil)
