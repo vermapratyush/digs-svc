@@ -19,7 +19,7 @@ func init() {
 	beego.Router("/v1/logout", &controllers.LogoutController{})
 	beego.Router("/v1/notification", &controllers.NotificationController{})
 	beego.Router("/v1/unread", &controllers.UnreadController{})
-	beego.Router("/v1/messagePin", &controllers.MessagePinController{})
+	beego.Router("/v1/pinMessage", &controllers.MessagePinController{})
 	beego.Router("/v1/people", &controllers.PeopleController{})
 	beego.Router("/v1/group", &controllers.GroupController{})
 	beego.Router("/v1/feed", &controllers.FeedController{})

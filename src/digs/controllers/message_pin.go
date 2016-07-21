@@ -39,7 +39,7 @@ func (this *MessagePinController) Put() {
 	this.Serve204()
 }
 
-func (this *MessagePinController) Delete() {
+func (this *MessagePinController) Post() {
 	var request domain.MessagePinAddDeleteRequest
 	logger.Debug("DeleteMessagePin|Request=", string(this.Ctx.Input.RequestBody))
 	this.Super(&request.BaseRequest)
