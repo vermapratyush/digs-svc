@@ -5,6 +5,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"github.com/afex/hystrix-go/hystrix"
 	"digs/common"
+	"digs/logger"
 )
 
 var (
@@ -50,4 +51,43 @@ func GetAllMessages(fieldValue []string) (*[]Message, error) {
 
 
 	return &res, err
+}
+
+func GetResolvedMessages(mids []string) ([]MessagesResolved, error) {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C(collectionName)
+	defer conn.Close()
+
+	res := []MessagesResolved{}
+
+	err := hystrix.Do(common.MessageGetAll, func() error {
+		match := bson.M{
+			"$match": bson.M{
+				"mid": bson.M{
+					"$in": mids,
+				},
+			},
+		}
+		lookUp := bson.M{
+			"$lookup": bson.M{
+				"from": "accounts",
+				"localField": "from",
+				"foreignField": "uid",
+				"as": "fromUserAccount",
+			},
+		}
+		unwind := bson.M{
+			"$unwind": "$fromUserAccount",
+		}
+		pipe := c.Pipe([]bson.M{match, lookUp, unwind})
+		err := pipe.All(&res)
+
+		return err
+	}, nil)
+
+	if err != nil {
+		logger.Error("BatchResolvedMessage|MIDS=", mids, "|Err=", err)
+	}
+
+	return res, err
 }

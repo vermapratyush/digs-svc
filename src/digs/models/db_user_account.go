@@ -150,3 +150,49 @@ func AddUserToGroupChat(uid, gid string) error {
 
 	return err
 }
+
+func AddPinnedMessage(uid, mid string) error {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("accounts")
+	defer conn.Close()
+
+	err := hystrix.Do(common.UserAccount, func() error {
+		query := bson.M{"uid": uid}
+		update := bson.M{
+			"$push": bson.M{
+				"pinnedMessages": mid,
+			},
+		}
+		err := c.Update(query, update)
+		return err
+	}, nil)
+
+	if err != nil {
+		logger.Error("AddPinnedMessage|UID=", uid, "|MID=", mid, "|Err=", err)
+	}
+
+	return err
+}
+
+func RemovePinnedMessage(uid, mid string) error {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("accounts")
+	defer conn.Close()
+
+	err := hystrix.Do(common.UserAccount, func() error {
+		query := bson.M{"uid": uid}
+		update := bson.M{
+			"$pull": bson.M{
+				"pinnedMessages": mid,
+			},
+		}
+		err := c.Update(query, update)
+		return err
+	}, nil)
+
+	if err != nil {
+		logger.Error("RemovePinnedMessage|UID=", uid, "|MID=", mid, "|Err=", err)
+	}
+
+	return err
+}

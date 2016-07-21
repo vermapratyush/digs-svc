@@ -86,3 +86,8 @@ type UnreadRequest struct {
 	GID string `json:"groupId" bson:"groupId"`
 	MID string `json:"messageId" bson:"messageId"`
 }
+
+type MessagePinAddDeleteRequest struct {
+	BaseRequest
+	MID string `json:"messageId" bson:"messageId"`
+}

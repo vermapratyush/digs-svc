@@ -41,6 +41,7 @@ type UserAccount struct {
 	Settings        Setting `json:"settings" bson:"settings"`
 	GroupIds        []string `json:"groupIds" bson:"groupIds"`
 	BlockedUsers    []string `json:"blockedUsers" bson:"blockedUsers"`
+	PinnedMessages  []string `json:"pinnedMessages" bson:"pinnedMessages"`
 	BlockedMessages []string `json:"blockedMessages" bson:"blockedMessages"`
 }
 
@@ -99,4 +100,14 @@ type UserGroupMessageResolved struct {
 //TODO: Hack for one-to-one conversation
 type OneToOnePeopleFeed struct {
 	UserAccount UserAccount `json:"userAccount" bson:"userAccount"`
+}
+
+type MessagesResolved struct {
+	MID          string `bson:"mid" json:"mid"`
+	From         string `bson:"from" json:"from"`
+	Location     Coordinate `bson:"location" json:"location"`
+	Content      string `bson:"content" json:"content"`
+	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
+	UserAccount UserAccount `json:"fromUserAccount" bson:"fromUserAccount"`
+
 }
