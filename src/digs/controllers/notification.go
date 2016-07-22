@@ -29,7 +29,7 @@ func (this *NotificationController) Post() {
 		this.Serve500(err)
 		return
 	}
-	err = models.AddNotificationId(session.UID, request.NotificationID, request.OSType)
+	err = models.AddNotificationId(session.UID, request.NotificationID, request.OSType, request.AppVersion)
 	if err != nil {
 		logger.Error("NOTIFICATION|NotificationAddFialed|SID=", session.SID, "|UID=", session.UID, "|Err=%v", err)
 		this.Serve500(errors.New("Unable to register device"))

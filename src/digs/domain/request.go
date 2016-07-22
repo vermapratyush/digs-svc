@@ -13,6 +13,7 @@ type NotificationRequest struct {
 	NotificationID    string `json:"notificationId" bson:"notificationId"`
 	OldNotificationID string `json:"oldNotificationId" bson:"oldNotificationId"`
 	OSType            string `json:"osType" bson:"osType"`
+	AppVersion        string `json:"appVersion" bson:"appVersion"`
 }
 
 type UserLogoutRequest struct {

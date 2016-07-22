@@ -26,7 +26,7 @@ func DeleteNotificationId(uid string, nid string) error {
 	return err
 }
 
-func AddNotificationId(uid string, nid string, os string) error {
+func AddNotificationId(uid string, nid string, os string, appVersion string) error {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("notifications")
 	defer conn.Close()
@@ -39,6 +39,7 @@ func AddNotificationId(uid string, nid string, os string) error {
 			"notificationId": nid,
 			"os": os,
 			"creationTime": time.Now(),
+			"appVersion": appVersion,
 		}
 
 		_, err := c.Upsert(key, value)
