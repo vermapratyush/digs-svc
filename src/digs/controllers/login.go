@@ -57,6 +57,7 @@ func (this *LoginController) Post()  {
 		StatusCode:200,
 		SessionId:sid,
 		UserId:uid,
+		Verified:userAccount.Verified,
 		Settings:domain.SettingResponse{
 			Range:userAccount.Settings.Range,
 			PublicProfile:userAccount.Settings.PublicProfile,
