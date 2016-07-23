@@ -30,6 +30,9 @@ func AddUserNewLocation(longitude, latitude float64, uid string) error {
 		return err
 	}, nil)
 
+	if err != nil {
+		logger.Error("LocationUpdateFailed|UID=", uid, "|Err=", err)
+	}
 	return err
 }
 

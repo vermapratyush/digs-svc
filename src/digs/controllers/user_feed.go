@@ -100,7 +100,7 @@ func (this *FeedController) Get() {
 				From: common.GetName(user.FirstName, user.LastName),
 				About: user.About,
 				Message: msg.Content,
-				Timestamp: msg.CreationTime.Unix() * int64(1000),
+				Timestamp: msg.CreationTime.UnixNano() / int64(1000000),
 				ProfilePicture: user.ProfilePicture,
 			},
 		)

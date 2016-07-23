@@ -99,7 +99,7 @@ func composeResponse(gid string, messages []models.UserGroupMessageResolved) []d
 			From: common.GetName(message.UserAccount.FirstName, message.UserAccount.LastName),
 			About: message.UserAccount.About,
 			Message: message.Content,
-			Timestamp: message.CreationTime.Unix() * int64(1000),
+			Timestamp: message.CreationTime.UnixNano() / int64(1000000),
 			ProfilePicture: message.UserAccount.ProfilePicture,
 		}
 	}

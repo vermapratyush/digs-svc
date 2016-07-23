@@ -55,7 +55,7 @@ func updatePersonActivity(userAccount *models.UserAccount, oldRange, newRange fl
 		if oldRange > newRange {
 			uidList := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], oldRange, newRange)
 			logger.Debug("SettingsChanged|UID=", userAccount.UID, "|InformPartialUser=%v", uidList)
-			socket.MulticastPersonCustom("leave", userAccount, userLocation.Location, uidList, "")
+			socket.MulticastPersonCustom("out_of_range", userAccount, userLocation.Location, uidList, "")
 		} else {
 			uidList := models.GetLiveUIDForFeed(userLocation.Location.Coordinates[0], userLocation.Location.Coordinates[1], newRange, oldRange)
 			logger.Debug("SettingsChanged|UID=", userAccount.UID, "|InformPartialUser=%v", uidList)

@@ -82,11 +82,12 @@ func serve(requestBody []byte, userAuth *models.UserAuth, location *domain.Coord
 
 	case strings.HasPrefix(message, socket.SendMessage):
 
-
 		var msg = domain.MessageSendRequest{}
 		_ = json.Unmarshal(requestBody[len(socket.SendMessage):], &msg)
 		updateLocation(location, &msg.Location, userAuth)
-
+		if msg.Location.Longitude == 0.0 || msg.Location.Latitude == 0.0 {
+			msg.Location = *location
+		}
 		err := handleMessage(userAuth.UID, &msg)
 		if err != nil {
 			logger.Critical("MessageRecv|NotHandled|SID=", userAuth.SID, "|UID=", userAuth.UID, "|Err=%v", err)
@@ -140,6 +141,12 @@ func handleTyping(uid string, msg *domain.MessageTypingRequest) {
 }
 
 func updateLocation(oldLocation, newLocation *domain.Coordinate, userAuth *models.UserAuth) {
+	if newLocation.Latitude == 0.0 || newLocation.Longitude == 0.0 {
+		if oldLocation.Longitude != 0.0 && oldLocation.Latitude != 0.0 {
+			newLocation = oldLocation
+		}
+		return
+	}
 
 	if oldLocation == nil || (oldLocation != nil && common.Distance(oldLocation, newLocation) > 5000) {
 		if oldLocation == nil {

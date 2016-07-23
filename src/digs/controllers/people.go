@@ -121,6 +121,9 @@ func addPeopleWhoCommunicatedOneOnOne(uid string, people []*domain.PersonRespons
 	oneOneOne, _ := models.GetGroupsUserIsMemberOf(uid)
 
 	for _, user := range (oneOneOne) {
+		if len(user.MessageIds) == 0 {
+			continue
+		}
 		addUser := true
 		for _, person := range(people) {
 			if user.UserAccount.UID == person.UID {

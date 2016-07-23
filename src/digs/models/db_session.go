@@ -101,6 +101,7 @@ type UserGroupMessageResolved struct {
 //TODO: Hack for one-to-one conversation
 type OneToOnePeopleFeed struct {
 	UserAccount UserAccount `json:"userAccount" bson:"userAccount"`
+	MessageIds []string `json:"mids" bson:"mids"`
 }
 
 type MessagesResolved struct {
