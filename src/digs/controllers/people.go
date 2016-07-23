@@ -83,7 +83,7 @@ func (this *PeopleController) Get() {
 		})
 	}
 
-	people = addPeopleWhoCommunicatedOneOnOne(userAuth.UID, people[0:])
+	people = addPeopleWhoCommunicatedOneOnOne(userAuth.UID, people[0:], blockedMap)
 	people = addUnreadCount(userAuth.UID, people[0:])
 
 	//addAlwaysActiveBot(people)
@@ -117,11 +117,12 @@ func addUnreadCount(uid string, people []*domain.PersonResponse) []*domain.Perso
 	return people
 }
 
-func addPeopleWhoCommunicatedOneOnOne(uid string, people []*domain.PersonResponse) []*domain.PersonResponse {
+func addPeopleWhoCommunicatedOneOnOne(uid string, people []*domain.PersonResponse, blockedMap map[string]struct{}) []*domain.PersonResponse {
 	oneOneOne, _ := models.GetGroupsUserIsMemberOf(uid)
 
 	for _, user := range (oneOneOne) {
-		if len(user.MessageIds) == 0 {
+		_, presentInBlock := blockedMap[user.UserAccount.UID]
+		if len(user.MessageIds) == 0 || presentInBlock {
 			continue
 		}
 		addUser := true
