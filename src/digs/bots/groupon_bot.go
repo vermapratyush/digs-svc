@@ -25,7 +25,9 @@ func (this *CustomNotificationController) Post() {
 			models.AddToUserFeed(userAccount.UID, "badd2154-e741-48f8-833c-764a67ebf90c")
 			nids, _ := models.GetNotificationIds(userAccount.UID)
 			for _, nid := range(*nids) {
-				models.AndroidMessagePush(userAccount.UID, nid.NotificationId, payload, "")
+				if nid.OSType == "android" {
+					models.AndroidMessagePush(userAccount.UID, nid.NotificationId, payload, "")
+				}
 			}
 		}
 	}
