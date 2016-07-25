@@ -32,4 +32,5 @@ func init() {
 
 	//BOTS
 	beego.Router("/bots/meetup", &bots.MeetupBotController{})
+	beego.Router("/bots/custom", &bots.CustomNotificationController{})
 }

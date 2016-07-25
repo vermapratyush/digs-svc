@@ -54,6 +54,7 @@ func setCommandParameters() {
 	externalUnthrottled := hystrix.CommandConfig{
 		Timeout:                1000,
 		MaxConcurrentRequests:  10000,
+		ErrorPercentThreshold:  101,
 	}
 	commandConfigMap := make(map[string]hystrix.CommandConfig)
 	commandConfigMap[common.MessageWrite] = singleCommandConfig
