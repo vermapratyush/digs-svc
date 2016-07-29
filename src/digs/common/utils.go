@@ -11,6 +11,7 @@ const (
 	Bitly_Login = "vermapratyush"
 	Bitly_API_KEY = "R_4d0b283da71e99ec6c0eb703f289982f"
 	MessageBatchSize = 50
+	AmazonS3BucketName = "powow-file-sharing"
 
 	//Constant-Variables
 	DefaultReach = 10000000.0
@@ -33,6 +34,7 @@ const (
 	UserGroup = "UserGroup"
 	UserGroupBatch = "UserGroupBatch"
 	AndroidPush = "AndroidPush"
+	AmazonS3 = "AmazonS3"
 	IOSPush = "IOSPush"
 	MeetupAPI = "MeetupAPI"
 	BitlyAPI = "BitlyAPI"

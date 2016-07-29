@@ -49,6 +49,15 @@ func (this *HttpBaseController) Serve500(err error) {
 	return
 
 }
+func (this *HttpBaseController) ServeUnsupportedMedia() {
+	this.Data["json"] = domain.GenericResponse{
+		StatusCode:415,
+	}
+	this.Ctx.Output.SetStatus(415)
+	this.ServeJSON()
+	return
+
+}
 
 func (this *HttpBaseController) InvalidSessionResponse() {
 	this.Data["json"] = &domain.GenericResponse{

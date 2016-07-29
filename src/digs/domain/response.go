@@ -66,3 +66,8 @@ type CreateGroupResponse struct {
 	GroupAbout string `json:"groupAbout" bson:"groupAbout"`
 	Messages   []MessageGetResponse `json:"messages" bson:"messages"`
 }
+
+type MessagePutResponse struct {
+	ResourceUrl string `json:"resourceUrl" bson:"resourceUrl"`
+
+}

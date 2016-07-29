@@ -56,6 +56,11 @@ func setCommandParameters() {
 		MaxConcurrentRequests:  10000,
 		ErrorPercentThreshold:  101,
 	}
+	awsS3ExternalUnthrottled := hystrix.CommandConfig{
+		Timeout:                5000,
+		MaxConcurrentRequests:  10000,
+		ErrorPercentThreshold:  101,
+	}
 	commandConfigMap := make(map[string]hystrix.CommandConfig)
 	commandConfigMap[common.MessageWrite] = singleCommandConfig
 	commandConfigMap[common.MessageGetAll] = batchCommandConfig
@@ -77,6 +82,7 @@ func setCommandParameters() {
 	commandConfigMap[common.IOSPush] = externalUnthrottled
 	commandConfigMap[common.MeetupAPI] = externalUnthrottled
 	commandConfigMap[common.BitlyAPI] = externalUnthrottled
+	commandConfigMap[common.AmazonS3] = awsS3ExternalUnthrottled
 
 	hystrix.Configure(commandConfigMap)
 
