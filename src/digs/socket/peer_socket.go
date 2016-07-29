@@ -9,6 +9,7 @@ import (
 	"sync"
 	"digs/logger"
 	"fmt"
+	"strings"
 )
 
 
@@ -198,10 +199,20 @@ func sendPushMessage(userAccount *models.UserAccount, toUID string, response *do
 
 func androidPush(userAccount *models.UserAccount, nid string, msg *domain.MessageGetResponse) {
 	additionalData, _ := json.Marshal(msg)
-	models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s: %s", userAccount.FirstName, msg.Message), string(additionalData))
+	if strings.Contains(msg.Message, "<img") {
+		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s has sent an image", userAccount.FirstName), string(additionalData))
+	} else {
+		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s: %s", userAccount.FirstName, msg.Message), string(additionalData))
+	}
+
 
 }
 
 func iosPush(userAccount *models.UserAccount, nid string, msg *domain.MessageGetResponse)  {
-	models.IOSMessagePush(userAccount.UID, nid, fmt.Sprintf("%s: %s", userAccount.FirstName, msg.Message))
+	if strings.Contains(msg.Message, "<img") {
+		models.IOSMessagePush(userAccount.UID, nid, fmt.Sprintf("%s has sent an image", userAccount.FirstName))
+	} else {
+		models.IOSMessagePush(userAccount.UID, nid, fmt.Sprintf("%s: %s", userAccount.FirstName, msg.Message))
+	}
+
 }
