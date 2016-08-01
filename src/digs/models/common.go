@@ -2,7 +2,6 @@ package models
 
 import (
 	"github.com/deckarep/golang-set"
-	"github.com/astaxie/beego"
 	"digs/logger"
 )
 
