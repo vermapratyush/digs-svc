@@ -138,9 +138,7 @@ func AddUserToGroupChat(uid, gid string) error {
 		update := bson.M {
 			"$set": bson.M{
 				"uid": uid,
-				"groupMember": bson.M{
-					gid: 1,
-				},
+				fmt.Sprintf("groupMember.%s", gid): 1,
 			},
 		}
 		err := c.Update(query, update)
