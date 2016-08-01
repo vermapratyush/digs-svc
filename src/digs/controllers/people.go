@@ -109,7 +109,7 @@ func addJoinedGroups(userAccount *models.UserAccount, people []*domain.PersonRes
 	for _, group := range(userGroups) {
 		people = append(people, &domain.PersonResponse{
 			Name: group.GroupName,
-			UID: group.GID,
+			GID: group.GID,
 			About: group.GroupAbout,
 			ActiveState: "joined_group",
 			ProfilePicture: "",
@@ -149,7 +149,7 @@ func addGroupsNearBy(userAccount *models.UserAccount, coordinate *domain.Coordin
 		}
 		people = append(people, &domain.PersonResponse{
 			Name: group.GroupName,
-			UID: group.GID,
+			GID: group.GID,
 			About: group.GroupAbout,
 			ActiveState: "nearby_group",
 			ProfilePicture: "",
@@ -176,7 +176,6 @@ func addUnreadCount(uid string, people []*domain.PersonResponse) []*domain.Perso
 
 	for _, person := range (people) {
 		idx := common.IndexOf(userGroupMap[person.UID].MIDS, userGroupMap[person.UID].MessageRead[uid])
-		logger.Debug("otherId=", person.UID, "|MyId=", uid, "|idx=", idx)
 		if idx < 0 {
 			idx = 0
 		}
