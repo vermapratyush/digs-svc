@@ -8,6 +8,7 @@ import (
 	"github.com/afex/hystrix-go/hystrix"
 	"digs/common"
 	"digs/logger"
+	"fmt"
 )
 
 func AddUserAccount(firstName, lastName, email, about, fbid, locale, profilePicture string, verified bool) (*UserAccount, error) {
@@ -163,9 +164,7 @@ func AddUserToOneToOneGroupChat(uid, gid string) error {
 		update := bson.M {
 			"$set": bson.M{
 				"uid": uid,
-				"groupMember": bson.M{
-					gid: 0,
-				},
+				fmt.Sprintf("groupMember.%s", gid): 0,
 			},
 		}
 		err := c.Update(query, update)
