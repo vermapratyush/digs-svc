@@ -179,6 +179,77 @@ func GetMessageFromGroup(gid string, upto, size int64) ([]UserGroupMessageResolv
 	return result, err
 }
 
+func GetUserGroups(gids []string) []UserGroup {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("user_groups")
+	defer conn.Close()
+
+	result := []UserGroup{}
+	err := hystrix.Do(common.UserGroup, func() error {
+		err := c.Find(bson.M{
+			"gid": bson.M{
+				"$in": gids,
+			},
+		}).All(&result)
+
+		return err
+	}, nil)
+	if err != nil {
+		logger.Error("UserGroupGetAll|gids=", gids, "|Err=", err)
+	}
+
+	return result[0:]
+}
+
+//TODO: Hack specific to 1-1 chat
+func GetUnreadMessageCountOneOnOne(uid string) ([]UserGroup, error) {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("user_groups")
+	defer conn.Close()
+	defer conn.Close()
+
+	result := []UserGroup{}
+	err := hystrix.Do(common.UserGroupBatch, func() error {
+		query := bson.M{
+			"uids": bson.M{
+				"$in": []string{uid},
+			},
+		}
+		err := c.Find(query).All(&result)
+
+		return err
+	}, nil)
+
+	if err != nil {
+		logger.Error("UnreadMessageError|UID=", uid, "|Err=", err)
+	}
+
+	return result, err
+}
+
+func UpdateUnreadPointer(gid, uid, mid string) error {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("user_groups")
+	defer conn.Close()
+
+	err := hystrix.Do(common.UserGroup, func() error {
+		query := bson.M{"gid": gid}
+		update := bson.M{
+			"$set": bson.M{
+				fmt.Sprintf("messageRead.%s", uid): mid,
+			},
+		}
+		err := c.Update(query, update)
+		return err
+	}, nil)
+	if err != nil {
+		logger.Error("UpdateUnreadPointer|UID=", uid, "|Gid=", gid, "|Mid=", mid, "|Err=", err)
+	}
+
+	return err
+}
+
+//TODO: HACK: GET RID
 //TODO: Hack for one-one past messages
 func GetGroupsUserIsMemberOf(uid string) ([]OneToOnePeopleFeed, error) {
 	conn := Session.Clone()
@@ -229,51 +300,4 @@ func GetGroupsUserIsMemberOf(uid string) ([]OneToOnePeopleFeed, error) {
 	}
 	return result, err
 
-}
-
-//TODO: Hack specific to 1-1 chat
-func GetUnreadMessageCountOneOnOne(uid string) ([]UserGroup, error) {
-	conn := Session.Clone()
-	c := conn.DB(DefaultDatabase).C("user_groups")
-	defer conn.Close()
-
-	result := []UserGroup{}
-	err := hystrix.Do(common.UserGroupBatch, func() error {
-		query := bson.M{
-			"uids": bson.M{
-				"$in": []string{uid},
-			},
-		}
-		err := c.Find(query).All(&result)
-
-		return err
-	}, nil)
-
-	if err != nil {
-		logger.Error("UnreadMessageError|UID=", uid, "|Err=", err)
-	}
-
-	return result, err
-}
-
-func UpdateUnreadPointer(gid, uid, mid string) error {
-	conn := Session.Clone()
-	c := conn.DB(DefaultDatabase).C("user_groups")
-	defer conn.Close()
-
-	err := hystrix.Do(common.UserGroup, func() error {
-		query := bson.M{"gid": gid}
-		update := bson.M{
-			"$set": bson.M{
-				fmt.Sprintf("messageRead.%s", uid): mid,
-			},
-		}
-		err := c.Update(query, update)
-		return err
-	}, nil)
-	if err != nil {
-		logger.Error("UpdateUnreadPointer|UID=", uid, "|Gid=", gid, "|Mid=", mid, "|Err=", err)
-	}
-
-	return err
 }

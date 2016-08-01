@@ -47,6 +47,7 @@ type PersonResponse struct {
 	UnreadCount    int64 `json:"unreadCount" bson:"unreadCount"`
 	ActiveState    string `json:"state" bson:"state"`
 	Activity       string `json:"activity" bson:"activity"`
+	MemberCount    int `json:"memberCount" bson:"memberCount"`
 	ProfilePicture string `json:"picture" bson:"picture"`
 }
 

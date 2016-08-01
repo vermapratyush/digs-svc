@@ -9,6 +9,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"digs/logger"
 	"strconv"
+	"github.com/deckarep/golang-set"
 )
 
 type PeopleController struct {
@@ -83,14 +84,60 @@ func (this *PeopleController) Get() {
 		})
 	}
 
-	people = addPeopleWhoCommunicatedOneOnOne(userAuth.UID, people[0:], blockedMap)
-	people = addUnreadCount(userAuth.UID, people[0:])
+	//TODO: HACK: GET RID
+	version := this.Ctx.Input.Param(":version")
+	if version == "v1" {
+
+		people = addPeopleWhoCommunicatedOneOnOneHack(userAccount.UID, people[0:], blockedMap)
+	} else {
+		people = addPeopleWhoCommunicatedOneOnOne(userAccount, people[0:], blockedMap)
+		people = addGroupsNearBy(userAccount, &domain.Coordinate{Longitude:longitude, Latitude:latitude}, people[0:])
+		people = addUnreadCount(userAuth.UID, people[0:])
+	}
 
 	//addAlwaysActiveBot(people)
 
 	logger.Debug("PEOPLE|SID=", userAuth.SID, "|UID=", userAuth.UID, "|FeedSize=", len(people))
 
 	this.Serve200(people)
+}
+
+func addGroupsNearBy(userAccount *models.UserAccount, coordinate *domain.Coordinate, people []*domain.PersonResponse) []*domain.PersonResponse {
+	nearByPeople := models.GetLiveUIDForFeed(coordinate.Longitude, coordinate.Latitude, userAccount.Settings.Range, -1)
+	userAccounts, _ := models.GetAllUserAccountIn(nearByPeople)
+	groupIds := mapset.NewSet()
+	for _, userAccount := range (userAccounts) {
+		for _, gid := range (userAccount.GroupIds) {
+			groupIds.Add(gid)
+		}
+	}
+	for _, group := range(people) {
+		if group.ActiveState == "joined_group" {
+			groupIds.Remove(group.GID)
+		}
+	}
+	groupIdString := make([]string, groupIds.Cardinality())
+	idx := 0
+	for gid := range(groupIds.Iter()) {
+		groupIdString[idx] = gid.(string)
+		idx++
+	}
+	userGroups := models.GetUserGroups(groupIdString)
+	for _, group := range(userGroups) {
+		if len(group.UIDS) <= 2 || len(group.MIDS) == 0 {
+			continue
+		}
+		people = append(people, &domain.PersonResponse{
+			Name: group.GroupName,
+			UID: group.GID,
+			About: group.GroupAbout,
+			ActiveState: "nearby_group",
+			ProfilePicture: "",
+			UnreadCount: 0,
+			MemberCount: len(group.UIDS),
+		})
+	}
+	return people
 }
 
 func addUnreadCount(uid string, people []*domain.PersonResponse) []*domain.PersonResponse {
@@ -117,7 +164,7 @@ func addUnreadCount(uid string, people []*domain.PersonResponse) []*domain.Perso
 	return people
 }
 
-func addPeopleWhoCommunicatedOneOnOne(uid string, people []*domain.PersonResponse, blockedMap map[string]struct{}) []*domain.PersonResponse {
+func addPeopleWhoCommunicatedOneOnOneHack(uid string, people []*domain.PersonResponse, blockedMap map[string]struct{}) []*domain.PersonResponse {
 	oneOneOne, _ := models.GetGroupsUserIsMemberOf(uid)
 
 	for _, user := range (oneOneOne) {
@@ -143,6 +190,65 @@ func addPeopleWhoCommunicatedOneOnOne(uid string, people []*domain.PersonRespons
 			})
 		}
 	}
+	return people
+}
+
+func addPeopleWhoCommunicatedOneOnOne(userAccount *models.UserAccount, people []*domain.PersonResponse, blockedMap map[string]struct{}) []*domain.PersonResponse {
+
+	userGroups := models.GetUserGroups(userAccount.GroupIds)
+
+	userIdsForOneOnOne := make([]string, 0)
+	for _, group := range(userGroups) {
+
+		if len(group.UIDS) == 2 && len(group.MIDS) > 0 {
+			if group.UIDS[0] != userAccount.UID {
+				userIdsForOneOnOne = append(userIdsForOneOnOne, group.UIDS[0])
+			} else {
+				userIdsForOneOnOne = append(userIdsForOneOnOne, group.UIDS[1])
+			}
+		} else if len(group.UIDS) > 2 {
+			people = append(people, &domain.PersonResponse {
+				Name: group.GroupName,
+				UID: group.GID,
+				GID: group.GID,
+				About: group.GroupAbout,
+				ActiveState: "joined_group",
+				ProfilePicture: "",
+				MemberCount: len(group.UIDS),
+				UnreadCount: int64(common.IndexOf(group.MIDS, group.MessageRead[userAccount.UID])),
+			})
+		}
+	}
+
+	if len(userIdsForOneOnOne) > 0 {
+		oneOnOne, _ := models.GetAllUserAccountIn(userIdsForOneOnOne)
+		for _, user := range (oneOnOne) {
+
+			_, presentInBlock := blockedMap[user.UID]
+			if presentInBlock {
+				continue
+			}
+			addUser := true
+			for _, person := range(people) {
+				if user.UID == person.UID {
+					addUser = false
+				}
+			}
+			if addUser {
+				people = append(people, &domain.PersonResponse {
+					Name: common.GetName(user.FirstName, user.LastName),
+					UID: user.UID,
+					About: user.About,
+					Activity: "join",
+					ActiveState: "out_of_range",
+					Verified:user.Verified,
+					ProfilePicture: user.ProfilePicture,
+				})
+			}
+		}
+
+	}
+
 	return people
 }
 
