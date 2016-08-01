@@ -22,7 +22,7 @@ func init() {
 	beego.Router("/v1/unread", &controllers.UnreadController{})
 	beego.Router("/v1/pinMessage", &controllers.MessagePinController{})
 	beego.Router("/:version/people", &controllers.PeopleController{})
-	beego.Router("/v1/group", &controllers.GroupController{})
+	beego.Router("/:version/group", &controllers.GroupController{})
 	beego.Router("/v1/feed", &controllers.FeedController{})
 	beego.Router("/v1/setting", &controllers.SettingController{})
 	beego.Router("/v1/abuse", &controllers.AbuseController{})

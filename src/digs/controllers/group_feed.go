@@ -8,6 +8,8 @@ import (
 	"digs/logger"
 	"encoding/json"
 	"fmt"
+	"github.com/deckarep/golang-set"
+	"github.com/astaxie/beego"
 )
 
 type GroupController struct {
@@ -56,23 +58,41 @@ func (this *GroupController) Post() {
 	messages := []models.UserGroupMessageResolved{}
 	response := domain.CreateGroupResponse{}
 
+	if this.Ctx.Input.Param(":version") == "v1" {
+		request.IsPersonal = true
+	}
 	//One-to-one chat
-	if len(request.UIDS) == 2 {
-		userGroup, err = models.CheckOneToOneGroupExist(request.UIDS[0], request.UIDS[1])
-		if err != nil && err != mgo.ErrNotFound {
-			this.Serve500(err)
-			return
-		} else if err == mgo.ErrNotFound {
-			userGroup, err = CreateGroupChat("One-To-One-Group", fmt.Sprintf("Betweem %s and %s", request.UIDS[0], request.UIDS[1]), request.UIDS)
+	if request.IsPersonal {
+		otherUID := request.UIDS[0]
+		if otherUID == userAuth.UID {
+			otherUID = request.UIDS[1]
+		}
+		otherUserAccount, _ := models.GetUserAccount("uid", otherUID)
+		userAccount, _ := models.GetUserAccount("uid", userAuth.UID)
+		userAccountSet := mapset.NewSet()
+		otherUserAccountSet := mapset.NewSet()
+		for _, gid := range(userAccount.OneToOneGroupId()) {
+			userAccountSet.Add(gid)
+		}
+		for _, gid := range(otherUserAccount.OneToOneGroupId()) {
+			otherUserAccountSet.Add(gid)
+		}
+		intersect := userAccountSet.Intersect(otherUserAccountSet)
+		beego.Debug(userAccountSet)
+		beego.Debug(otherUserAccountSet)
+		beego.Debug(intersect)
+		if intersect.Cardinality() != 1 {
+			userGroup, err = CreateOneToOneGroupChat("One-To-One-Group", fmt.Sprintf("Betweem %s and %s", request.UIDS[0], request.UIDS[1]), request.UIDS)
 			if err != nil {
 				this.Serve500(err)
 				return
 			}
 		} else {
+			userGroup, _ = models.GetGroupAccount(intersect.ToSlice()[0].(string))
 			messages, _ = models.GetMessageFromGroup(userGroup.GID, 0, common.MessageBatchSize)
 		}
 	} else {
-		userGroup, err = models.CreateGroup(request.GroupName, request.GroupAbout, request.UIDS)
+		userGroup, err = CreateGroupChat(request.GroupName, request.GroupAbout, request.UIDS)
 		if err != nil {
 			this.Serve500(err)
 			return

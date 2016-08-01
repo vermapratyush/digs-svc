@@ -40,6 +40,7 @@ type UserAccount struct {
 	Verified        bool `bson:"verified" json:"verified"`
 	Settings        Setting `json:"settings" bson:"settings"`
 	GroupIds        []string `json:"groupIds" bson:"groupIds"`
+	GroupMember     map[string]int `json:"groupMember" bson:"groupMember"`
 	BlockedUsers    []string `json:"blockedUsers" bson:"blockedUsers"`
 	PinnedMessages  []string `json:"pinnedMessages" bson:"pinnedMessages"`
 	BlockedMessages []string `json:"blockedMessages" bson:"blockedMessages"`

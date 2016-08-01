@@ -127,7 +127,6 @@ func AddToBlockedContent(uid, contentType, contentValue string) error {
 	return err
 }
 
-//TODO: This field is not being used as of now.
 func AddUserToGroupChat(uid, gid string) error {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("accounts")
@@ -136,8 +135,11 @@ func AddUserToGroupChat(uid, gid string) error {
 	err := hystrix.Do(common.UserAccount, func() error {
 		query := bson.M{"uid": uid}
 		update := bson.M {
-			"$push": bson.M{
-				"groupIds": gid,
+			"$set": bson.M{
+				"uid": uid,
+				"groupMember": bson.M{
+					gid: 1,
+				},
 			},
 		}
 		err := c.Update(query, update)
@@ -146,6 +148,32 @@ func AddUserToGroupChat(uid, gid string) error {
 
 	if err != nil {
 		logger.Error("AddUserToGroup|UID=", uid, "|Gid=", gid, "|Err=", err)
+	}
+
+	return err
+}
+
+func AddUserToOneToOneGroupChat(uid, gid string) error {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("accounts")
+	defer conn.Close()
+
+	err := hystrix.Do(common.UserAccount, func() error {
+		query := bson.M{"uid": uid}
+		update := bson.M {
+			"$set": bson.M{
+				"uid": uid,
+				"groupMember": bson.M{
+					gid: 0,
+				},
+			},
+		}
+		err := c.Update(query, update)
+		return err
+	}, nil)
+
+	if err != nil {
+		logger.Error("AddUserToOneToOneGroup|UID=", uid, "|Gid=", gid, "|Err=", err)
 	}
 
 	return err

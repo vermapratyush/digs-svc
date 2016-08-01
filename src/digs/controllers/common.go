@@ -108,3 +108,13 @@ func CreateGroupChat(groupName, groupAbout string, members []string) (models.Use
 
 	return userGroup, err
 }
+
+func CreateOneToOneGroupChat(groupName, groupAbout string, members []string) (models.UserGroup, error) {
+	userGroup, err := models.CreateGroup(groupName, groupAbout, members)
+
+	for _, uid := range (members) {
+		_ = models.AddUserToOneToOneGroupChat(uid, userGroup.GID)
+	}
+
+	return userGroup, err
+}

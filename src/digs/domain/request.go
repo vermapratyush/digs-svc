@@ -80,6 +80,7 @@ type GroupCreateRequest struct {
 	UIDS       []string `json:"userIds" bson:"userIds"`
 	GroupName  string `json:"groupName" bson:"groupName"`
 	GroupAbout string `json:"groupAbout" bson:"groupAbout"`
+	IsPersonal bool `json:"isPersonal" bson:"isPersonal"`
 }
 
 type UnreadRequest struct {

@@ -89,10 +89,12 @@ func (this *PeopleController) Get() {
 	if version == "v1" {
 
 		people = addPeopleWhoCommunicatedOneOnOneHack(userAccount.UID, people[0:], blockedMap)
+		people = addUnreadCount(userAuth.UID, people[0:])
 	} else {
 		people = addPeopleWhoCommunicatedOneOnOne(userAccount, people[0:], blockedMap)
+		people = addJoinedGroups(userAccount, people[0:])
 		people = addGroupsNearBy(userAccount, &domain.Coordinate{Longitude:longitude, Latitude:latitude}, people[0:])
-		people = addUnreadCount(userAuth.UID, people[0:])
+
 	}
 
 	//addAlwaysActiveBot(people)
@@ -102,12 +104,30 @@ func (this *PeopleController) Get() {
 	this.Serve200(people)
 }
 
+func addJoinedGroups(userAccount *models.UserAccount, people []*domain.PersonResponse) []*domain.PersonResponse {
+	userGroups := models.GetUserGroups(userAccount.MultiGroupId())
+	for _, group := range(userGroups) {
+		people = append(people, &domain.PersonResponse{
+			Name: group.GroupName,
+			UID: group.GID,
+			About: group.GroupAbout,
+			ActiveState: "joined_group",
+			ProfilePicture: "",
+			UnreadCount: int64(common.IndexOf(group.MIDS, group.MessageRead[userAccount.UID])),
+			MemberCount: len(group.UIDS),
+			IsGroup: true,
+		})
+	}
+
+	return people
+}
+
 func addGroupsNearBy(userAccount *models.UserAccount, coordinate *domain.Coordinate, people []*domain.PersonResponse) []*domain.PersonResponse {
 	nearByPeople := models.GetLiveUIDForFeed(coordinate.Longitude, coordinate.Latitude, userAccount.Settings.Range, -1)
 	userAccounts, _ := models.GetAllUserAccountIn(nearByPeople)
 	groupIds := mapset.NewSet()
 	for _, userAccount := range (userAccounts) {
-		for _, gid := range (userAccount.GroupIds) {
+		for _, gid := range (userAccount.MultiGroupId()) {
 			groupIds.Add(gid)
 		}
 	}
@@ -124,7 +144,7 @@ func addGroupsNearBy(userAccount *models.UserAccount, coordinate *domain.Coordin
 	}
 	userGroups := models.GetUserGroups(groupIdString)
 	for _, group := range(userGroups) {
-		if len(group.UIDS) <= 2 || len(group.MIDS) == 0 {
+		if len(group.MIDS) == 0 {
 			continue
 		}
 		people = append(people, &domain.PersonResponse{
@@ -135,11 +155,13 @@ func addGroupsNearBy(userAccount *models.UserAccount, coordinate *domain.Coordin
 			ProfilePicture: "",
 			UnreadCount: 0,
 			MemberCount: len(group.UIDS),
+			IsGroup: true,
 		})
 	}
 	return people
 }
 
+//TODO: HACK: GET RID
 func addUnreadCount(uid string, people []*domain.PersonResponse) []*domain.PersonResponse {
 
 	userGroups, _ := models.GetUnreadMessageCountOneOnOne(uid)
@@ -195,28 +217,20 @@ func addPeopleWhoCommunicatedOneOnOneHack(uid string, people []*domain.PersonRes
 
 func addPeopleWhoCommunicatedOneOnOne(userAccount *models.UserAccount, people []*domain.PersonResponse, blockedMap map[string]struct{}) []*domain.PersonResponse {
 
-	userGroups := models.GetUserGroups(userAccount.GroupIds)
+	userGroups := models.GetUserGroups(userAccount.OneToOneGroupId())
 
 	userIdsForOneOnOne := make([]string, 0)
+	unreadCountPerGroup := make(map[string]int64, len(userGroups))
 	for _, group := range(userGroups) {
-
-		if len(group.UIDS) == 2 && len(group.MIDS) > 0 {
+		if len(group.MIDS) > 0 {
 			if group.UIDS[0] != userAccount.UID {
 				userIdsForOneOnOne = append(userIdsForOneOnOne, group.UIDS[0])
+				unreadCountPerGroup[group.UIDS[0]] = int64(common.IndexOf(group.MIDS, group.MessageRead[userAccount.UID]))
 			} else {
 				userIdsForOneOnOne = append(userIdsForOneOnOne, group.UIDS[1])
+				unreadCountPerGroup[group.UIDS[1]] = int64(common.IndexOf(group.MIDS, group.MessageRead[userAccount.UID]))
 			}
-		} else if len(group.UIDS) > 2 {
-			people = append(people, &domain.PersonResponse {
-				Name: group.GroupName,
-				UID: group.GID,
-				GID: group.GID,
-				About: group.GroupAbout,
-				ActiveState: "joined_group",
-				ProfilePicture: "",
-				MemberCount: len(group.UIDS),
-				UnreadCount: int64(common.IndexOf(group.MIDS, group.MessageRead[userAccount.UID])),
-			})
+
 		}
 	}
 
@@ -243,6 +257,8 @@ func addPeopleWhoCommunicatedOneOnOne(userAccount *models.UserAccount, people []
 					ActiveState: "out_of_range",
 					Verified:user.Verified,
 					ProfilePicture: user.ProfilePicture,
+					IsGroup: false,
+					UnreadCount: unreadCountPerGroup[user.UID],
 				})
 			}
 		}

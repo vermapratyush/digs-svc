@@ -206,7 +206,6 @@ func GetUnreadMessageCountOneOnOne(uid string) ([]UserGroup, error) {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("user_groups")
 	defer conn.Close()
-	defer conn.Close()
 
 	result := []UserGroup{}
 	err := hystrix.Do(common.UserGroupBatch, func() error {

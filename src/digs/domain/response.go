@@ -49,6 +49,7 @@ type PersonResponse struct {
 	Activity       string `json:"activity" bson:"activity"`
 	MemberCount    int `json:"memberCount" bson:"memberCount"`
 	ProfilePicture string `json:"picture" bson:"picture"`
+	IsGroup        bool `json:"isGroup" bson:"isGroup"`
 }
 
 type MessagePushResponse struct {
