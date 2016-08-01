@@ -30,7 +30,7 @@ func (this *GroupController) Get() {
 		return
 	}
 	messages, _ := models.GetMessageFromGroup(gid, from, common.MessageBatchSize)
-	logger.Debug("GROUPGetResponse|Sid=", sid, "|UID=", userAuth.UID, "|ResponseSize=", len(messages))
+	logger.Debug("GROUPGetResponse|Sid=", sid, "|UID=", userAuth.UID, "|GID=", gid, "|ResponseSize=", len(messages))
 
 	response := composeResponse(gid, messages)
 	this.Serve200(response)
