@@ -116,6 +116,7 @@ func addJoinedGroups(userAccount *models.UserAccount, people []*domain.PersonRes
 			UnreadCount: int64(common.IndexOf(group.MIDS, group.MessageRead[userAccount.UID])),
 			MemberCount: len(group.UIDS),
 			IsGroup: true,
+			ProfilePicture: group.GroupPicture,
 		})
 	}
 
@@ -156,6 +157,7 @@ func addGroupsNearBy(userAccount *models.UserAccount, coordinate *domain.Coordin
 			UnreadCount: 0,
 			MemberCount: len(group.UIDS),
 			IsGroup: true,
+			ProfilePicture: group.GroupPicture,
 		})
 	}
 	return people

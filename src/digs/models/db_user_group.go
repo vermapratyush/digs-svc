@@ -36,7 +36,7 @@ func CheckOneToOneGroupExist(uid1, uid2 string) (UserGroup, error) {
 
 }
 
-func CreateGroup(groupName, groupAbout string, members []string) (UserGroup, error) {
+func CreateGroup(groupName, groupAbout, groupPicture string, members []string) (UserGroup, error) {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("user_groups")
 	defer conn.Close()
@@ -46,6 +46,7 @@ func CreateGroup(groupName, groupAbout string, members []string) (UserGroup, err
 		GroupName: groupName,
 		GroupAbout: groupAbout,
 		UIDS:members,
+		GroupPicture: groupPicture,
 	}
 	err := hystrix.Do(common.UserGroup, func() error {
 

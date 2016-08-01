@@ -99,8 +99,8 @@ func (this *WSBaseController) Respond(obj interface{})  {
 	}
 }
 
-func CreateGroupChat(groupName, groupAbout string, members []string) (models.UserGroup, error) {
-	userGroup, err := models.CreateGroup(groupName, groupAbout, members)
+func CreateGroupChat(groupName, groupAbout, groupPicture string, members []string) (models.UserGroup, error) {
+	userGroup, err := models.CreateGroup(groupName, groupAbout, groupPicture, members)
 
 	for _, uid := range (members) {
 		_ = models.AddUserToGroupChat(uid, userGroup.GID)
@@ -110,7 +110,7 @@ func CreateGroupChat(groupName, groupAbout string, members []string) (models.Use
 }
 
 func CreateOneToOneGroupChat(groupName, groupAbout string, members []string) (models.UserGroup, error) {
-	userGroup, err := models.CreateGroup(groupName, groupAbout, members)
+	userGroup, err := models.CreateGroup(groupName, groupAbout, "", members)
 
 	for _, uid := range (members) {
 		_ = models.AddUserToOneToOneGroupChat(uid, userGroup.GID)

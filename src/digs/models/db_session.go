@@ -83,12 +83,13 @@ type MessageHistory struct {
 }
 
 type UserGroup struct {
-	GID         string `json:"gid" bson:"gid"`
-	UIDS        []string `json:"uids" bson:"uids"`
-	MIDS        []string `json:"mids" bson:"mids"`
-	GroupName   string `json:"groupName" bson:"groupName"`
-	GroupAbout  string `json:"groupAbout" bson:"groupAbout"`
-	MessageRead map[string]string `json:"messageRead" bson:"messageRead"`
+	GID          string `json:"gid" bson:"gid"`
+	UIDS         []string `json:"uids" bson:"uids"`
+	MIDS         []string `json:"mids" bson:"mids"`
+	GroupName    string `json:"groupName" bson:"groupName"`
+	GroupAbout   string `json:"groupAbout" bson:"groupAbout"`
+	GroupPicture string `json:"groupPicture" bson:"groupPicture"`
+	MessageRead  map[string]string `json:"messageRead" bson:"messageRead"`
 }
 
 type UserGroupMessageResolved struct {
@@ -102,7 +103,7 @@ type UserGroupMessageResolved struct {
 //TODO: Hack for one-to-one conversation
 type OneToOnePeopleFeed struct {
 	UserAccount UserAccount `json:"userAccount" bson:"userAccount"`
-	MessageIds []string `json:"mids" bson:"mids"`
+	MessageIds  []string `json:"mids" bson:"mids"`
 }
 
 type MessagesResolved struct {
@@ -111,6 +112,5 @@ type MessagesResolved struct {
 	Location     Coordinate `bson:"location" json:"location"`
 	Content      string `bson:"content" json:"content"`
 	CreationTime time.Time `bson:"creationTime" json:"creationTime"`
-	UserAccount UserAccount `json:"fromUserAccount" bson:"fromUserAccount"`
-
+	UserAccount  UserAccount `json:"fromUserAccount" bson:"fromUserAccount"`
 }

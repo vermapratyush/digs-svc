@@ -80,7 +80,7 @@ func (this *GroupController) Post() {
 			messages, _ = models.GetMessageFromGroup(userGroup.GID, 0, common.MessageBatchSize)
 		}
 	} else {
-		userGroup, err = CreateGroupChat(request.GroupName, request.GroupAbout, request.UIDS)
+		userGroup, err = CreateGroupChat(request.GroupName, request.GroupAbout, request.GroupPicture, request.UIDS)
 		if err != nil {
 			this.Serve500(err)
 			return
@@ -90,6 +90,7 @@ func (this *GroupController) Post() {
 	response.GID = userGroup.GID
 	response.GroupName = userGroup.GroupName
 	response.GroupAbout = userGroup.GroupAbout
+	response.GroupPicture = userGroup.GroupPicture
 	response.Messages = composeResponse(userGroup.GID, messages)
 
 	logger.Debug("GROUPCreateResponse|Sid=", sid, "|UID=", userAuth.UID, "GID=", response.GID, "|ResponseSize=", len(response.Messages))
@@ -116,6 +117,7 @@ func (this *GroupController) GetDetails() {
 		Users: mapper.MapUserAccountToPersonResponse(userAccounts),
 		GroupName: userGroup.GroupName,
 		GroupAbout: userGroup.GroupAbout,
+		GroupPicture: userGroup.GroupPicture,
 	})
 }
 

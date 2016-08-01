@@ -63,10 +63,11 @@ type SettingResponse struct {
 }
 
 type CreateGroupResponse struct {
-	GID        string `json:"groupId" bson:"groupId"`
-	GroupName  string `json:"groupName" bson:"groupName"`
-	GroupAbout string `json:"groupAbout" bson:"groupAbout"`
-	Messages   []MessageGetResponse `json:"messages" bson:"messages"`
+	GID          string `json:"groupId" bson:"groupId"`
+	GroupName    string `json:"groupName" bson:"groupName"`
+	GroupAbout   string `json:"groupAbout" bson:"groupAbout"`
+	GroupPicture string `json:"groupPicture" bson:"groupPicture"`
+	Messages     []MessageGetResponse `json:"messages" bson:"messages"`
 }
 
 type MessagePutResponse struct {
@@ -74,8 +75,9 @@ type MessagePutResponse struct {
 }
 
 type GroupDetail struct {
-	GID        string `json:"groupId" bson:"groupId"`
-	Users      []PersonResponse `json:"users" bson:"users"`
-	GroupName  string `json:"groupName" bson:"groupName"`
-	GroupAbout string `json:"groupAbout" bson:"groupAbout"`
+	GID          string `json:"groupId" bson:"groupId"`
+	Users        []PersonResponse `json:"users" bson:"users"`
+	GroupName    string `json:"groupName" bson:"groupName"`
+	GroupAbout   string `json:"groupAbout" bson:"groupAbout"`
+	GroupPicture string `json:"groupPicture" bson:"groupPicture"`
 }
