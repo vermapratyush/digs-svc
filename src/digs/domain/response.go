@@ -71,5 +71,11 @@ type CreateGroupResponse struct {
 
 type MessagePutResponse struct {
 	ResourceUrl string `json:"resourceUrl" bson:"resourceUrl"`
+}
 
+type GroupDetail struct {
+	GID        string `json:"groupId" bson:"groupId"`
+	Users      []PersonResponse `json:"users" bson:"users"`
+	GroupName  string `json:"groupName" bson:"groupName"`
+	GroupAbout string `json:"groupAbout" bson:"groupAbout"`
 }

@@ -8,6 +8,7 @@ import (
 	"digs/logger"
 	"encoding/json"
 	"fmt"
+	"digs/mapper"
 )
 
 type GroupController struct {
@@ -93,6 +94,29 @@ func (this *GroupController) Post() {
 
 	logger.Debug("GROUPCreateResponse|Sid=", sid, "|UID=", userAuth.UID, "GID=", response.GID, "|ResponseSize=", len(response.Messages))
 	this.Serve200(response)
+}
+
+func (this *GroupController) GetDetails() {
+	sid := this.GetString("sessionId")
+	_, err := models.FindSession("sid", sid)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			this.InvalidSessionResponse()
+			return
+		}
+		this.Serve500(err)
+		return
+	}
+	gid := this.Ctx.Input.Param(":groupId")
+	userGroup, _ := models.GetGroupAccount(gid)
+
+	userAccounts, _ := models.GetAllUserAccountIn(userGroup.UIDS)
+	this.Serve200(&domain.GroupDetail {
+		GID: gid,
+		Users: mapper.MapUserAccountToPersonResponse(userAccounts),
+		GroupName: userGroup.GroupName,
+		GroupAbout: userGroup.GroupAbout,
+	})
 }
 
 func composeResponse(gid string, messages []models.UserGroupMessageResolved) []domain.MessageGetResponse {
