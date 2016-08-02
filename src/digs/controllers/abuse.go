@@ -36,6 +36,9 @@ func (this *AbuseController) Post() {
 		models.AddToBlockedContent(session.UID, "blockedMessages", request.MID)
 		models.RemoveMessage(session.UID, request.MID)
 	}
+	if request.GID != "" {
+		models.AddToBlockedContent(session.UID, "blockedGroups", request.GID)
+	}
 
 	this.Serve204()
 }

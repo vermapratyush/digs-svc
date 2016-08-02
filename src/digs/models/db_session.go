@@ -42,6 +42,7 @@ type UserAccount struct {
 	GroupIds        []string `json:"groupIds" bson:"groupIds"`
 	GroupMember     map[string]int `json:"groupMember" bson:"groupMember"`
 	BlockedUsers    []string `json:"blockedUsers" bson:"blockedUsers"`
+	BlockedGroups   []string `json:"blockedGroups" bson:"blockedGroups"`
 	PinnedMessages  []string `json:"pinnedMessages" bson:"pinnedMessages"`
 	BlockedMessages []string `json:"blockedMessages" bson:"blockedMessages"`
 }

@@ -57,6 +57,7 @@ func (this *PeopleController) Get() {
 	}
 
 	blockedMap := common.GetStringArrayAsMap(userAccount.BlockedUsers)
+	blockedGroup := common.GetStringArrayAsMap(userAccount.BlockedGroups)
 
 	//TODO: Find a better solution, too make realloc
 	people := make([]*domain.PersonResponse, 0, len(uidList))
@@ -93,7 +94,7 @@ func (this *PeopleController) Get() {
 	} else {
 		people = addPeopleWhoCommunicatedOneOnOne(userAccount, people[0:], blockedMap)
 		people = addJoinedGroups(userAccount, people[0:])
-		people = addGroupsNearBy(userAccount, &domain.Coordinate{Longitude:longitude, Latitude:latitude}, people[0:])
+		people = addGroupsNearBy(userAccount, &domain.Coordinate{Longitude:longitude, Latitude:latitude}, blockedGroup, people[0:])
 
 	}
 
@@ -122,13 +123,16 @@ func addJoinedGroups(userAccount *models.UserAccount, people []*domain.PersonRes
 	return people
 }
 
-func addGroupsNearBy(userAccount *models.UserAccount, coordinate *domain.Coordinate, people []*domain.PersonResponse) []*domain.PersonResponse {
+func addGroupsNearBy(userAccount *models.UserAccount, coordinate *domain.Coordinate, blockedGroup map[string]struct{}, people []*domain.PersonResponse) []*domain.PersonResponse {
 	nearByPeople := models.GetLiveUIDForFeed(coordinate.Longitude, coordinate.Latitude, userAccount.Settings.Range, -1)
 	userAccounts, _ := models.GetAllUserAccountIn(nearByPeople)
 	groupIds := mapset.NewSet()
 	for _, userAccount := range (userAccounts) {
 		for _, gid := range (userAccount.MultiGroupId()) {
-			groupIds.Add(gid)
+			_, blocked := blockedGroup[gid]
+			if !blocked {
+				groupIds.Add(gid)
+			}
 		}
 	}
 	for _, group := range(people) {

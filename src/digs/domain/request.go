@@ -71,8 +71,9 @@ type SettingRequest struct {
 
 type AbuseRequest struct {
 	BaseRequest
-	MID string `json:"messageId" bson:"messageId"`
 	UID string `json:"userId" bson:"userId"`
+	GID string `json:"groupId" bson:"groupId"`
+	MID string `json:"messageId" bson:"messageId"`
 }
 
 type GroupCreateRequest struct {
