@@ -95,8 +95,9 @@ func MulticastPersonCustom(activity string, userAccount *models.UserAccount, use
 				ActiveState:activeState,
 				Verified:userAccount.Verified,
 				ProfilePicture: userAccount.ProfilePicture,
+				IsGroup: false,
 			})
-			err := sendWSMessage(peer, userAccount.UID, response)
+			err := sendWSMessage(peer, response)
 			if err != nil {
 				logger.Error("PEER|MessageSendFailed|ToUID=", toUID, "|From=", userAccount.UID, "|err=%v", err)
 			}
@@ -104,6 +105,18 @@ func MulticastPersonCustom(activity string, userAccount *models.UserAccount, use
 	}
 }
 
+func MulticastGroup(event *domain.PersonResponse, uids[] string) {
+	for _, toUID := range(uids) {
+		peer, present := GetLookUp(toUID)
+		if present {
+			logger.Debug("PEER|SendingActivity|toUID=", toUID, "|Activity=CreateGroup")
+			messageByte, _:= json.Marshal(event)
+			sendWSMessage(peer, messageByte)
+		} else {
+			sendPushPeople(toUID, event)
+		}
+	}
+}
 
 func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRequest) {
 
@@ -126,7 +139,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 		}
 		toUserAccount, _ := models.GetUserAccount("uid", toUID)
 
-		//Add to feed of the user or group accordingly
+		//Add to feed of the user, group_feed has already been updated
 		if msg.GID == "" {
 			models.AddToUserFeed(toUID, msg.MID)
 		}
@@ -155,7 +168,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			sendPushMessage(userAccount, toUID, response)
 
 		} else if (present) {
-			err := sendWSMessage(peer, userAccount.UID, responseString)
+			err := sendWSMessage(peer, responseString)
 			if err != nil && toUserAccount.Settings.PushNotification {
 				sendingPush = append(sendingPush, toUID)
 				sendPushMessage(userAccount, toUID, response)
@@ -168,13 +181,12 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 	logger.Debug("PushMessage|len=", len(sendingPush), "|uid=", sendingPush)
 }
 
-func sendWSMessage(toPeer Peer, fromUID string, data []byte) error {
+func sendWSMessage(toPeer Peer, data []byte) error {
 	defer DeadSocketWrite(toPeer.UID)
 
 	err := SendData(toPeer.UID, data)
 	if err != nil {
-		logger.Critical("MessageSendFailed|ToUID=", toPeer.UID, "|From=", fromUID, "|Error=%v", err)
-		LeaveNode(fromUID)
+		logger.Critical("MessageSendFailed|ToUID=", toPeer.UID, "|Error=%v", err)
 		return err
 	}
 	return nil
@@ -190,22 +202,44 @@ func sendPushMessage(userAccount *models.UserAccount, toUID string, response *do
 
 	for _, notification := range(*notifications) {
 		if notification.OSType == "android" {
-			androidPush(userAccount, notification.NotificationId, response)
+			androidMessagePush(userAccount, notification.NotificationId, response)
 		} else {
 			iosPush(userAccount, notification.NotificationId, response)
 		}
 	}
 }
 
-func androidPush(userAccount *models.UserAccount, nid string, msg *domain.MessageGetResponse) {
+func sendPushPeople(uid string, response *domain.PersonResponse) {
+	notifications, err := models.GetNotificationIds(uid)
+	if err != nil {
+		logger.Error("PEER|NotificationIdFetch|toUID=", uid, "|err=%v", err)
+		return
+	}
+	message := fmt.Sprintf("You have been added to the group: %s", response.Name)
+	for _, notification := range(*notifications) {
+		if notification.OSType == "android" {
+			androidPeoplePush(uid, notification.NotificationId, message)
+		} else {
+			iosPeoplePush(uid, notification.NotificationId, message)
+		}
+	}
+}
+
+func androidMessagePush(userAccount *models.UserAccount, nid string, msg *domain.MessageGetResponse) {
 	additionalData, _ := json.Marshal(msg)
 	if strings.Contains(msg.Message, "<img") {
 		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s has sent an image", userAccount.FirstName), string(additionalData))
 	} else {
 		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s: %s", userAccount.FirstName, msg.Message), string(additionalData))
 	}
+}
 
+func androidPeoplePush(uid, nid, message string) {
+	models.AndroidMessagePush(uid, nid, message, "")
+}
 
+func iosPeoplePush(uid, nid, message string) {
+	models.IOSMessagePush(uid, nid, message)
 }
 
 func iosPush(userAccount *models.UserAccount, nid string, msg *domain.MessageGetResponse)  {

@@ -23,7 +23,19 @@ func MapUserAccountToPersonResponse(userAccounts []models.UserAccount) []domain.
 			Verified: userAccount.Verified,
 			ActiveState: activeState,
 			ProfilePicture: userAccount.ProfilePicture,
+			IsGroup: true,
 		}
 	}
 	return res
+}
+
+func MapGroupAccountToPersonResponse(group models.UserGroup) *domain.PersonResponse {
+	return &domain.PersonResponse{
+		Name: group.GroupName,
+		GID: group.GID,
+		About: group.GroupAbout,
+		MemberCount: len(group.UIDS),
+		IsGroup: true,
+		ProfilePicture: group.GroupPicture,
+	}
 }

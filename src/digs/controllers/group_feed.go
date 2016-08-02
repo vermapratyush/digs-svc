@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"digs/mapper"
+	"digs/socket"
 )
 
 type GroupController struct {
@@ -75,12 +76,14 @@ func (this *GroupController) Post() {
 				this.Serve500(err)
 				return
 			}
+			go informUsersOfNewGroup(request.UIDS, userGroup)
 		} else {
 			userGroup, _ = models.GetGroupAccount(intersect)
 			messages, _ = models.GetMessageFromGroup(userGroup.GID, 0, common.MessageBatchSize)
 		}
 	} else {
 		userGroup, err = CreateGroupChat(request.GroupName, request.GroupAbout, request.GroupPicture, request.UIDS)
+		go informUsersOfNewGroup(request.UIDS, userGroup)
 		if err != nil {
 			this.Serve500(err)
 			return
@@ -138,7 +141,10 @@ func (this *GroupController) JoinGroup() {
 		this.Serve500(err)
 		return
 	}
-	this.Serve204()
+	userGroup, _ := models.GetGroupAccount(gid)
+	person := mapper.MapGroupAccountToPersonResponse(userGroup)
+	person.ActiveState = "joined_group"
+	this.Serve200(person)
 }
 
 func (this *GroupController) LeaveGroup() {
@@ -158,7 +164,10 @@ func (this *GroupController) LeaveGroup() {
 		this.Serve500(err)
 		return
 	}
-	this.Serve204()
+	userGroup, _ := models.GetGroupAccount(gid)
+	person := mapper.MapGroupAccountToPersonResponse(userGroup)
+	person.ActiveState = "nearby_group"
+	this.Serve200(person)
 }
 
 func composeResponse(gid string, messages []models.UserGroupMessageResolved) []domain.MessageGetResponse {
@@ -177,4 +186,10 @@ func composeResponse(gid string, messages []models.UserGroupMessageResolved) []d
 		}
 	}
 	return responseMessage
+}
+
+func informUsersOfNewGroup(uid []string, group models.UserGroup) {
+	event := mapper.MapGroupAccountToPersonResponse(group)
+	event.ActiveState = "joined_group"
+	socket.MulticastGroup(event, uid)
 }

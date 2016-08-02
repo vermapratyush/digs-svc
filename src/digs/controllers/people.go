@@ -82,6 +82,7 @@ func (this *PeopleController) Get() {
 			ActiveState: activeState,
 			Verified:user.Verified,
 			ProfilePicture: user.ProfilePicture,
+			IsGroup: false,
 		})
 	}
 
@@ -270,44 +271,3 @@ func addPeopleWhoCommunicatedOneOnOne(userAccount *models.UserAccount, people []
 
 	return people
 }
-
-func addAlwaysActiveBot(people []*domain.PersonResponse) {
-	containsSitesh := false
-	containsPratyush := false
-	for _, person := range(people) {
-		if person.UID == "10210146992256811" {
-			containsSitesh = true
-			person.ActiveState = "active"
-		} else if person.UID == "10154168592560450" {
-			containsPratyush = true
-			person.ActiveState = "active"
-		}
-	}
-	user, _ := models.GetUserAccount("uid", "10210146992256811")
-	if !containsSitesh {
-		people = append(people, &domain.PersonResponse{
-			Name: common.GetName(user.FirstName, user.LastName),
-			UID: user.UID,
-			About: user.About,
-			Activity: "join",
-			ActiveState: "active",
-			Verified:user.Verified,
-			ProfilePicture: user.ProfilePicture,
-		})
-	}
-	user, _ = models.GetUserAccount("uid", "10154168592560450")
-	if !containsPratyush {
-		people = append(people, &domain.PersonResponse{
-			Name: common.GetName(user.FirstName, user.LastName),
-			UID: user.UID,
-			About: user.About,
-			Activity: "join",
-			ActiveState: "active",
-			Verified:user.Verified,
-			ProfilePicture: user.ProfilePicture,
-		})
-	}
-}
-
-
-
