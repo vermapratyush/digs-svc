@@ -113,7 +113,7 @@ func AddToBlockedContent(uid, contentType, contentValue string) error {
 	err := hystrix.Do(common.UserAccount, func() error {
 		query := bson.M{"uid": uid}
 		update := bson.M{
-			"$push": bson.M{
+			"$addToSet": bson.M{
 				contentType: contentValue,
 			},
 		}
@@ -152,6 +152,29 @@ func AddUserToGroupChat(uid, gid string) error {
 	return err
 }
 
+func RemoveUserFromGroupChat(uid, gid string) error {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("accounts")
+	defer conn.Close()
+
+	err := hystrix.Do(common.UserAccount, func() error {
+		query := bson.M{"uid": uid}
+		update := bson.M {
+			"$unset": bson.M{
+				fmt.Sprintf("groupMember.%s", gid): 0,
+			},
+		}
+		err := c.Update(query, update)
+		return err
+	}, nil)
+
+	if err != nil {
+		logger.Error("RemoveUserFromGroup|UID=", uid, "|Gid=", gid, "|Err=", err)
+	}
+
+	return err
+}
+
 func AddUserToOneToOneGroupChat(uid, gid string) error {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("accounts")
@@ -184,7 +207,7 @@ func AddPinnedMessage(uid, mid string) error {
 	err := hystrix.Do(common.UserAccount, func() error {
 		query := bson.M{"uid": uid}
 		update := bson.M{
-			"$push": bson.M{
+			"$addToSet": bson.M{
 				"pinnedMessages": mid,
 			},
 		}

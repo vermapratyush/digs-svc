@@ -118,3 +118,27 @@ func CreateOneToOneGroupChat(groupName, groupAbout string, members []string) (mo
 
 	return userGroup, err
 }
+
+func AddUserToGroup(uid, gid string) error {
+	err := models.AddUserToGroupChat(uid, gid)
+	if err != nil {
+		return err
+	}
+	err = models.AddUserIdToGroup(uid, gid)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func RemoveUserFromGroup(uid, gid string) error {
+	err := models.RemoveUserFromGroupChat(uid, gid)
+	if err != nil {
+		return err
+	}
+	err = models.RemoveUserIdFromGroup(uid, gid)
+	if err != nil {
+		return err
+	}
+	return nil
+}

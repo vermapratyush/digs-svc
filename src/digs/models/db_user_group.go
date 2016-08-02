@@ -202,6 +202,53 @@ func GetUserGroups(gids []string) []UserGroup {
 	return result[0:]
 }
 
+func AddUserIdToGroup(uid, gid string) error {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("user_groups")
+	defer conn.Close()
+
+	err := hystrix.Do(common.UserGroup, func() error {
+		query := bson.M{
+			"gid": gid,
+		}
+		update := bson.M{
+			"$addToSet": bson.M{
+				"uids": uid,
+			},
+		}
+		err := c.Update(query, update)
+		return err
+	}, nil)
+	if err != nil {
+		logger.Error("AddUIDToGroup|GID=", gid, "|UID=", uid, "|Err=", err)
+	}
+
+	return err
+}
+
+func RemoveUserIdFromGroup(uid, gid string) error {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("user_groups")
+	defer conn.Close()
+
+	err := hystrix.Do(common.UserGroup, func() error {
+		query := bson.M{
+			"gid": gid,
+		}
+		update := bson.M{
+			"$pull": bson.M{
+				"uids": uid,
+			},
+		}
+		err := c.Update(query, update)
+		return err
+	}, nil)
+	if err != nil {
+		logger.Error("RemoveUIDFromGroup|GID=", gid, "|UID=", uid, "|Err=", err)
+	}
+
+	return err
+}
 //TODO: Hack specific to 1-1 chat
 func GetUnreadMessageCountOneOnOne(uid string) ([]UserGroup, error) {
 	conn := Session.Clone()

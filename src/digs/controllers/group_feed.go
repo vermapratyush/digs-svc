@@ -121,6 +121,46 @@ func (this *GroupController) GetDetails() {
 	})
 }
 
+func (this *GroupController) JoinGroup() {
+	sid := this.GetString("sessionId")
+	userAccount, err := models.FindSession("sid", sid)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			this.InvalidSessionResponse()
+			return
+		}
+		this.Serve500(err)
+		return
+	}
+	gid := this.Ctx.Input.Param(":groupId")
+	err = AddUserToGroup(userAccount.UID, gid)
+	if err != nil {
+		this.Serve500(err)
+		return
+	}
+	this.Serve204()
+}
+
+func (this *GroupController) LeaveGroup() {
+	sid := this.GetString("sessionId")
+	userAccount, err := models.FindSession("sid", sid)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			this.InvalidSessionResponse()
+			return
+		}
+		this.Serve500(err)
+		return
+	}
+	gid := this.Ctx.Input.Param(":groupId")
+	err = RemoveUserFromGroup(userAccount.UID, gid)
+	if err != nil {
+		this.Serve500(err)
+		return
+	}
+	this.Serve204()
+}
+
 func composeResponse(gid string, messages []models.UserGroupMessageResolved) []domain.MessageGetResponse {
 	responseMessage := make([]domain.MessageGetResponse, len(messages))
 	for idx, message := range (messages) {
