@@ -257,6 +257,7 @@ func addPeopleWhoCommunicatedOneOnOne(userAccount *models.UserAccount, people []
 			addUser := true
 			for _, person := range(people) {
 				if user.UID == person.UID {
+					person.UnreadCount = unreadCountPerGroup[person.UID]
 					addUser = false
 				}
 			}
