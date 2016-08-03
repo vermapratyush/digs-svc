@@ -32,6 +32,7 @@ type MessageGetResponse struct {
 	GID            string `json:"groupId" bson:"groupId"`
 	From           string `json:"name" bson:"name"`
 	About          string `json:"about" bson:"about"`
+	IsGroup        bool `json:"isGroup" bson:"isGroup"`
 	Message        string `json:"body" bson:"body"`
 	Verified       bool `json:"verified" bson:"verified"`
 	Timestamp      int64 `json:"timestamp" bson:"timestamp"`

@@ -121,7 +121,10 @@ func MulticastGroup(event *domain.PersonResponse, uids[] string) {
 func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRequest) {
 
 	uids := []string{}
-
+	isGroup := true
+	if (common.IndexOf(userAccount.OneToOneGroupId(), msg.GID) != -1) {
+		isGroup = false
+	}
 	if msg.GID != "" {
 		groupAccount, _ := models.GetGroupAccount(msg.GID)
 		uids = groupAccount.UIDS
@@ -155,6 +158,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			UID:userAccount.UID,
 			GID:msg.GID,
 			MID:msg.MID,
+			IsGroup: isGroup,
 			Verified:userAccount.Verified,
 			About: userAccount.About,
 			Message: msg.Body,

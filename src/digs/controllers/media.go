@@ -4,7 +4,6 @@ import (
 	"github.com/satori/go.uuid"
 	"digs/domain"
 	"fmt"
-	"github.com/astaxie/beego"
 	"digs/models"
 	"digs/logger"
 	"gopkg.in/mgo.v2"
