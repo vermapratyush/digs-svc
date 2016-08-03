@@ -23,7 +23,7 @@ func MapUserAccountToPersonResponse(userAccounts []models.UserAccount) []domain.
 			Verified: userAccount.Verified,
 			ActiveState: activeState,
 			ProfilePicture: userAccount.ProfilePicture,
-			IsGroup: true,
+			IsGroup: false,
 		}
 	}
 	return res

@@ -202,6 +202,31 @@ func GetUserGroups(gids []string) []UserGroup {
 	return result[0:]
 }
 
+func UpdateGroupAccount(gid, groupName, groupPicture string) error {
+	conn := Session.Clone()
+	c := conn.DB(DefaultDatabase).C("user_groups")
+	defer conn.Close()
+
+	err := hystrix.Do(common.UserGroup, func() error {
+		query := bson.M{
+			"gid": gid,
+		}
+		update := bson.M{
+			"$set": bson.M{
+				"groupName": groupName,
+				"groupPicture": groupPicture,
+			},
+		}
+		err := c.Update(query, update)
+		return err
+	}, nil)
+	if err != nil {
+		logger.Error("UpdateGroupInfo|GID=", gid, "|UID=", groupName, "|GroupPicture=", groupPicture, "|Err=", err)
+	}
+
+	return err
+}
+
 func AddUserIdToGroup(uid, gid string) error {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("user_groups")

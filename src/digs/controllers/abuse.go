@@ -38,6 +38,7 @@ func (this *AbuseController) Post() {
 	}
 	if request.GID != "" {
 		models.AddToBlockedContent(session.UID, "blockedGroups", request.GID)
+		RemoveUserFromGroup(session.UID, request.GID)
 	}
 
 	this.Serve204()

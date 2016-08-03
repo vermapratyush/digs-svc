@@ -76,6 +76,12 @@ func (this *HttpBaseController) Serve200(obj interface{}) {
 	this.ServeJSON()
 }
 
+func (this *HttpBaseController) Serve404() {
+	//this.Data["json"] = obj
+	this.Ctx.Output.SetStatus(404)
+	this.ServeJSON()
+}
+
 func (this *HttpBaseController) Serve304() {
 	this.Ctx.Output.SetStatus(304)
 	this.ServeJSON()

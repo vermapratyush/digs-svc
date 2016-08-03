@@ -109,12 +109,16 @@ func (this *PeopleController) Get() {
 func addJoinedGroups(userAccount *models.UserAccount, people []*domain.PersonResponse) []*domain.PersonResponse {
 	userGroups := models.GetUserGroups(userAccount.MultiGroupId())
 	for _, group := range(userGroups) {
+		unread := common.IndexOf(group.MIDS, group.MessageRead[userAccount.UID])
+		if unread < 0 {
+			unread = len(group.MIDS);
+		}
 		people = append(people, &domain.PersonResponse{
 			Name: group.GroupName,
 			GID: group.GID,
 			About: group.GroupAbout,
 			ActiveState: "joined_group",
-			UnreadCount: int64(common.IndexOf(group.MIDS, group.MessageRead[userAccount.UID])),
+			UnreadCount: int64(unread),
 			MemberCount: len(group.UIDS),
 			IsGroup: true,
 			ProfilePicture: group.GroupPicture,
@@ -227,12 +231,16 @@ func addPeopleWhoCommunicatedOneOnOne(userAccount *models.UserAccount, people []
 	unreadCountPerGroup := make(map[string]int64, len(userGroups))
 	for _, group := range(userGroups) {
 		if len(group.MIDS) > 0 {
+			unread := common.IndexOf(group.MIDS, group.MessageRead[userAccount.UID])
+			if unread < 0 {
+				unread = len(group.MIDS);
+			}
 			if group.UIDS[0] != userAccount.UID {
 				userIdsForOneOnOne = append(userIdsForOneOnOne, group.UIDS[0])
-				unreadCountPerGroup[group.UIDS[0]] = int64(common.IndexOf(group.MIDS, group.MessageRead[userAccount.UID]))
+				unreadCountPerGroup[group.UIDS[0]] = int64(unread)
 			} else {
 				userIdsForOneOnOne = append(userIdsForOneOnOne, group.UIDS[1])
-				unreadCountPerGroup[group.UIDS[1]] = int64(common.IndexOf(group.MIDS, group.MessageRead[userAccount.UID]))
+				unreadCountPerGroup[group.UIDS[1]] = int64(unread)
 			}
 
 		}

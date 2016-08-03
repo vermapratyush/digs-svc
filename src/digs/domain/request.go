@@ -79,6 +79,7 @@ type AbuseRequest struct {
 type GroupCreateRequest struct {
 	BaseRequest
 	UIDS       []string `json:"userIds" bson:"userIds"`
+	GID        string `json:"groupId" bson:"groupId"`
 	GroupName  string `json:"groupName" bson:"groupName"`
 	GroupAbout string `json:"groupAbout" bson:"groupAbout"`
 	GroupPicture string `json:"groupPicture" bson:"groupPicture"`
