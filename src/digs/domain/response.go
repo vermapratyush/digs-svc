@@ -35,6 +35,8 @@ type MessageGetResponse struct {
 	IsGroup        bool `json:"isGroup" bson:"isGroup"`
 	Message        string `json:"body" bson:"body"`
 	Verified       bool `json:"verified" bson:"verified"`
+	GroupName      string `json:"groupName" bson:"groupName"`
+	GroupPicture   string `json:"groupPicture" bson:"groupPicture"`
 	Timestamp      int64 `json:"timestamp" bson:"timestamp"`
 	ProfilePicture string `json:"picture" bson:"picture"`
 }
@@ -68,6 +70,7 @@ type CreateGroupResponse struct {
 	GroupName    string `json:"groupName" bson:"groupName"`
 	GroupAbout   string `json:"groupAbout" bson:"groupAbout"`
 	GroupPicture string `json:"groupPicture" bson:"groupPicture"`
+	MemberCount  int `json:"memberCount" bson:"memberCount"`
 	Messages     []MessageGetResponse `json:"messages" bson:"messages"`
 }
 

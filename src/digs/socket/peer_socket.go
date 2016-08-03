@@ -125,8 +125,9 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 	if (common.IndexOf(userAccount.OneToOneGroupId(), msg.GID) != -1) {
 		isGroup = false
 	}
+	groupAccount := models.UserGroup{}
 	if msg.GID != "" {
-		groupAccount, _ := models.GetGroupAccount(msg.GID)
+		groupAccount, _ = models.GetGroupAccount(msg.GID)
 		uids = groupAccount.UIDS
 	} else {
 		uids = models.GetLiveUIDForFeed(msg.Location.Longitude, msg.Location.Latitude, userAccount.Settings.Range, -1)
@@ -162,6 +163,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			Verified:userAccount.Verified,
 			About: userAccount.About,
 			Message: msg.Body,
+			GroupName: groupAccount.GroupName,
 			Timestamp: msg.Timestamp,
 			ProfilePicture:userAccount.ProfilePicture,
 		}

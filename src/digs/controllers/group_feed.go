@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"digs/mapper"
 	"digs/socket"
-	"github.com/astaxie/beego"
 )
 
 type GroupController struct {
@@ -77,7 +76,6 @@ func (this *GroupController) Post() {
 				this.Serve500(err)
 				return
 			}
-			go informUsersOfNewGroup(request.UIDS, userGroup)
 		} else {
 			userGroup, _ = models.GetGroupAccount(intersect)
 			messages, _ = models.GetMessageFromGroup(userGroup.GID, 0, common.MessageBatchSize)
@@ -96,16 +94,19 @@ func (this *GroupController) Post() {
 					return
 				}
 			}
-			beego.Debug("Updating group");
 			err = models.UpdateGroupAccount(request.GID, request.GroupName, request.GroupPicture)
 			if err != nil {
 				this.Serve500(err)
 				return
 			}
-			userGroup.GroupName = request.GroupName
-			userGroup.GroupPicture = request.GroupPicture
+			userGroup, _ = models.GetGroupAccount(request.GID)
+			response.MemberCount = len(userGroup.UIDS)
+			if len(request.UIDS) > 0 {
+				go informUsersOfNewGroup(request.UIDS, userGroup)
+			}
 		} else {
 			userGroup, err = CreateGroupChat(request.GroupName, request.GroupAbout, request.GroupPicture, request.UIDS)
+			response.MemberCount = len(request.UIDS)
 			if err != nil {
 				this.Serve500(err)
 				return
