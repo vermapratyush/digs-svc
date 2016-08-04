@@ -27,7 +27,7 @@ func AndroidMessagePush(uid, nid, message, additionalData string)  {
 		data := map[string]string{
 			"title": "powow",
 			"message": message,
-			"image": "twitter",
+			"image": "https://raw.githubusercontent.com/PowowInfo/powowinfo.github.io/master/img/image_300.png",
 			"style": "inbox",
 			"additionalData": additionalData,
 			"content-available": "1",
