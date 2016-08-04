@@ -10,6 +10,7 @@ import (
 	"digs/logger"
 	"fmt"
 	"strings"
+	"regexp"
 )
 
 
@@ -23,6 +24,7 @@ const (
 	//MessageToClient
 	Message         = "6:"
 )
+var digits = regexp.MustCompile(`[a-zA-Z\-]+`)
 
 func AddNode(uid string, ws *websocket.Conn) {
 	if uid == "" {
@@ -233,16 +235,22 @@ func sendPushPeople(uid string, response *domain.PersonResponse) {
 
 func androidMessagePush(userAccount *models.UserAccount, nid string, msg *domain.MessageGetResponse) {
 	additionalData, _ := json.Marshal(msg)
+	style := "inbox"
+	overrideId := ""
+	if msg.IsGroup {
+		overrideId = digits.ReplaceAllString(msg.GID, "")
+	}
 	if strings.Contains(msg.Message, "<img") {
-		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s has sent an image", userAccount.FirstName), string(additionalData), "inbox")
+		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s has sent an image", userAccount.FirstName), string(additionalData), style, overrideId)
 	} else {
-		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s: %s", userAccount.FirstName, msg.Message), string(additionalData), "inbox")
+		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s: %s", userAccount.FirstName, msg.Message), string(additionalData), style, overrideId)
 	}
 }
 
 func androidPeoplePush(uid, nid, message string, people *domain.PersonResponse) {
+	overrideId := digits.ReplaceAllString(people.GID, "")
 	additionalData, _ := json.Marshal(people)
-	models.AndroidMessagePush(uid, nid, message, string(additionalData), "individual")
+	models.AndroidMessagePush(uid, nid, message, string(additionalData), "inbox", overrideId)
 }
 
 func iosPeoplePush(uid, nid, message string) {
