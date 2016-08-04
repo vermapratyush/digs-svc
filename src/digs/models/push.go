@@ -32,7 +32,6 @@ func AndroidMessagePush(uid, nid, message, additionalData, pushType, overrideId 
 			"image": "https://raw.githubusercontent.com/PowowInfo/powowinfo.github.io/master/img/image_300.png",
 			"style": "inbox",
 			"additionalData": additionalData,
-			"content-available": "1",
 			"summaryText": "There are %n% notification",
 		}
 		if pushType == "individual" {
