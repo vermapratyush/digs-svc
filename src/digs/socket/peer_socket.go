@@ -224,7 +224,7 @@ func sendPushPeople(uid string, response *domain.PersonResponse) {
 	message := fmt.Sprintf("You have been added to the group: %s", response.Name)
 	for _, notification := range(*notifications) {
 		if notification.OSType == "android" {
-			androidPeoplePush(uid, notification.NotificationId, message)
+			androidPeoplePush(uid, notification.NotificationId, message, response)
 		} else {
 			iosPeoplePush(uid, notification.NotificationId, message)
 		}
@@ -234,14 +234,15 @@ func sendPushPeople(uid string, response *domain.PersonResponse) {
 func androidMessagePush(userAccount *models.UserAccount, nid string, msg *domain.MessageGetResponse) {
 	additionalData, _ := json.Marshal(msg)
 	if strings.Contains(msg.Message, "<img") {
-		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s has sent an image", userAccount.FirstName), string(additionalData))
+		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s has sent an image", userAccount.FirstName), string(additionalData), "inbox")
 	} else {
-		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s: %s", userAccount.FirstName, msg.Message), string(additionalData))
+		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s: %s", userAccount.FirstName, msg.Message), string(additionalData), "inbox")
 	}
 }
 
-func androidPeoplePush(uid, nid, message string) {
-	models.AndroidMessagePush(uid, nid, message, "")
+func androidPeoplePush(uid, nid, message string, people *domain.PersonResponse) {
+	additionalData, _ := json.Marshal(people)
+	models.AndroidMessagePush(uid, nid, message, string(additionalData), "individual")
 }
 
 func iosPeoplePush(uid, nid, message string) {

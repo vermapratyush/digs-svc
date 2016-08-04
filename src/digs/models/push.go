@@ -8,6 +8,7 @@ import (
 	"github.com/NaySoftware/go-fcm"
 	"digs/logger"
 	"encoding/json"
+	"strconv"
 )
 var (
 	APNSCert, pemErr = certificate.FromPemFile("models/apn_production.pem", "")
@@ -20,7 +21,8 @@ type APS struct {
 	Alert string `json:"alert"`
 }
 
-func AndroidMessagePush(uid, nid, message, additionalData string)  {
+var id = 0
+func AndroidMessagePush(uid, nid, message, additionalData, pushType string)  {
 	_ = hystrix.Go(common.AndroidPush, func() error {
 		fcm := fcm.NewFcmClient(common.PushNotification_API_KEY)
 
@@ -32,6 +34,12 @@ func AndroidMessagePush(uid, nid, message, additionalData string)  {
 			"additionalData": additionalData,
 			"content-available": "1",
 			"summaryText": "There are %n% notification",
+		}
+		if pushType == "individual" {
+			data["style"] = ""
+			delete(data, "summaryText")
+			data["notId"] = strconv.Itoa(id)
+			id++
 		}
 
 		fcm.SetContentAvailable(true)
