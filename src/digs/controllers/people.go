@@ -66,7 +66,7 @@ func (this *PeopleController) Get() {
 		_, present := socket.GetLookUp(user.UID)
 		_, presentInBlock := blockedMap[user.UID]
 
-		if user.UID == userAccount.UID || presentInBlock  {
+		if user.UID == userAccount.UID || presentInBlock || !user.Settings.PublicProfile  {
 			continue
 		}
 
@@ -251,7 +251,7 @@ func addPeopleWhoCommunicatedOneOnOne(userAccount *models.UserAccount, people []
 		for _, user := range (oneOnOne) {
 
 			_, presentInBlock := blockedMap[user.UID]
-			if presentInBlock {
+			if presentInBlock || !user.Settings.PublicProfile {
 				continue
 			}
 			addUser := true
