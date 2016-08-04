@@ -101,6 +101,7 @@ func (this *GroupController) Post() {
 			}
 			userGroup, _ = models.GetGroupAccount(request.GID)
 			response.MemberCount = len(userGroup.UIDS)
+			messages, _ = models.GetMessageFromGroup(userGroup.GID, 0, common.MessageBatchSize)
 			if len(request.UIDS) > 0 {
 				go informUsersOfNewGroup(request.UIDS, userGroup)
 			}
