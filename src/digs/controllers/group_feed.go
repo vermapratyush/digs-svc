@@ -111,7 +111,13 @@ func (this *GroupController) Post() {
 				this.Serve500(err)
 				return
 			}
-			go informUsersOfNewGroup(request.UIDS, userGroup)
+			indexOfCurrentUser := common.IndexOf(request.UIDS, userAuth.UID)
+			if indexOfCurrentUser != -1 {
+				usersToInform := append(request.UIDS[0:indexOfCurrentUser], request.UIDS[indexOfCurrentUser + 1:]...)
+				go informUsersOfNewGroup(usersToInform, userGroup)
+			} else {
+				go informUsersOfNewGroup(request.UIDS, userGroup)
+			}
 		}
 	}
 
