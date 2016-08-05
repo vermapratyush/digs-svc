@@ -118,7 +118,7 @@ func addStub() ([]*domain.MessageGetResponse) {
 		UID: "uid1",
 		MID: "mid1",
 		From: "Powow",
-		Message: "Hi, Welcome to powow. You can see the people and groups around you under the 'People' and 'Groups' tab. You can also type post a post a question or an announcement below and it will be viewed by people in your locality. In the settings page you can specify your influence range (currently: 10,000 KM). Depending on the value, you will be able to reach as many people as possible.",
+		Message: "Hi, Welcome to powow. You can see the people and groups around you under the 'People' and 'Groups' tab. You can also type post a question or an announcement below and it will be viewed by people in your locality. In the settings page you can specify your influence range (currently: 10,000 KM). Depending on the value, you will be able to reach as many people as possible.",
 		Timestamp: time.Now().Unix() * int64(1000),
 		ProfilePicture:"https://raw.githubusercontent.com/PowowInfo/powowinfo.github.io/master/img/image_300.png",
 	})
