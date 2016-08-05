@@ -10,7 +10,6 @@ import (
 	"mime/multipart"
 	"image/jpeg"
 	"image/png"
-	"image/gif"
 	"os"
 	"github.com/nfnt/resize"
 	"image"
@@ -105,7 +104,7 @@ func processAndUploadImages(file multipart.File, fileExt string, outputFile stri
 		}
 		resizeImageFile, _ := os.Create(resizedFileName)
 
-		if len(imageQuality) != 3 {
+		if len(imageQuality) != 3 || fileExt == "gif" {
 			err = models.PutS3Object(originalFile, newBlobName, mime.TypeByExtension(fileExt), uid)
 			if err != nil {
 				logger.Critical("ImageUpload|S3UploadFailed|err=", err)
@@ -122,9 +121,6 @@ func processAndUploadImages(file multipart.File, fileExt string, outputFile stri
 		}
 		if fileExt == "png" {
 			png.Encode(resizeImageFile, resizedImage)
-		}
-		if fileExt == "gif" {
-			gif.Encode(resizeImageFile, resizedImage, &gif.Options{NumColors: 256})
 		}
 
 		err = models.PutS3Object(resizeImageFile, newBlobName, "image/webp", uid)
