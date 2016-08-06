@@ -96,14 +96,6 @@ func processAndUploadImages(file multipart.File, fileExt string, outputFile stri
 	for fileQualityPrefix, imageQuality := range(ResizeOptions) {
 		newBlobName := fmt.Sprintf("%s-%s", outputFile, fileQualityPrefix)
 
-		originalImageCopy, _ := os.Open(originalFile.Name())
-		originalImg, _, err := image.Decode(originalImageCopy)
-		if err != nil {
-			logger.Critical("ImageUpload|FileDecodeError|Err=", err)
-			return nil, nil
-		}
-		resizeImageFile, _ := os.Create(resizedFileName)
-
 		if len(imageQuality) != 3 || fileExt == "gif" {
 			err = models.PutS3Object(originalFile, newBlobName, mime.TypeByExtension(fileExt), uid)
 			if err != nil {
@@ -111,6 +103,14 @@ func processAndUploadImages(file multipart.File, fileExt string, outputFile stri
 			}
 			continue
 		}
+
+		originalImageCopy, _ := os.Open(originalFile.Name())
+		originalImg, _, err := image.Decode(originalImageCopy)
+		if err != nil {
+			logger.Critical("ImageUpload|FileDecodeError|Err=", err)
+			return nil, nil
+		}
+		resizeImageFile, _ := os.Create(resizedFileName)
 
 		resizedImage := resize.Thumbnail(imageQuality[0], imageQuality[1], originalImg, resize.Lanczos3)
 		if err != nil {

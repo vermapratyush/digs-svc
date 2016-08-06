@@ -210,7 +210,7 @@ func sendPushMessage(userAccount *models.UserAccount, toUID string, response *do
 
 	for _, notification := range(*notifications) {
 		if notification.OSType == "android" {
-			androidMessagePush(userAccount, notification.NotificationId, response)
+			androidMessagePush(userAccount, notification.NotificationId, *response)
 		} else {
 			iosPush(userAccount, notification.NotificationId, response)
 		}
@@ -233,12 +233,16 @@ func sendPushPeople(uid string, response *domain.PersonResponse) {
 	}
 }
 
-func androidMessagePush(userAccount *models.UserAccount, nid string, msg *domain.MessageGetResponse) {
+func androidMessagePush(userAccount *models.UserAccount, nid string, msg domain.MessageGetResponse) {
 	additionalData, _ := json.Marshal(msg)
 	style := "inbox"
 	overrideId := ""
 	if msg.IsGroup {
 		overrideId = digits.ReplaceAllString(msg.GID, "")
+		//HACK: GET RID
+		msg.From = msg.GroupName
+		msg.ProfilePicture = msg.GroupPicture
+		additionalData, _ = json.Marshal(msg)
 	}
 	if strings.Contains(msg.Message, "<img") {
 		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s has sent an image", userAccount.FirstName), string(additionalData), style, overrideId)
