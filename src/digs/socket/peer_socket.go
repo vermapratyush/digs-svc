@@ -239,10 +239,8 @@ func androidMessagePush(userAccount *models.UserAccount, nid string, msg domain.
 	overrideId := ""
 	if msg.IsGroup {
 		overrideId = digits.ReplaceAllString(msg.GID, "")
-		//HACK: GET RID
-		msg.From = msg.GroupName
-		msg.ProfilePicture = msg.GroupPicture
-		additionalData, _ = json.Marshal(msg)
+	} else {
+		overrideId = digits.ReplaceAllString(msg.UID, "")
 	}
 	if strings.Contains(msg.Message, "<img") {
 		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s has sent an image", userAccount.FirstName), string(additionalData), style, overrideId)
