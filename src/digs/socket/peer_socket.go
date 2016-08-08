@@ -126,6 +126,8 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 	isGroup := true
 	if (common.IndexOf(userAccount.OneToOneGroupId(), msg.GID) != -1) {
 		isGroup = false
+	} else if msg.GID == "" {
+		isGroup = false
 	}
 	groupAccount := models.UserGroup{}
 	if msg.GID != "" {
@@ -156,6 +158,10 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			logger.Debug("PEER|NotSendingMessage|toUID=", toUID, "|FromUID=", userAccount.UID, "|Blocked=", blocked)
 			continue
 		}
+		picture := userAccount.ProfilePicture
+		if isGroup {
+			picture = groupAccount.GroupPicture
+		}
 		response := &domain.MessageGetResponse{
 			From:common.GetName(userAccount.FirstName, userAccount.LastName),
 			UID:userAccount.UID,
@@ -167,7 +173,7 @@ func MulticastMessage(userAccount *models.UserAccount, msg *domain.MessageSendRe
 			Message: msg.Body,
 			GroupName: groupAccount.GroupName,
 			Timestamp: msg.Timestamp,
-			ProfilePicture:userAccount.ProfilePicture,
+			ProfilePicture: picture,
 		}
 		responseString, _ := json.Marshal(response)
 
@@ -237,22 +243,28 @@ func androidMessagePush(userAccount *models.UserAccount, nid string, msg domain.
 	additionalData, _ := json.Marshal(msg)
 	style := "inbox"
 	overrideId := ""
+	title := "powow"
 	if msg.IsGroup {
+		title = msg.GroupName
+		style = "individual"
 		overrideId = digits.ReplaceAllString(msg.GID, "")
 	} else {
-		overrideId = digits.ReplaceAllString(msg.UID, "")
+		if msg.GID != "" {
+			style = "individual"
+			overrideId = digits.ReplaceAllString(msg.UID, "")
+		}
 	}
 	if strings.Contains(msg.Message, "<img") {
-		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s has sent an image", userAccount.FirstName), string(additionalData), style, overrideId)
+		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s has sent an image", userAccount.FirstName), string(additionalData), style, overrideId, title)
 	} else {
-		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s: %s", userAccount.FirstName, msg.Message), string(additionalData), style, overrideId)
+		models.AndroidMessagePush(userAccount.UID, nid, fmt.Sprintf("%s: %s", userAccount.FirstName, msg.Message), string(additionalData), style, overrideId, title)
 	}
 }
 
 func androidPeoplePush(uid, nid, message string, people *domain.PersonResponse) {
 	overrideId := digits.ReplaceAllString(people.GID, "")
 	additionalData, _ := json.Marshal(people)
-	models.AndroidMessagePush(uid, nid, message, string(additionalData), "inbox", overrideId)
+	models.AndroidMessagePush(uid, nid, message, string(additionalData), "inbox", overrideId, "powow")
 }
 
 func iosPeoplePush(uid, nid, message string) {

@@ -16,7 +16,7 @@ func (this *CustomNotificationController) Post() {
 		nids, _ := models.GetNotificationIds(userAccount.UID)
 		for _, nid := range(*nids) {
 			if nid.OSType == "android" {
-				models.AndroidMessagePush(userAccount.UID, nid.NotificationId, payload, "", "individual", "")
+				models.AndroidMessagePush(userAccount.UID, nid.NotificationId, payload, "", "individual", "", "powow")
 			}
 		}
 	}

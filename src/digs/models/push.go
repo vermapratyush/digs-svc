@@ -22,15 +22,15 @@ type APS struct {
 }
 
 var id = 0
-func AndroidMessagePush(uid, nid, message, additionalData, pushType, overrideId string)  {
+func AndroidMessagePush(uid, nid, message, additionalData, pushType, overrideId, title string)  {
 	_ = hystrix.Go(common.AndroidPush, func() error {
 		fcm := fcm.NewFcmClient(common.PushNotification_API_KEY)
 
 		data := map[string]string{
-			"title": "powow",
+			"title": title,
 			"message": message,
 			"image": "https://raw.githubusercontent.com/PowowInfo/powowinfo.github.io/master/img/image_300.png",
-			"style": "inbox",
+			"style": pushType,
 			"additionalData": additionalData,
 			"summaryText": "There are %n% notification",
 		}
@@ -39,7 +39,8 @@ func AndroidMessagePush(uid, nid, message, additionalData, pushType, overrideId 
 			delete(data, "summaryText")
 			data["notId"] = strconv.Itoa(id)
 			id++
-		} else if overrideId != "" {
+		}
+		if overrideId != "" {
 			data["notId"] = overrideId
 			id++
 		}

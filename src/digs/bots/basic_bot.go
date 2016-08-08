@@ -100,7 +100,7 @@ func (this Bot) SendPushForMessage(uid string, message *models.Message) {
 	devices, _ := models.GetNotificationIds(uid)
 	for _, device := range(*devices) {
 		if device.OSType == "android" {
-			models.AndroidMessagePush(uid, device.NotificationId, message.Content, "", "individual", "")
+			models.AndroidMessagePush(uid, device.NotificationId, message.Content, "", "individual", "", this.BotName)
 		} else {
 			models.IOSMessagePush(uid, device.NotificationId, message.Content)
 		}
