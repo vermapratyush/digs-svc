@@ -140,6 +140,9 @@ func addGroupsNearBy(userAccount *models.UserAccount, coordinate *domain.Coordin
 			}
 		}
 	}
+	//TODO: HACK: Add AlwaysShow Groups
+	groupIds.Add("5f839ce5-5894-4de0-8b78-8149a5febdd5")
+	
 	for _, group := range(people) {
 		if group.ActiveState == "joined_group" {
 			groupIds.Remove(group.GID)
