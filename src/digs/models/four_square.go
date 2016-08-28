@@ -21,7 +21,17 @@ type FourSquareVenues struct {
 type FourSquareVenue struct {
 	Id string `json:"id" bson:"id"`
 	Name string `json:"name" bson:"name"`
+	Categories []Categories `json:"categories" bson:"categories"`
 	VenueStats FourSquareVenueStats `json:"stats" bson:"VenueStats"`
+}
+
+type Categories struct {
+	CategoryIcon CategoryIcon `json:"icon" bson:"icon"`
+}
+
+type CategoryIcon struct {
+	Prefix string `json:"prefix" bson:"prefix"`
+	Suffix string `json:"suffix" bson:"suffix"`
 }
 
 type FourSquareVenueStats struct {

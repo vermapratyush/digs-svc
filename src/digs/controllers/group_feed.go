@@ -173,6 +173,7 @@ func (this *GroupController) JoinGroup() {
 
 	if err == mgo.ErrNotFound {
         userGroup = fourSquareGroup(gid)
+		userGroup.UIDS = append(userGroup.UIDS, userAccount.UID)
 	}
 
 	err = AddUserToGroup(userAccount.UID, gid)
@@ -236,8 +237,11 @@ func fourSquareGroup(gid string) models.UserGroup {
 	if strings.HasPrefix(gid, "foursquare-") {
 		fourSquareId := strings.Replace(gid, "foursquare-", "", 1)
 		venue := models.GetFourSquareVenue(fourSquareId)
-
-		userGroup, _ := models.CreateGroupWithId(gid, venue.Response.Venue.Name, "Imported from FourSquare", "", []string{})
+		icon := ""
+		if len (venue.Response.Venue.Categories) > 0 {
+			icon = venue.Response.Venue.Categories[0].CategoryIcon.Prefix + "bg_64" + venue.Response.Venue.Categories[0].CategoryIcon.Prefix
+		}
+		userGroup, _ := models.CreateGroupWithId(gid, venue.Response.Venue.Name, "Imported from FourSquare", icon, []string{})
 		return userGroup
 	}
 	return models.UserGroup{}

@@ -11,6 +11,7 @@ import (
 	"github.com/deckarep/golang-set"
 	"fmt"
 	"digs/models"
+	"github.com/astaxie/beego"
 )
 
 type PeopleController struct {
@@ -118,6 +119,11 @@ func addFourSquareGroups(userAccount *models.UserAccount, coordinate *domain.Coo
 				member = true
 			}
 		}
+		icon := ""
+		if len (venue.Categories) > 0 {
+			icon = venue.Categories[0].CategoryIcon.Prefix + "bg_64" + venue.Categories[0].CategoryIcon.Suffix
+		}
+		beego.Info(icon)
 		if _, present := blockedGroup[venue.Id]; !member && !present && venue.VenueStats.CheckinsCount > 200 {
 			people = append(people, &domain.PersonResponse{
 				Name: fmt.Sprintf("%s %s", venue.Name, "(via FourSquare)"),
@@ -127,7 +133,7 @@ func addFourSquareGroups(userAccount *models.UserAccount, coordinate *domain.Coo
 				UnreadCount: 0,
 				MemberCount: 1,
 				IsGroup: true,
-				ProfilePicture: "",
+				ProfilePicture: icon,
 			})
 		}
 	}
