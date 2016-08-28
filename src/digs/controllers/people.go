@@ -110,7 +110,7 @@ func (this *PeopleController) Get() {
 
 func addFourSquareGroups(userAccount *models.UserAccount, coordinate *domain.Coordinate, blockedGroup map[string]struct{}, people []*domain.PersonResponse) []*domain.PersonResponse {
 
-	fourSquare := models.SearchFourSquareVenue(coordinate.Longitude, coordinate.Latitude, 1000.0)
+	fourSquare := models.SearchFourSquareVenue(coordinate.Longitude, coordinate.Latitude, 150.0)
 
 	for _, venue := range(fourSquare.Response.Venues) {
 		member := false
@@ -124,7 +124,7 @@ func addFourSquareGroups(userAccount *models.UserAccount, coordinate *domain.Coo
 			icon = venue.Categories[0].CategoryIcon.Prefix + "bg_64" + venue.Categories[0].CategoryIcon.Suffix
 		}
 		beego.Info(icon)
-		if _, present := blockedGroup[venue.Id]; !member && !present && venue.VenueStats.CheckinsCount > 200 {
+		if _, present := blockedGroup[venue.Id]; !member && !present {
 			people = append(people, &domain.PersonResponse{
 				Name: fmt.Sprintf("%s %s", venue.Name, "(via FourSquare)"),
 				GID: fmt.Sprintf("foursquare-%s", venue.Id),
