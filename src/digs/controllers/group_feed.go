@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"digs/mapper"
 	"digs/socket"
+	"strings"
 )
 
 type GroupController struct {
@@ -168,12 +169,17 @@ func (this *GroupController) JoinGroup() {
 		return
 	}
 	gid := this.Ctx.Input.Param(":groupId")
+	userGroup, err := models.GetGroupAccount(gid)
+
+	if err == mgo.ErrNotFound {
+        userGroup = fourSquareGroup(gid)
+	}
+
 	err = AddUserToGroup(userAccount.UID, gid)
 	if err != nil {
 		this.Serve500(err)
 		return
 	}
-	userGroup, _ := models.GetGroupAccount(gid)
 	person := mapper.MapGroupAccountToPersonResponse(userGroup)
 	person.ActiveState = "joined_group"
 	this.Serve200(person)
@@ -224,4 +230,15 @@ func informUsersOfNewGroup(uid []string, group models.UserGroup) {
 	event := mapper.MapGroupAccountToPersonResponse(group)
 	event.ActiveState = "joined_group"
 	socket.MulticastGroup(event, uid)
+}
+
+func fourSquareGroup(gid string) models.UserGroup {
+	if strings.HasPrefix(gid, "foursquare-") {
+		fourSquareId := strings.Replace(gid, "foursquare-", "", 1)
+		venue := models.GetFourSquareVenue(fourSquareId)
+
+		userGroup, _ := models.CreateGroupWithId(gid, venue.Response.Venue.Name, "Imported from FourSquare", "", []string{})
+		return userGroup
+	}
+	return models.UserGroup{}
 }

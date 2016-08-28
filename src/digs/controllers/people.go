@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"digs/models"
 	"errors"
 	"digs/domain"
 	"digs/common"
@@ -10,6 +9,8 @@ import (
 	"digs/logger"
 	"strconv"
 	"github.com/deckarep/golang-set"
+	"fmt"
+	"digs/models"
 )
 
 type PeopleController struct {
@@ -96,7 +97,7 @@ func (this *PeopleController) Get() {
 		people = addPeopleWhoCommunicatedOneOnOne(userAccount, people[0:], blockedMap)
 		people = addJoinedGroups(userAccount, people[0:])
 		people = addGroupsNearBy(userAccount, &domain.Coordinate{Longitude:longitude, Latitude:latitude}, blockedGroup, people[0:])
-
+		people = addFourSquareGroups(userAccount, &domain.Coordinate{Longitude:longitude, Latitude:latitude}, blockedGroup, people[0:])
 	}
 
 	//addAlwaysActiveBot(people)
@@ -104,6 +105,33 @@ func (this *PeopleController) Get() {
 	logger.Debug("PEOPLE|SID=", userAuth.SID, "|UID=", userAuth.UID, "|FeedSize=", len(people))
 
 	this.Serve200(people)
+}
+
+func addFourSquareGroups(userAccount *models.UserAccount, coordinate *domain.Coordinate, blockedGroup map[string]struct{}, people []*domain.PersonResponse) []*domain.PersonResponse {
+
+	fourSquare := models.SearchFourSquareVenue(coordinate.Longitude, coordinate.Latitude, 1000.0)
+
+	for _, venue := range(fourSquare.Response.Venues) {
+		member := false
+		for _, person := range(people) {
+			if person.GID == "foursquare-" + venue.Id {
+				member = true
+			}
+		}
+		if _, present := blockedGroup[venue.Id]; !member && !present && venue.VenueStats.CheckinsCount > 200 {
+			people = append(people, &domain.PersonResponse{
+				Name: fmt.Sprintf("%s %s", venue.Name, "(via FourSquare)"),
+				GID: fmt.Sprintf("foursquare-%s", venue.Id),
+				About: "Location imported from FourSquare",
+				ActiveState: "nearby_group",
+				UnreadCount: 0,
+				MemberCount: 1,
+				IsGroup: true,
+				ProfilePicture: "",
+			})
+		}
+	}
+	return people
 }
 
 func addJoinedGroups(userAccount *models.UserAccount, people []*domain.PersonResponse) []*domain.PersonResponse {

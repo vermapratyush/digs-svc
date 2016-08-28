@@ -8,6 +8,9 @@ import (
 const (
 	PushNotification_API_KEY = "AIzaSyCMYdgQUqL8X7D5OaY7hvADMOQzA6WaqPI"
 	Meetup_API_KEY = "06f4d95e5f7e7e6775682b25106f17"
+	FourSquare_API_CLIENT_ID = "SHZCEZO4D141UZ1LOT52SDKHPC3VFBUMBCJPVCUJT4INBIXF"
+	FourSquare_API_CLIENT_SECRET = "TKBLBXNKG5SQF0VZ3JTJEQLXAZWEYKXRJXWEFQOSBIK3IOY1"
+	FourSquare_API_CLIENT_VERSION = "20160728"
 	Bitly_Login = "vermapratyush"
 	Bitly_API_KEY = "R_4d0b283da71e99ec6c0eb703f289982f"
 	MessageBatchSize = 50
@@ -37,6 +40,7 @@ const (
 	AmazonS3 = "AmazonS3"
 	IOSPush = "IOSPush"
 	MeetupAPI = "MeetupAPI"
+	FourSquareAPI = "FourSquareAPI"
 	BitlyAPI = "BitlyAPI"
 )
 

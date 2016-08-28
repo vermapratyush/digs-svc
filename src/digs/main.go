@@ -81,6 +81,7 @@ func setCommandParameters() {
 	commandConfigMap[common.AndroidPush] = externalUnthrottled
 	commandConfigMap[common.IOSPush] = externalUnthrottled
 	commandConfigMap[common.MeetupAPI] = externalUnthrottled
+	commandConfigMap[common.FourSquareAPI] = externalUnthrottled
 	commandConfigMap[common.BitlyAPI] = externalUnthrottled
 	commandConfigMap[common.AmazonS3] = awsS3ExternalUnthrottled
 

@@ -36,13 +36,13 @@ func CheckOneToOneGroupExist(uid1, uid2 string) (UserGroup, error) {
 
 }
 
-func CreateGroup(groupName, groupAbout, groupPicture string, members []string) (UserGroup, error) {
+func CreateGroupWithId(groupId, groupName, groupAbout, groupPicture string, members []string) (UserGroup, error) {
 	conn := Session.Clone()
 	c := conn.DB(DefaultDatabase).C("user_groups")
 	defer conn.Close()
 
 	userGroup := UserGroup{
-		GID: uuid.NewV4().String(),
+		GID: groupId,
 		GroupName: groupName,
 		GroupAbout: groupAbout,
 		UIDS:members,
@@ -58,6 +58,10 @@ func CreateGroup(groupName, groupAbout, groupPicture string, members []string) (
 		logger.Error("CreateGroup|UserGroup=", userGroup, "|Err=", err)
 	}
 	return userGroup, err
+}
+
+func CreateGroup(groupName, groupAbout, groupPicture string, members []string) (UserGroup, error) {
+	return CreateGroupWithId(uuid.NewV4().String(), groupName, groupAbout, groupPicture, members)
 }
 
 func GetGroupAccount(gid string) (UserGroup, error) {
