@@ -239,7 +239,7 @@ func fourSquareGroup(gid string) models.UserGroup {
 		venue := models.GetFourSquareVenue(fourSquareId)
 		icon := "https://ss3.4sqi.net/img/categories_v2/none_bg_64.png"
 		if len (venue.Response.Venue.Categories) > 0 {
-			icon = venue.Response.Venue.Categories[0].CategoryIcon.Prefix + "bg_64" + venue.Response.Venue.Categories[0].CategoryIcon.Prefix
+			icon = venue.Response.Venue.Categories[0].CategoryIcon.Prefix + "bg_64" + venue.Response.Venue.Categories[0].CategoryIcon.Suffix
 		}
 		userGroup, _ := models.CreateGroupWithId(gid, venue.Response.Venue.Name, "Imported from FourSquare", icon, []string{})
 		return userGroup
