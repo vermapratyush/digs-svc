@@ -131,7 +131,7 @@ func addFourSquareGroups(userAccount *models.UserAccount, coordinate *domain.Coo
 				About: "Location imported from FourSquare",
 				ActiveState: "nearby_group",
 				UnreadCount: 0,
-				MemberCount: venue.VenueStats.UsersCount,
+				MemberCount: int(venue.VenueStats.UsersCount),
 				IsGroup: true,
 				ProfilePicture: icon,
 			})
