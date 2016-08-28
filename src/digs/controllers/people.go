@@ -119,19 +119,19 @@ func addFourSquareGroups(userAccount *models.UserAccount, coordinate *domain.Coo
 				member = true
 			}
 		}
-		icon := ""
+		icon := "https://ss3.4sqi.net/img/categories_v2/none_bg_64.png"
 		if len (venue.Categories) > 0 {
 			icon = venue.Categories[0].CategoryIcon.Prefix + "bg_64" + venue.Categories[0].CategoryIcon.Suffix
 		}
 		beego.Info(icon)
 		if _, present := blockedGroup[venue.Id]; !member && !present {
 			people = append(people, &domain.PersonResponse{
-				Name: fmt.Sprintf("%s %s", venue.Name, "(via FourSquare)"),
+				Name: venue.Name,
 				GID: fmt.Sprintf("foursquare-%s", venue.Id),
 				About: "Location imported from FourSquare",
 				ActiveState: "nearby_group",
 				UnreadCount: 0,
-				MemberCount: 1,
+				MemberCount: venue.VenueStats.UsersCount,
 				IsGroup: true,
 				ProfilePicture: icon,
 			})

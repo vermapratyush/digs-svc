@@ -237,7 +237,7 @@ func fourSquareGroup(gid string) models.UserGroup {
 	if strings.HasPrefix(gid, "foursquare-") {
 		fourSquareId := strings.Replace(gid, "foursquare-", "", 1)
 		venue := models.GetFourSquareVenue(fourSquareId)
-		icon := ""
+		icon := "https://ss3.4sqi.net/img/categories_v2/none_bg_64.png"
 		if len (venue.Response.Venue.Categories) > 0 {
 			icon = venue.Response.Venue.Categories[0].CategoryIcon.Prefix + "bg_64" + venue.Response.Venue.Categories[0].CategoryIcon.Prefix
 		}
