@@ -123,7 +123,7 @@ func addFourSquareGroups(userAccount *models.UserAccount, coordinate *domain.Coo
 		if len (venue.Categories) > 0 {
 			icon = venue.Categories[0].CategoryIcon.Prefix + "bg_64" + venue.Categories[0].CategoryIcon.Suffix
 		}
-		beego.Info(icon)
+
 		if _, present := blockedGroup[venue.Id]; !member && !present && venue.VenueStats.UsersCount > 1 {
 			people = append(people, &domain.PersonResponse{
 				Name: venue.Name,
